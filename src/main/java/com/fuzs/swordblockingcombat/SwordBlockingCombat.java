@@ -1,6 +1,6 @@
 package com.fuzs.swordblockingcombat;
 
-import com.fuzs.swordblockingcombat.handler.CommonEventHandler;
+import com.fuzs.swordblockingcombat.handler.InitiateBlockHandler;
 import com.fuzs.swordblockingcombat.handler.RenderBlockingHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -24,7 +24,7 @@ public class SwordBlockingCombat {
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent evt) {
-        MinecraftForge.EVENT_BUS.register(new CommonEventHandler());
+        MinecraftForge.EVENT_BUS.register(new InitiateBlockHandler());
     }
 
     private void onClientSetup(final FMLClientSetupEvent evt) {

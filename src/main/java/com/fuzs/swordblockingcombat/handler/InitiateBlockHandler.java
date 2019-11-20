@@ -10,7 +10,7 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-public class CommonEventHandler {
+public class InitiateBlockHandler {
 
     @SuppressWarnings("unused")
     @SubscribeEvent

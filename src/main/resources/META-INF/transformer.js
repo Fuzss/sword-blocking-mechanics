@@ -60,9 +60,9 @@ function patchBipedModelSetRotationAngles(method, obfuscated) {
     var length = instructions.length;
     for (var i = 0; i < length; i++) {
         var node = instructions[i];
-        if (node.getOpcode() == Opcodes.GETFIELD && node instanceof FieldInsnNode && node.name.equals(swingProgress)) {
+        if (node instanceof FieldInsnNode && node.getOpcode().equals(Opcodes.GETFIELD) && node.name.equals(swingProgress)) {
             var prevNode = getNthPrevious(node, 5);
-            if (prevNode.getOpcode() == Opcodes.PUTFIELD && prevNode instanceof FieldInsnNode && prevNode.name.equals(rotateAngleY)) {
+            if (prevNode instanceof FieldInsnNode && prevNode.getOpcode().equals(Opcodes.PUTFIELD) && prevNode.name.equals(rotateAngleY)) {
                 foundNode = node;
                 break;
             }
