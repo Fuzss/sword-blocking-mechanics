@@ -1,5 +1,5 @@
-# Sword Blocking
-Sword blocking is back! Exactly like it used to be, or different? Your choice!
+# Sword Blocking Combat
 
-## Downloads
-Check this project out on Curse (not yet available).
+A Minecraft mod. Downloads can be found on CurseForge.
+
+![](https://i.imgur.com/hYbIJGt.png)
