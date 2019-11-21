@@ -2,18 +2,46 @@ package com.fuzs.swordblockingcombat.handler;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.renderer.entity.model.BipedModel;
+import net.minecraft.client.renderer.entity.model.PlayerModel;
 import net.minecraft.client.renderer.model.ItemCameraTransforms;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SwordItem;
 import net.minecraft.util.Hand;
 import net.minecraft.util.HandSide;
+import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderSpecificHandEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class RenderBlockingHandler {
 
     private final Minecraft mc = Minecraft.getInstance();
+
+    @SuppressWarnings("unused")
+    @SubscribeEvent
+    public void onRenderLiving(RenderLivingEvent.Pre evt) {
+
+        if (evt.getEntity() instanceof AbstractClientPlayerEntity) {
+            AbstractClientPlayerEntity player = (AbstractClientPlayerEntity) evt.getEntity();
+            if (player.getActiveItemStack().getItem() instanceof SwordItem) {
+                PlayerModel model = (PlayerModel) evt.getRenderer().getEntityModel();
+                boolean left1 = player.getActiveHand() == Hand.OFF_HAND && player.getPrimaryHand() == HandSide.RIGHT;
+                boolean left2 = player.getActiveHand() == Hand.MAIN_HAND && player.getPrimaryHand() == HandSide.LEFT;
+                if (left1 || left2) {
+                    if (model.leftArmPose == BipedModel.ArmPose.ITEM) {
+                        model.leftArmPose = BipedModel.ArmPose.BLOCK;
+                    }
+                } else {
+                    if (model.rightArmPose == BipedModel.ArmPose.ITEM) {
+                        model.rightArmPose = BipedModel.ArmPose.BLOCK;
+                    }
+                }
+            }
+        }
+
+    }
 
     @SuppressWarnings({"unused", "deprecation"})
     @SubscribeEvent
