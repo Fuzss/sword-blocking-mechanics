@@ -1,5 +1,6 @@
 package com.fuzs.swordblockingcombat.handler;
 
+import com.fuzs.swordblockingcombat.helper.EligibleItemHelper;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
@@ -8,7 +9,6 @@ import net.minecraft.client.renderer.entity.model.BipedModel;
 import net.minecraft.client.renderer.entity.model.PlayerModel;
 import net.minecraft.client.renderer.model.ItemCameraTransforms;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.SwordItem;
 import net.minecraft.util.Hand;
 import net.minecraft.util.HandSide;
 import net.minecraftforge.client.event.RenderLivingEvent;
@@ -21,12 +21,12 @@ public class RenderBlockingHandler {
 
     @SuppressWarnings("unused")
     @SubscribeEvent
-    public void onRenderLiving(RenderLivingEvent.Pre evt) {
+    public void onRenderLiving(RenderLivingEvent.Pre<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>> evt) {
 
         if (evt.getEntity() instanceof AbstractClientPlayerEntity) {
             AbstractClientPlayerEntity player = (AbstractClientPlayerEntity) evt.getEntity();
-            if (player.getActiveItemStack().getItem() instanceof SwordItem) {
-                PlayerModel model = (PlayerModel) evt.getRenderer().getEntityModel();
+            if (EligibleItemHelper.isItemEligible(player.getActiveItemStack())) {
+                PlayerModel<AbstractClientPlayerEntity> model = evt.getRenderer().getEntityModel();
                 boolean left1 = player.getActiveHand() == Hand.OFF_HAND && player.getPrimaryHand() == HandSide.RIGHT;
                 boolean left2 = player.getActiveHand() == Hand.MAIN_HAND && player.getPrimaryHand() == HandSide.LEFT;
                 if (left1 || left2) {
@@ -45,10 +45,10 @@ public class RenderBlockingHandler {
 
     @SuppressWarnings({"unused", "deprecation"})
     @SubscribeEvent
-    public void renderSpecificHand(RenderSpecificHandEvent evt) {
+    public void onRenderSpecificHand(RenderSpecificHandEvent evt) {
 
         ItemStack stack = evt.getItemStack();
-        if (stack.getItem() instanceof SwordItem) {
+        if (EligibleItemHelper.isItemEligible(stack)) {
             ClientPlayerEntity player = this.mc.player;
             if (player.isHandActive() && player.getActiveHand() == evt.getHand()) {
                 GlStateManager.pushMatrix();
