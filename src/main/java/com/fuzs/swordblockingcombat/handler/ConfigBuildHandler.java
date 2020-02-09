@@ -23,9 +23,10 @@ public class ConfigBuildHandler {
 
             BUILDER.push(name);
 
-            this.exclude = ConfigBuildHandler.BUILDER.comment("Swords to exclude").define("Exclude", Lists.newArrayList("examplemod:exampleitem"));
-            this.include = ConfigBuildHandler.BUILDER.comment("Swords to include").define("Include", Lists.newArrayList("examplemod:exampleitem"));
-            this.blocked = ConfigBuildHandler.BUILDER.comment("Percentage blocked").defineInRange("Blocked", 0.5, 0.0, 1.0);
+            this.exclude = ConfigBuildHandler.BUILDER.comment("Swords to exclude from blocking. Intended for modded swords that already have a right-click function. Requires a restart to apply.").define("Exclusion List", Lists.newArrayList("examplemod:exampleitem"));
+            this.include = ConfigBuildHandler.BUILDER.comment("Items to include for blocking. Intended for modded swords that don't extend vanilla swords. Requires a restart to apply.").define("Inclusion List", Lists.newArrayList("examplemod:exampleitem"));
+            this.blocked = ConfigBuildHandler.BUILDER.comment("Percentage an incoming attack will be reduced by when blocking.").defineInRange("Blocked Percentage", 0.5, 0.0, 1.0);
+            this.damageSword = ConfigBuildHandler.BUILDER.comment("Damage sword when blocking an attack depending on the amount of damage blocked. Sword is only damaged when at least three damage points have been blocked, just like a shield.").define("Damage Sword", false);
 
             BUILDER.pop();
 

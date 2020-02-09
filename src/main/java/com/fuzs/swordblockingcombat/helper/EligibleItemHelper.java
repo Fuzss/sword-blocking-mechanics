@@ -3,20 +3,51 @@ package com.fuzs.swordblockingcombat.helper;
 import com.fuzs.swordblockingcombat.handler.ConfigBuildHandler;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SwordItem;
+import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class EligibleItemHelper {
 
-    private static Set<ResourceLocation> exclude;
-    private static Set<ResourceLocation> include;
+    private ItemStack activeItemStackMain = ItemStack.EMPTY;
+    private ItemStack activeItemStackOff = ItemStack.EMPTY;
+    private boolean cachedResultMain;
+    private boolean cachedResultOff;
 
-    public static boolean isItemEligible(ItemStack stack) {
+    private Set<ResourceLocation> exclude;
+    private Set<ResourceLocation> include;
+
+    public boolean test(ItemStack stack, Hand hand) {
+
+        if (hand == null) {
+            return this.isEligible(stack);
+        }
+
+        ResourceLocation location = stack.getItem().getRegistryName();
+        ItemStack cache = hand == Hand.MAIN_HAND ? this.activeItemStackMain : this.activeItemStackOff;
+        if (location != null && !location.equals(cache.getItem().getRegistryName())) {
+
+            if (hand == Hand.MAIN_HAND) {
+
+                this.activeItemStackMain = stack;
+                this.cachedResultMain = this.isEligible(stack);
+            } else {
+
+                this.activeItemStackOff = stack;
+                this.cachedResultOff = this.isEligible(stack);
+            }
+            //System.out.println("Re-created: " + location + ", " + hand + ", " + cache.getItem().getRegistryName());
+        }
+
+        //System.out.println("Forwarded: " + location);
+        return hand == Hand.MAIN_HAND ? this.cachedResultMain : this.cachedResultOff;
+    }
+
+    private boolean isEligible(ItemStack stack) {
 
         ResourceLocation location = stack.getItem().getRegistryName();
 
@@ -24,7 +55,7 @@ public class EligibleItemHelper {
             return false;
         }
 
-        if (contains(getExclusionSet(), location)) {
+        if (this.contains(this.getExclusionSet(), location)) {
             return false;
         }
 
@@ -32,49 +63,54 @@ public class EligibleItemHelper {
             return true;
         }
 
-        return contains(getInclusionSet(), location);
+        return this.contains(this.getInclusionSet(), location);
 
     }
 
-    private static boolean contains(Set<ResourceLocation> set, ResourceLocation location) {
+    private boolean contains(Set<ResourceLocation> set, ResourceLocation location) {
+
         return set.stream().filter(it -> it.getNamespace().equals(location.getNamespace())).map(ResourceLocation::getPath)
-                .collect(Collectors.toSet()).contains(location.getPath());
+                .anyMatch(it -> it.equals(location.getPath()));
     }
 
-    private static Set<ResourceLocation> getExclusionSet() {
+    private Set<ResourceLocation> getExclusionSet() {
 
-        if (exclude == null) {
-            exclude = new HashSet<>();
-            build(ConfigBuildHandler.GENERAL_CONFIG.exclude.get(), exclude);
+        if (this.exclude == null) {
+
+            this.exclude = new HashSet<>();
+            this.build(ConfigBuildHandler.GENERAL_CONFIG.exclude.get(), this.exclude);
         }
 
-        return exclude;
+        return this.exclude;
 
     }
 
-    private static Set<ResourceLocation> getInclusionSet() {
+    private Set<ResourceLocation> getInclusionSet() {
 
-        if (include == null) {
-            include = new HashSet<>();
-            build(ConfigBuildHandler.GENERAL_CONFIG.include.get(), include);
+        if (this.include == null) {
+
+            this.include = new HashSet<>();
+            this.build(ConfigBuildHandler.GENERAL_CONFIG.include.get(), this.include);
         }
 
-        return include;
+        return this.include;
 
     }
 
-    private static void build(List<String> list, Set<ResourceLocation> set) {
+    private void build(List<String> list, Set<ResourceLocation> set) {
 
         for (String s : list) {
+
             String[] s1 = s.split(":");
             if (s1.length == 2) {
+
                 ResourceLocation location = new ResourceLocation(s1[0], s1[1]);
                 if (ForgeRegistries.ITEMS.containsKey(location)) {
+
                     set.add(location);
                 }
             }
         }
-
     }
 
 }
