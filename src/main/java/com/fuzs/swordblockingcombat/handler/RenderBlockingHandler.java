@@ -24,7 +24,7 @@ public class RenderBlockingHandler {
 
     @SuppressWarnings("unused")
     @SubscribeEvent
-    public void onRenderLiving(RenderLivingEvent.Pre<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>> evt) {
+    public void onRenderLiving(final RenderLivingEvent.Pre<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>> evt) {
 
         if (evt.getEntity() instanceof AbstractClientPlayerEntity) {
 
@@ -53,7 +53,7 @@ public class RenderBlockingHandler {
 
     @SuppressWarnings({"unused", "deprecation"})
     @SubscribeEvent
-    public void onRenderHand(RenderHandEvent evt) {
+    public void onRenderHand(final RenderHandEvent evt) {
 
         ClientPlayerEntity player = this.mc.player;
         if (player != null && player.isHandActive() && player.getActiveHand() == evt.getHand()) {
@@ -61,16 +61,16 @@ public class RenderBlockingHandler {
             ItemStack stack = evt.getItemStack();
             if (this.eligibleItem.test(stack, evt.getHand())) {
 
-                FirstPersonRenderer renderer = this.mc.getFirstPersonRenderer();
+                FirstPersonRenderer itemRenderer = this.mc.getFirstPersonRenderer();
                 MatrixStack matrixStack = evt.getMatrixStack();
                 matrixStack.func_227860_a_();
 
                 boolean rightHanded = (evt.getHand() == Hand.MAIN_HAND ? player.getPrimaryHand() : player.getPrimaryHand().opposite()) == HandSide.RIGHT;
-                float equippedProg = evt.getHand() == Hand.MAIN_HAND ? 1.0F - MathHelper.lerp(evt.getPartialTicks(), renderer.prevEquippedProgressMainHand, renderer.equippedProgressMainHand) :
-                        1.0F - MathHelper.lerp(evt.getPartialTicks(), renderer.prevEquippedProgressOffHand, renderer.equippedProgressOffHand);
+                float equippedProg = evt.getHand() == Hand.MAIN_HAND ? 1.0F - MathHelper.lerp(evt.getPartialTicks(), itemRenderer.prevEquippedProgressMainHand, itemRenderer.equippedProgressMainHand) :
+                        1.0F - MathHelper.lerp(evt.getPartialTicks(), itemRenderer.prevEquippedProgressOffHand, itemRenderer.equippedProgressOffHand);
 
                 this.transformSideFirstPerson(matrixStack, rightHanded ? 1.0F : -1.0F, equippedProg);
-                renderer.func_228397_a_(player, stack, rightHanded ? net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND :
+                itemRenderer.func_228397_a_(player, stack, rightHanded ? net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND :
                         net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND, !rightHanded, matrixStack, evt.getBuffers(), evt.getLight());
 
                 matrixStack.func_227865_b_();

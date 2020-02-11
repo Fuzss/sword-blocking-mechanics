@@ -18,6 +18,8 @@ public class ConfigBuildHandler {
         public final ForgeConfigSpec.ConfigValue<List<String>> include;
         public final ForgeConfigSpec.DoubleValue blocked;
         public final ForgeConfigSpec.BooleanValue damageSword;
+        //public final ForgeConfigSpec.IntValue damageAmount;
+        public final ForgeConfigSpec.IntValue blockDelay;
 
         private GeneralConfig(String name) {
 
@@ -25,8 +27,10 @@ public class ConfigBuildHandler {
 
             this.exclude = ConfigBuildHandler.BUILDER.comment("Swords to exclude from blocking. Intended for modded swords that already have a right-click function. Requires a restart to apply.").define("Exclusion List", Lists.newArrayList("examplemod:exampleitem"));
             this.include = ConfigBuildHandler.BUILDER.comment("Items to include for blocking. Intended for modded swords that don't extend vanilla swords. Requires a restart to apply.").define("Inclusion List", Lists.newArrayList("examplemod:exampleitem"));
-            this.blocked = ConfigBuildHandler.BUILDER.comment("Percentage an incoming attack will be reduced by when blocking.").defineInRange("Blocked Percentage", 0.5, 0.0, 1.0);
+            this.blocked = ConfigBuildHandler.BUILDER.comment("Percentage an incoming attack will be reduced by when blocking.").defineInRange("Blocked Damage", 0.5, 0.0, 1.0);
             this.damageSword = ConfigBuildHandler.BUILDER.comment("Damage sword when blocking an attack depending on the amount of damage blocked. Sword is only damaged when at least three damage points have been blocked, just like a shield.").define("Damage Sword", false);
+            //this.damageAmount = ConfigBuildHandler.BUILDER.comment("Amount a sword will be damaged by after blocking.").defineInRange("Damage Amount", 1, 0, Integer.MAX_VALUE);
+            this.blockDelay = ConfigBuildHandler.BUILDER.comment("Amount of ticks after which blocking is effective.").defineInRange("Warm-Up Delay", 0, 0, Integer.MAX_VALUE);
 
             BUILDER.pop();
 

@@ -2,13 +2,17 @@ package com.fuzs.swordblockingcombat;
 
 import com.fuzs.swordblockingcombat.handler.ConfigBuildHandler;
 import com.fuzs.swordblockingcombat.handler.InitiateBlockHandler;
+import com.fuzs.swordblockingcombat.handler.NoCooldownHandler;
 import com.fuzs.swordblockingcombat.handler.RenderBlockingHandler;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.AttackIndicatorStatus;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,6 +37,7 @@ public class SwordBlockingCombat {
 
     private void onClientSetup(final FMLClientSetupEvent evt) {
         MinecraftForge.EVENT_BUS.register(new RenderBlockingHandler());
+        MinecraftForge.EVENT_BUS.register(new NoCooldownHandler());
     }
 
 }
