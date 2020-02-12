@@ -2,6 +2,7 @@ package com.fuzs.swordblockingcombat.handler;
 
 import com.google.common.collect.Lists;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.List;
 
@@ -20,6 +21,8 @@ public class ConfigBuildHandler {
         public final ForgeConfigSpec.BooleanValue damageSword;
         //public final ForgeConfigSpec.IntValue damageAmount;
         public final ForgeConfigSpec.IntValue blockDelay;
+        public final ForgeConfigSpec.EnumValue<FoodTicker> foodTicker;
+        public final ForgeConfigSpec.BooleanValue noProjectileResistance;
 
         private GeneralConfig(String name) {
 
@@ -31,6 +34,8 @@ public class ConfigBuildHandler {
             this.damageSword = ConfigBuildHandler.BUILDER.comment("Damage sword when blocking an attack depending on the amount of damage blocked. Sword is only damaged when at least three damage points have been blocked, just like a shield.").define("Damage Sword", false);
             //this.damageAmount = ConfigBuildHandler.BUILDER.comment("Amount a sword will be damaged by after blocking.").defineInRange("Damage Amount", 1, 0, Integer.MAX_VALUE);
             this.blockDelay = ConfigBuildHandler.BUILDER.comment("Amount of ticks after which blocking is effective.").defineInRange("Warm-Up Delay", 0, 0, Integer.MAX_VALUE);
+            this.foodTicker = ConfigBuildHandler.BUILDER.comment("Changes the way the player heals from food. \"CLASSIC\" option restores the pre combat update system, \"COMBAT\" option introduces the changes from current combat snapshots.").defineEnum("Food Ticker", FoodTicker.CLASSIC);
+            this.noProjectileResistance = ConfigBuildHandler.BUILDER.comment("Disables the default 0.5 second damage immunity when hit by a projectile. This makes it possible for entities to be hit by multiple projectiles at once, e. g. from a multishot enchanted crossbow.").define("No Projectile Immunity", true);
 
             BUILDER.pop();
 
@@ -39,5 +44,10 @@ public class ConfigBuildHandler {
     }
 
     public static final ForgeConfigSpec SPEC = BUILDER.build();
+
+    @SuppressWarnings("unused")
+    public enum FoodTicker {
+        DEFAULT, CLASSIC, COMBAT;
+    }
 
 }

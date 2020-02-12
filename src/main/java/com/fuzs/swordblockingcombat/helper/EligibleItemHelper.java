@@ -1,79 +1,63 @@
 package com.fuzs.swordblockingcombat.helper;
 
 import com.fuzs.swordblockingcombat.handler.ConfigBuildHandler;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SwordItem;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class EligibleItemHelper {
 
-    private ItemStack activeItemStackMain = ItemStack.EMPTY;
-    private ItemStack activeItemStackOff = ItemStack.EMPTY;
+    private Item activeItemMain;
+    private Item activeItemOff;
     private boolean cachedResultMain;
     private boolean cachedResultOff;
 
-    private Set<ResourceLocation> exclude;
-    private Set<ResourceLocation> include;
+    private Set<Item> exclude;
+    private Set<Item> include;
 
     public boolean test(ItemStack stack, Hand hand) {
 
+        Item item = stack.getItem();
         if (hand == null) {
-            return this.isEligible(stack);
+            return this.isEligible(item);
         }
 
-        ResourceLocation location = stack.getItem().getRegistryName();
-        ItemStack cache = hand == Hand.MAIN_HAND ? this.activeItemStackMain : this.activeItemStackOff;
-        if (location != null && !location.equals(cache.getItem().getRegistryName())) {
+        Item cache = hand == Hand.MAIN_HAND ? this.activeItemMain : this.activeItemOff;
+        if (!item.equals(cache)) {
 
             if (hand == Hand.MAIN_HAND) {
 
-                this.activeItemStackMain = stack;
-                this.cachedResultMain = this.isEligible(stack);
+                this.activeItemMain = item;
+                this.cachedResultMain = this.isEligible(item);
             } else {
 
-                this.activeItemStackOff = stack;
-                this.cachedResultOff = this.isEligible(stack);
+                this.activeItemOff = item;
+                this.cachedResultOff = this.isEligible(item);
             }
-            //System.out.println("Re-created: " + location + ", " + hand + ", " + cache.getItem().getRegistryName());
         }
 
-        //System.out.println("Forwarded: " + location);
         return hand == Hand.MAIN_HAND ? this.cachedResultMain : this.cachedResultOff;
     }
 
-    private boolean isEligible(ItemStack stack) {
+    private boolean isEligible(Item item) {
 
-        ResourceLocation location = stack.getItem().getRegistryName();
-
-        if (location == null) {
+        if (this.getExclusionSet().contains(item)) {
             return false;
         }
 
-        if (this.contains(this.getExclusionSet(), location)) {
-            return false;
-        }
-
-        if (stack.getItem() instanceof SwordItem) {
+        if (item instanceof SwordItem) {
             return true;
         }
 
-        return this.contains(this.getInclusionSet(), location);
-
+        return this.getInclusionSet().contains(item);
     }
 
-    private boolean contains(Set<ResourceLocation> set, ResourceLocation location) {
-
-        return set.stream().filter(it -> it.getNamespace().equals(location.getNamespace())).map(ResourceLocation::getPath)
-                .anyMatch(it -> it.equals(location.getPath()));
-    }
-
-    private Set<ResourceLocation> getExclusionSet() {
+    private Set<Item> getExclusionSet() {
 
         if (this.exclude == null) {
 
@@ -82,10 +66,9 @@ public class EligibleItemHelper {
         }
 
         return this.exclude;
-
     }
 
-    private Set<ResourceLocation> getInclusionSet() {
+    private Set<Item> getInclusionSet() {
 
         if (this.include == null) {
 
@@ -94,22 +77,23 @@ public class EligibleItemHelper {
         }
 
         return this.include;
-
     }
 
-    private void build(List<String> list, Set<ResourceLocation> set) {
+    private void build(List<String> list, Set<Item> set) {
 
         for (String s : list) {
 
             String[] s1 = s.split(":");
-            if (s1.length == 2) {
+            Optional<ResourceLocation> locationOptional = Optional.empty();
+            if (s1.length == 1) {
 
-                ResourceLocation location = new ResourceLocation(s1[0], s1[1]);
-                if (ForgeRegistries.ITEMS.containsKey(location)) {
+                locationOptional = Optional.of(new ResourceLocation(s1[0]));
+            } else if (s1.length == 2) {
 
-                    set.add(location);
-                }
+                locationOptional = Optional.of(new ResourceLocation(s1[0], s1[1]));
             }
+
+            locationOptional.flatMap(location -> Optional.ofNullable(ForgeRegistries.ITEMS.getValue(location))).ifPresent(set::add);
         }
     }
 

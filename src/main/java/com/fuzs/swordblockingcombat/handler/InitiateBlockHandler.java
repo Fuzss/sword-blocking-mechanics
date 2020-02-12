@@ -18,6 +18,7 @@ import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
+import net.minecraftforge.event.entity.player.CriticalHitEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -28,13 +29,6 @@ public class InitiateBlockHandler {
     private static final int SWORD_USE_DURATION = 72000;
 
     private EligibleItemHelper eligibleItem = new EligibleItemHelper();
-
-    @SuppressWarnings("unused")
-    @SubscribeEvent
-    public void onAttackEntity(final AttackEntityEvent evt) {
-
-        evt.getPlayer().ticksSinceLastSwing = (int) Math.ceil(evt.getPlayer().getCooldownPeriod());
-    }
 
     @SuppressWarnings("unused")
     @SubscribeEvent
