@@ -49,6 +49,7 @@ public class EnchantmentHandler {
         float f = (float) evt.getPlayer().getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getValue();
 
         if (sharpness > 1 || impaling > 0) {
+
             evt.setResult(Event.Result.ALLOW);
         }
 
@@ -102,6 +103,14 @@ public class EnchantmentHandler {
                 }
             }
         }
+
+//        if (stack.getItem() instanceof BowItem && evt.getEntityLiving() instanceof PlayerEntity) {
+//
+//
+//            PlayerEntity playerentity = (PlayerEntity) evt.getEntityLiving();
+//            boolean flag = playerentity.abilities.isCreativeMode || EnchantmentHelper.getEnchantmentLevel(Enchantments.INFINITY, stack) > 0;
+//            ItemStack itemstack = playerentity.findAmmo(stack);
+//        }
     }
 
     @SuppressWarnings("unused")
@@ -123,11 +132,11 @@ public class EnchantmentHandler {
         if (evt.getEntity() instanceof AbstractArrowEntity) {
 
             final AbstractArrowEntity abstractarrowentity = (AbstractArrowEntity) evt.getEntity();
-            if (abstractarrowentity.getShooter() instanceof PlayerEntity) {
+            if (abstractarrowentity.getShooter() instanceof LivingEntity) {
 
-                PlayerEntity player = (PlayerEntity) abstractarrowentity.getShooter();
-                ItemStack bow = player.getActiveItemStack();
-                ItemStack crossbow = player.getHeldItem(player.getActiveHand());
+                LivingEntity livingEntity = (LivingEntity) abstractarrowentity.getShooter();
+                ItemStack bow = livingEntity.getActiveItemStack();
+                ItemStack crossbow = livingEntity.getHeldItem(livingEntity.getActiveHand());
 
                 if (bow.getItem() instanceof BowItem) {
                     this.addBowArrowStats(abstractarrowentity, bow);
@@ -140,22 +149,8 @@ public class EnchantmentHandler {
 
     private void addCrossbowArrowStats(AbstractArrowEntity abstractarrowentity, ItemStack stack) {
 
-        // power enchantment for crossbows
-        int j = EnchantmentHelper.getEnchantmentLevel(Enchantments.POWER, stack);
-        if (j > 0) {
-            abstractarrowentity.setDamage(abstractarrowentity.getDamage() + (double)j * 0.5D + 0.5D);
-        }
-
-        // punch enchantment for crossbows
-        int k = EnchantmentHelper.getEnchantmentLevel(Enchantments.PUNCH, stack);
-        if (k > 0) {
-            abstractarrowentity.setKnockbackStrength(k);
-        }
-
-        // flame enchantment for crossbows
-        if (EnchantmentHelper.getEnchantmentLevel(Enchantments.FLAME, stack) > 0) {
-            abstractarrowentity.setFire(100);
-        }
+        // power, punch and flame for crossbows
+        this.addArrowEnchantments(stack, abstractarrowentity);
 
         if (EnchantmentHelper.getEnchantmentLevel(Enchantments.INFINITY, stack) > 0 && abstractarrowentity instanceof ArrowEntity
                 && ((ArrowEntity) abstractarrowentity).getArrowStack().getItem() == Items.ARROW) {
@@ -169,6 +164,47 @@ public class EnchantmentHandler {
         int i = EnchantmentHelper.getEnchantmentLevel(Enchantments.PIERCING, stack);
         if (i > 0) {
             abstractarrowentity.func_213872_b((byte) i);
+        }
+
+        // multishot enchantment for bows
+//        if (EnchantmentHelper.getEnchantmentLevel(Enchantments.MULTISHOT, stack) > 0) {
+//
+//            if (abstractarrowentity.getShooter() instanceof LivingEntity) {
+//
+//                LivingEntity shooter = (LivingEntity) abstractarrowentity.getShooter();
+//                ItemStack arrowStack = abstractarrowentity instanceof ArrowEntity ? ((ArrowEntity) abstractarrowentity).getArrowStack() : new ItemStack(Items.SPECTRAL_ARROW);
+//                float velocity = BowItem.getArrowVelocity(shooter.getItemInUseMaxCount());
+//                for (int j = 0; j < 2; j++) {
+//
+//                    AbstractArrowEntity arrow = ((ArrowItem) arrowStack.getItem()).createArrow(abstractarrowentity.getEntityWorld(), arrowStack, shooter);
+//                    arrow.shoot(shooter, shooter.rotationPitch, shooter.rotationYaw, 0.0F, velocity * 3.0F, 1.0F);
+//
+//                    arrow.setIsCritical(abstractarrowentity.getIsCritical());
+//                    arrow.pickupStatus = AbstractArrowEntity.PickupStatus.CREATIVE_ONLY;
+//
+//                    this.addArrowEnchantments(stack, arrow);
+//
+//                    abstractarrowentity.getEntityWorld().addEntity(arrow);
+//
+//                }
+//            }
+//        }
+    }
+
+    private void addArrowEnchantments(ItemStack stack, AbstractArrowEntity arrow) {
+
+        int j = EnchantmentHelper.getEnchantmentLevel(Enchantments.POWER, stack);
+        if (j > 0) {
+            arrow.setDamage(arrow.getDamage() + (double) j * 0.5D + 0.5D);
+        }
+
+        int k = EnchantmentHelper.getEnchantmentLevel(Enchantments.PUNCH, stack);
+        if (k > 0) {
+            arrow.setKnockbackStrength(k);
+        }
+
+        if (EnchantmentHelper.getEnchantmentLevel(Enchantments.FLAME, stack) > 0) {
+            arrow.setFire(100);
         }
     }
 

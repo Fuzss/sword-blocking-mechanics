@@ -1,11 +1,9 @@
 package com.fuzs.swordblockingcombat.handler;
 
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
-import net.minecraftforge.event.entity.player.CriticalHitEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -44,16 +42,6 @@ public class MiscellaneousHandler {
 
         // disable cooldown right before every attack
         evt.getPlayer().ticksSinceLastSwing = (int) Math.ceil(evt.getPlayer().getCooldownPeriod());
-    }
-
-    @SuppressWarnings("unused")
-    @SubscribeEvent
-    public void onCriticalHit(final CriticalHitEvent evt) {
-
-        // prevent sweeping from taking effect unless the enchantment is in place
-        if (EnchantmentHelper.getSweepingDamageRatio(evt.getPlayer()) == 0.0F) {
-            evt.getPlayer().onGround = false;
-        }
     }
 
     @SuppressWarnings("unused")

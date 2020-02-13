@@ -20,7 +20,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 public class RenderBlockingHandler {
 
     private final Minecraft mc = Minecraft.getInstance();
-    private EligibleItemHelper eligibleItem = new EligibleItemHelper();
 
     @SuppressWarnings("unused")
     @SubscribeEvent
@@ -29,7 +28,7 @@ public class RenderBlockingHandler {
         if (evt.getEntity() instanceof AbstractClientPlayerEntity) {
 
             AbstractClientPlayerEntity player = (AbstractClientPlayerEntity) evt.getEntity();
-            if (player.isHandActive() && this.eligibleItem.test(player.getActiveItemStack(), player.getActiveHand())) {
+            if (player.isHandActive() && EligibleItemHelper.check(player.getActiveItemStack())) {
 
                 PlayerModel<AbstractClientPlayerEntity> model = evt.getRenderer().getEntityModel();
                 boolean left1 = player.getActiveHand() == Hand.OFF_HAND && player.getPrimaryHand() == HandSide.RIGHT;
@@ -59,7 +58,7 @@ public class RenderBlockingHandler {
         if (player != null && player.isHandActive() && player.getActiveHand() == evt.getHand()) {
 
             ItemStack stack = evt.getItemStack();
-            if (this.eligibleItem.test(stack, evt.getHand())) {
+            if (EligibleItemHelper.check(stack)) {
 
                 FirstPersonRenderer itemRenderer = this.mc.getFirstPersonRenderer();
                 MatrixStack matrixStack = evt.getMatrixStack();

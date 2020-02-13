@@ -17,8 +17,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
-import net.minecraftforge.event.entity.player.AttackEntityEvent;
-import net.minecraftforge.event.entity.player.CriticalHitEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -28,14 +26,12 @@ public class InitiateBlockHandler {
 
     private static final int SWORD_USE_DURATION = 72000;
 
-    private EligibleItemHelper eligibleItem = new EligibleItemHelper();
-
     @SuppressWarnings("unused")
     @SubscribeEvent
     public void onRightClickItem(final PlayerInteractEvent.RightClickItem evt) {
 
         PlayerEntity player = evt.getPlayer();
-        if (this.eligibleItem.test(evt.getItemStack(), evt.getHand())) {
+        if (EligibleItemHelper.check(evt.getItemStack())) {
 
             ItemStack stack = player.getHeldItemOffhand();
             Predicate<ItemStack> noAction = item -> item.getItem().getUseAction(item) == UseAction.NONE;
@@ -62,7 +58,7 @@ public class InitiateBlockHandler {
     @SubscribeEvent
     public void onItemUseStart(final LivingEntityUseItemEvent.Start evt) {
 
-        if (this.eligibleItem.test(evt.getItem(), evt.getEntityLiving().getActiveHand())) {
+        if (EligibleItemHelper.check(evt.getItem())) {
 
             evt.setDuration(SWORD_USE_DURATION);
         }
@@ -144,7 +140,7 @@ public class InitiateBlockHandler {
     private boolean isBlocking(PlayerEntity player) {
 
         boolean ready = SWORD_USE_DURATION - player.getItemInUseCount() >= ConfigBuildHandler.GENERAL_CONFIG.blockDelay.get();
-        return ready && this.eligibleItem.test(player.getActiveItemStack(), player.getActiveHand());
+        return ready && EligibleItemHelper.check(player.getActiveItemStack());
     }
 
 }

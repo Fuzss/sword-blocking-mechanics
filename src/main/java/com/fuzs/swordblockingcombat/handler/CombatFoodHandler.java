@@ -34,10 +34,8 @@ public class CombatFoodHandler {
         @Override
         public void tick(PlayerEntity player) {
 
-            int ticker = ConfigBuildHandler.FoodTicker.valueOf(ConfigBuildHandler.GENERAL_CONFIG.foodTicker.get().toString()).ordinal();
             Difficulty difficulty = player.world.getDifficulty();
             this.prevFoodLevel = this.foodLevel;
-
             if (this.foodExhaustionLevel > 4.0F) {
                 this.foodExhaustionLevel -= 4.0F;
                 if (this.foodSaturationLevel > 0.0F) {
@@ -47,49 +45,23 @@ public class CombatFoodHandler {
                 }
             }
 
+            boolean combat = ConfigBuildHandler.GENERAL_CONFIG.foodTicker.get() == ConfigBuildHandler.FoodTicker.COMBAT;
+            int delay = combat ? 60 : 80, threshold = combat ? 6 : 18;
             boolean naturalRegen = player.world.getGameRules().getBoolean(GameRules.NATURAL_REGENERATION);
-            if (ticker == 1) {
-                this.tickClassic(player, difficulty, naturalRegen);
-            } else if (ticker == 2) {
-                this.tickCombat(player, difficulty, naturalRegen);
-            }
-        }
-
-        private void tickClassic(PlayerEntity player, Difficulty difficulty, boolean naturalRegen) {
-
-            if (naturalRegen && this.foodLevel >= 18 && player.shouldHeal()) {
+            if (naturalRegen && this.foodLevel >= threshold && player.shouldHeal()) {
                 ++this.foodTimer;
-                if (this.foodTimer >= 80) {
+                if (this.foodTimer >= delay) {
                     player.heal(1.0F);
-                    this.addExhaustion(3.0F);
-                    this.foodTimer = 0;
-                }
-            } else if (this.foodLevel <= 0) {
-                ++this.foodTimer;
-                if (this.foodTimer >= 80) {
-                    if (player.getHealth() > 10.0F || difficulty == Difficulty.HARD || player.getHealth() > 1.0F && difficulty == Difficulty.NORMAL) {
-                        player.attackEntityFrom(DamageSource.STARVE, 1.0F);
+                    if (combat) {
+                        this.foodLevel = Math.max(this.foodLevel - 1, 0);
+                    } else {
+                        this.addExhaustion(6.0F); // was 3.0F originally
                     }
-
-                    this.foodTimer = 0;
-                }
-            } else {
-                this.foodTimer = 0;
-            }
-        }
-
-        private void tickCombat(PlayerEntity player, Difficulty difficulty, boolean naturalRegen) {
-
-            if (naturalRegen && this.foodLevel >= 6 && player.shouldHeal()) {
-                ++this.foodTimer;
-                if (this.foodTimer >= 60) {
-                    player.heal(1.0F);
-                    this.foodLevel = Math.max(this.foodLevel - 1, 0);
                     this.foodTimer = 0;
                 }
             } else if (this.foodLevel <= 0) {
                 ++this.foodTimer;
-                if (this.foodTimer >= 60) {
+                if (this.foodTimer >= delay) {
                     if (player.getHealth() > 10.0F || difficulty == Difficulty.HARD || player.getHealth() > 1.0F && difficulty == Difficulty.NORMAL) {
                         player.attackEntityFrom(DamageSource.STARVE, 1.0F);
                     }

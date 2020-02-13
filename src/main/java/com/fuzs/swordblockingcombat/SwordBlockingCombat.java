@@ -20,12 +20,14 @@ public class SwordBlockingCombat {
     public static final Logger LOGGER = LogManager.getLogger(SwordBlockingCombat.NAME);
 
     public SwordBlockingCombat() {
+
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onCommonSetup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigBuildHandler.SPEC, MODID + ".toml");
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent evt) {
+
         MinecraftForge.EVENT_BUS.register(new InitiateBlockHandler());
         MinecraftForge.EVENT_BUS.register(new CombatFoodHandler());
         MinecraftForge.EVENT_BUS.register(new EnchantmentHandler());
@@ -33,6 +35,7 @@ public class SwordBlockingCombat {
     }
 
     private void onClientSetup(final FMLClientSetupEvent evt) {
+
         MinecraftForge.EVENT_BUS.register(new RenderBlockingHandler());
         MinecraftForge.EVENT_BUS.register(new NoCooldownHandler());
     }

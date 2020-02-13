@@ -2,7 +2,6 @@ package com.fuzs.swordblockingcombat.handler;
 
 import com.google.common.collect.Lists;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.List;
 
@@ -23,6 +22,8 @@ public class ConfigBuildHandler {
         public final ForgeConfigSpec.IntValue blockDelay;
         public final ForgeConfigSpec.EnumValue<FoodTicker> foodTicker;
         public final ForgeConfigSpec.BooleanValue noProjectileResistance;
+        public final ForgeConfigSpec.BooleanValue sweepingRequired;
+        public final ForgeConfigSpec.BooleanValue noSweepingSmoke;
 
         private GeneralConfig(String name) {
 
@@ -36,6 +37,8 @@ public class ConfigBuildHandler {
             this.blockDelay = ConfigBuildHandler.BUILDER.comment("Amount of ticks after which blocking is effective.").defineInRange("Warm-Up Delay", 0, 0, Integer.MAX_VALUE);
             this.foodTicker = ConfigBuildHandler.BUILDER.comment("Changes the way the player heals from food. \"CLASSIC\" option restores the pre combat update system, \"COMBAT\" option introduces the changes from current combat snapshots.").defineEnum("Food Ticker", FoodTicker.CLASSIC);
             this.noProjectileResistance = ConfigBuildHandler.BUILDER.comment("Disables the default 0.5 second damage immunity when hit by a projectile. This makes it possible for entities to be hit by multiple projectiles at once, e. g. from a multishot enchanted crossbow.").define("No Projectile Immunity", true);
+            this.sweepingRequired = ConfigBuildHandler.BUILDER.comment("Is the sweeping edge enchantment required to perform a sweep attack.").define("Require Sweeping Edge", true);
+            this.noSweepingSmoke = ConfigBuildHandler.BUILDER.comment("Prevent particles created by a sweep attack from appearing.").define("No Sweeping Particles", true);
 
             BUILDER.pop();
 
