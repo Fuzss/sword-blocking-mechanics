@@ -1,6 +1,6 @@
-package com.fuzs.swordblockingcombat.handler;
+package com.fuzs.swordblockingcombat.client;
 
-import com.fuzs.swordblockingcombat.helper.EligibleItemHelper;
+import com.fuzs.swordblockingcombat.common.helper.ItemBlockingHelper;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
@@ -13,10 +13,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.HandSide;
 import net.minecraft.util.math.MathHelper;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
+@OnlyIn(Dist.CLIENT)
 public class RenderBlockingHandler {
 
     private final Minecraft mc = Minecraft.getInstance();
@@ -28,7 +31,7 @@ public class RenderBlockingHandler {
         if (evt.getEntity() instanceof AbstractClientPlayerEntity) {
 
             AbstractClientPlayerEntity player = (AbstractClientPlayerEntity) evt.getEntity();
-            if (player.isHandActive() && EligibleItemHelper.check(player.getActiveItemStack())) {
+            if (player.isHandActive() && ItemBlockingHelper.getCanStackBlock(player.getActiveItemStack())) {
 
                 PlayerModel<AbstractClientPlayerEntity> model = evt.getRenderer().getEntityModel();
                 boolean left1 = player.getActiveHand() == Hand.OFF_HAND && player.getPrimaryHand() == HandSide.RIGHT;
@@ -58,7 +61,7 @@ public class RenderBlockingHandler {
         if (player != null && player.isHandActive() && player.getActiveHand() == evt.getHand()) {
 
             ItemStack stack = evt.getItemStack();
-            if (EligibleItemHelper.check(stack)) {
+            if (ItemBlockingHelper.getCanStackBlock(stack)) {
 
                 FirstPersonRenderer itemRenderer = this.mc.getFirstPersonRenderer();
                 MatrixStack matrixStack = evt.getMatrixStack();
@@ -78,6 +81,9 @@ public class RenderBlockingHandler {
         }
     }
 
+    /**
+     * values taken from Minecraft snapshot 15w33b
+     */
     private void transformSideFirstPerson(MatrixStack matrixStack, float side, float equippedProg) {
 
         matrixStack.func_227861_a_(side * 0.56F, -0.52F + equippedProg * -0.6F, -0.72F);

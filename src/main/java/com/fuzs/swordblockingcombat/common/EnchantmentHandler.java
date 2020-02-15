@@ -1,4 +1,4 @@
-package com.fuzs.swordblockingcombat.handler;
+package com.fuzs.swordblockingcombat.common;
 
 import com.google.common.collect.Lists;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -40,7 +40,7 @@ public class EnchantmentHandler {
     }
 
     @SuppressWarnings("unused")
-    @SubscribeEvent
+    //@SubscribeEvent
     public void onCriticalHit(final CriticalHitEvent evt) {
 
         // hijacking this event to be able to make modifications to the current attack damage

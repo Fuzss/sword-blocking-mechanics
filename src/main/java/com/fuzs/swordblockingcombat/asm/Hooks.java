@@ -1,46 +1,62 @@
 package com.fuzs.swordblockingcombat.asm;
 
-import com.fuzs.swordblockingcombat.handler.ConfigBuildHandler;
+import com.fuzs.swordblockingcombat.common.ClassicCombatHandler;
+import com.fuzs.swordblockingcombat.common.ModernCombatHandler;
+import com.fuzs.swordblockingcombat.config.ConfigValueHolder;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.item.ArmorStandEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.AxeItem;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.ToolItem;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 
+import javax.smartcardio.ATR;
+import java.util.Map;
+
 @SuppressWarnings("unused")
 public class Hooks {
 
+    /**
+     * make attacking an entity in {@link net.minecraft.item.ToolItem} only consume one durability point
+     */
     public static int hitEntityAmount(ToolItem instance) {
-        return instance instanceof AxeItem ? 1 : 2;
+        return ModernCombatHandler.hitEntityAmount(instance);
     }
 
     public static boolean doSweeping(boolean flag, PlayerEntity player, Entity targetEntity, float f) {
 
-        if (flag && (EnchantmentHelper.getSweepingDamageRatio(player) > 0 || !ConfigBuildHandler.GENERAL_CONFIG.sweepingRequired.get())) {
+        ClassicCombatHandler.doSweeping(flag, player, targetEntity, f);
+        return false;
+    }
 
-            float f3 = 1.0F + EnchantmentHelper.getSweepingDamageRatio(player) * f;
-            for (LivingEntity livingentity : player.world.getEntitiesWithinAABB(LivingEntity.class, targetEntity.getBoundingBox().grow(1.0D, 0.25D, 1.0D))) {
+    public static Multimap<String, AttributeModifier> adjustAttributeMap(Multimap<String, AttributeModifier> multimap, EquipmentSlotType equipmentSlot, ItemStack stack) {
 
-                if (livingentity != player && livingentity != targetEntity && !player.isOnSameTeam(livingentity) && (!(livingentity instanceof ArmorStandEntity) || !((ArmorStandEntity) livingentity).hasMarker()) && player.getDistanceSq(livingentity) < 9.0D) {
+        Map<Item, Map<String, AttributeModifier>> itemMap = ConfigValueHolder.MATERIAL_CHANGER.attributes;
+        if (itemMap != null && equipmentSlot == EquipmentSlotType.MAINHAND) {
 
-                    livingentity.knockBack(player, 0.4F, MathHelper.sin(player.rotationYaw * ((float) Math.PI / 180F)), -MathHelper.cos(player.rotationYaw * ((float) Math.PI / 180F)));
-                    livingentity.attackEntityFrom(DamageSource.causePlayerDamage(player), f3);
-                }
-            }
+            Map<String, AttributeModifier> attributeMap = itemMap.get(stack.getItem());
+            if (attributeMap != null) {
 
-            player.world.playSound(null, player.func_226277_ct_(), player.func_226278_cu_(), player.func_226281_cx_(), SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, player.getSoundCategory(), 1.0F, 1.0F);
-            if (!ConfigBuildHandler.GENERAL_CONFIG.noSweepingSmoke.get()) {
-
-                player.spawnSweepParticles();
+                multimap.putAll(Multimaps.forMap(attributeMap));
             }
         }
 
-        return false;
+        return multimap;
+    }
+
+    public static float addEnchantmentDamage() {
+        return 0.0F;
     }
 
 }

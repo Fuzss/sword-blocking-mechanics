@@ -1,17 +1,14 @@
-package com.fuzs.swordblockingcombat.handler;
+package com.fuzs.swordblockingcombat.common;
 
-import com.fuzs.swordblockingcombat.helper.EligibleItemHelper;
+import com.fuzs.swordblockingcombat.common.helper.ItemBlockingHelper;
+import com.fuzs.swordblockingcombat.config.ConfigValueHolder;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
-import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.UseAction;
 import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.EntityRayTraceResult;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
@@ -24,14 +21,14 @@ import java.util.function.Predicate;
 
 public class InitiateBlockHandler {
 
-    private static final int SWORD_USE_DURATION = 72000;
+    private final ItemBlockingHelper blockingHelper = new ItemBlockingHelper();
 
     @SuppressWarnings("unused")
     @SubscribeEvent
     public void onRightClickItem(final PlayerInteractEvent.RightClickItem evt) {
 
         PlayerEntity player = evt.getPlayer();
-        if (EligibleItemHelper.check(evt.getItemStack())) {
+        if (ItemBlockingHelper.getCanStackBlock(evt.getItemStack())) {
 
             ItemStack stack = player.getHeldItemOffhand();
             Predicate<ItemStack> noAction = item -> item.getItem().getUseAction(item) == UseAction.NONE;
@@ -58,9 +55,9 @@ public class InitiateBlockHandler {
     @SubscribeEvent
     public void onItemUseStart(final LivingEntityUseItemEvent.Start evt) {
 
-        if (EligibleItemHelper.check(evt.getItem())) {
+        if (ItemBlockingHelper.getCanStackBlock(evt.getItem())) {
 
-            evt.setDuration(SWORD_USE_DURATION);
+            evt.setDuration(this.blockingHelper.swordUseDuration);
         }
     }
 
@@ -75,7 +72,7 @@ public class InitiateBlockHandler {
             if (rayTrace.getEntity() instanceof PlayerEntity) {
                 PlayerEntity player = (PlayerEntity) rayTrace.getEntity();
 
-                if (this.isBlocking(player)) {
+                if (this.blockingHelper.getIsBlocking(player)) {
                     Vec3d playerVec3 = player.getLookVec();
 //                    arrow.knockBack(player, 0.5F, player.func_226277_ct_() - player.func_226277_ct_(), player.func_226281_cx_() - player.func_226281_cx_());
 
@@ -99,13 +96,13 @@ public class InitiateBlockHandler {
             PlayerEntity player = (PlayerEntity) evt.getEntityLiving();
             float damage = evt.getAmount();
 
-            if (damage > 0.0F && this.isBlocking(player)) {
+            if (damage > 0.0F && this.blockingHelper.getIsBlocking(player)) {
 
-                this.damageSword(player, damage);
+                this.blockingHelper.damageSword(player, damage);
 
                 if (!evt.getSource().isUnblockable()) {
 
-                    float reducedAmount = (1.0F + evt.getAmount()) * (1.0F - ConfigBuildHandler.GENERAL_CONFIG.blocked.get().floatValue());
+                    float reducedAmount = (1.0F + evt.getAmount()) * (1.0F - ConfigValueHolder.SWORD_BLOCKING.blocked);
                     if (reducedAmount <= 1.0F) {
                         reducedAmount = 0.0F;
                     }
@@ -114,33 +111,6 @@ public class InitiateBlockHandler {
                 }
             }
         }
-    }
-
-    private void damageSword(PlayerEntity player, float damage) {
-
-        if (ConfigBuildHandler.GENERAL_CONFIG.damageSword.get() && damage >= 3.0F) {
-
-            ItemStack stack = player.getActiveItemStack();
-            Hand hand = player.getActiveHand();
-            int i = 1 + MathHelper.floor(damage);
-
-            stack.damageItem(i, player, entity -> {
-                entity.sendBreakAnimation(hand);
-                net.minecraftforge.event.ForgeEventFactory.onPlayerDestroyItem(player, stack, hand);
-            });
-
-            if (stack.isEmpty()) {
-
-                player.setItemStackToSlot(hand == Hand.MAIN_HAND ? EquipmentSlotType.MAINHAND : EquipmentSlotType.OFFHAND, ItemStack.EMPTY);
-                player.playSound(SoundEvents.ENTITY_ITEM_BREAK, 0.8F, 0.8F + player.world.rand.nextFloat() * 0.4F);
-            }
-        }
-    }
-
-    private boolean isBlocking(PlayerEntity player) {
-
-        boolean ready = SWORD_USE_DURATION - player.getItemInUseCount() >= ConfigBuildHandler.GENERAL_CONFIG.blockDelay.get();
-        return ready && EligibleItemHelper.check(player.getActiveItemStack());
     }
 
 }

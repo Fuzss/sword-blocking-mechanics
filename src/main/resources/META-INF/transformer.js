@@ -70,6 +70,21 @@ function initializeCoreMod() {
                 }, classNode, "PlayerEntity");
                 return classNode;
             }
+        },
+        'item_stack_patch': {
+            'target': {
+                'type': 'CLASS',
+                'name': 'net.minecraft.item.ItemStack'
+            },
+            'transformer': function(classNode) {
+                patch({
+                    obfName: "func_111283_C",
+                    name: "getAttributeModifiers",
+                    desc: "(Lnet/minecraft/inventory/EquipmentSlotType;)Lcom/google/common/collect/Multimap;",
+                    patch: patchItemStackGetAttributeModifiers
+                }, classNode, "ItemStack");
+                return classNode;
+            }
         }
     };
 }
@@ -97,6 +112,30 @@ function patch(entry, classNode, name) {
         log("Patching " + name + " was successful");
     } else {
         log("Patching " + name + " failed");
+    }
+}
+
+function patchItemStackGetAttributeModifiers(method, obfuscated) {
+    var foundNode = null;
+    var instructions = method.instructions.toArray();
+    var length = instructions.length;
+    for (var i = 0; i < length; i++) {
+        var node = instructions[i];
+        if (node instanceof MethodInsnNode && node.getOpcode().equals(Opcodes.INVOKEVIRTUAL) && node.owner.equals("net/minecraft/item/Item") && node.name.equals("getAttributeModifiers") && node.desc.equals("(Lnet/minecraft/inventory/EquipmentSlotType;Lnet/minecraft/item/ItemStack;)Lcom/google/common/collect/Multimap;")) {
+            var nextNode = node.getNext();
+            if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.ASTORE)) {
+                foundNode = node;
+                break;
+            }
+        }
+    }
+    if (foundNode != null) {
+        var insnList = new InsnList();
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 1));
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        insnList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/fuzs/swordblockingcombat/asm/Hooks", "adjustAttributeMap", "(Lcom/google/common/collect/Multimap;Lnet/minecraft/inventory/EquipmentSlotType;Lnet/minecraft/item/ItemStack;)Lcom/google/common/collect/Multimap;", false));
+        method.instructions.insertBefore(getNthNode(foundNode, 1), insnList);
+        return true;
     }
 }
 

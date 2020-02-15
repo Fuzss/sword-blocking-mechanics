@@ -1,5 +1,6 @@
-package com.fuzs.swordblockingcombat.handler;
+package com.fuzs.swordblockingcombat.common;
 
+import com.fuzs.swordblockingcombat.config.ConfigValueHolder;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.FoodStats;
@@ -15,7 +16,7 @@ public class CombatFoodHandler {
     public void onEntityJoinWorld(final EntityJoinWorldEvent evt) {
 
         // replace food stats with one having some tweaks in the tick method
-        if (ConfigBuildHandler.GENERAL_CONFIG.foodTicker.get() != ConfigBuildHandler.FoodTicker.DEFAULT && evt.getEntity() instanceof PlayerEntity) {
+        if (ConfigValueHolder.FOOD_BUFFS.foodTicker.getId() != 0 && evt.getEntity() instanceof PlayerEntity) {
             ((PlayerEntity) evt.getEntity()).foodStats = new CombatFoodStats(((PlayerEntity) evt.getEntity()).foodStats);
         }
     }
@@ -45,14 +46,15 @@ public class CombatFoodHandler {
                 }
             }
 
-            boolean combat = ConfigBuildHandler.GENERAL_CONFIG.foodTicker.get() == ConfigBuildHandler.FoodTicker.COMBAT;
-            int delay = combat ? 60 : 80, threshold = combat ? 6 : 18;
+            int id = ConfigValueHolder.FOOD_BUFFS.foodTicker.getId();
+            int delay = id == 2 ? 60 : id == 3 ? ConfigValueHolder.FOOD_BUFFS.regenDelay : 80;
+            int threshold = id == 2 ? 6 : id == 3 ? ConfigValueHolder.FOOD_BUFFS.regenThreshold : 18;
             boolean naturalRegen = player.world.getGameRules().getBoolean(GameRules.NATURAL_REGENERATION);
             if (naturalRegen && this.foodLevel >= threshold && player.shouldHeal()) {
                 ++this.foodTimer;
                 if (this.foodTimer >= delay) {
                     player.heal(1.0F);
-                    if (combat) {
+                    if (id == 2 || id == 3 && ConfigValueHolder.FOOD_BUFFS.drainFood) {
                         this.foodLevel = Math.max(this.foodLevel - 1, 0);
                     } else {
                         this.addExhaustion(6.0F); // was 3.0F originally
