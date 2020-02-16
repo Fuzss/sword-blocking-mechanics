@@ -5,6 +5,8 @@ import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -12,6 +14,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 
+@OnlyIn(Dist.CLIENT)
 public class SharpnessDamageHandler {
 
     @SuppressWarnings("unused")

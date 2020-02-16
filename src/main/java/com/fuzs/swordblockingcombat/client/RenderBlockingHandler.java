@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.entity.model.PlayerModel;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.HandSide;
-import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderHandEvent;
@@ -68,10 +67,7 @@ public class RenderBlockingHandler {
                 matrixStack.func_227860_a_();
 
                 boolean rightHanded = (evt.getHand() == Hand.MAIN_HAND ? player.getPrimaryHand() : player.getPrimaryHand().opposite()) == HandSide.RIGHT;
-                float equippedProg = evt.getHand() == Hand.MAIN_HAND ? 1.0F - MathHelper.lerp(evt.getPartialTicks(), itemRenderer.prevEquippedProgressMainHand, itemRenderer.equippedProgressMainHand) :
-                        1.0F - MathHelper.lerp(evt.getPartialTicks(), itemRenderer.prevEquippedProgressOffHand, itemRenderer.equippedProgressOffHand);
-
-                this.transformSideFirstPerson(matrixStack, rightHanded ? 1.0F : -1.0F, equippedProg);
+                this.transformSideFirstPerson(matrixStack, rightHanded ? 1.0F : -1.0F, evt.getEquipProgress());
                 itemRenderer.func_228397_a_(player, stack, rightHanded ? net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND :
                         net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND, !rightHanded, matrixStack, evt.getBuffers(), evt.getLight());
 

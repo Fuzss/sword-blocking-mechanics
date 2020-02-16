@@ -6,6 +6,7 @@ var FieldInsnNode = Java.type('org.objectweb.asm.tree.FieldInsnNode');
 var MethodInsnNode = Java.type('org.objectweb.asm.tree.MethodInsnNode');
 var TypeInsnNode = Java.type('org.objectweb.asm.tree.TypeInsnNode');
 var JumpInsnNode = Java.type('org.objectweb.asm.tree.JumpInsnNode');
+var LdcInsnNode = Java.type('org.objectweb.asm.tree.LdcInsnNode');
 var LabelNode = Java.type('org.objectweb.asm.tree.LabelNode');
 var FrameNode = Java.type('org.objectweb.asm.tree.FrameNode');
 
@@ -67,11 +68,6 @@ function initializeCoreMod() {
                     name: "attackTargetEntityWithCurrentItem",
                     desc: "(Lnet/minecraft/entity/Entity;)V",
                     patch: patchPlayerEntityAttackTargetEntityWithCurrentItem
-                }, {
-                    obfName: "func_70097_a",
-                    name: "attackEntityFrom",
-                    desc: "(Lnet/minecraft/util/DamageSource;F)Z",
-                    patch: patchPlayerEntityAttackEntityFrom
                 }], classNode, "PlayerEntity");
                 return classNode;
             }
@@ -238,36 +234,6 @@ function patchPlayerEntityAttackTargetEntityWithCurrentItem(method, obfuscated) 
     return flag1 && flag2;
 }
 
-function patchPlayerEntityAttackEntityFrom(method, obfuscated) {
-    var attackEntityFrom = obfuscated ? "func_70097_a" : "attackEntityFrom";
-    var foundNode = null;
-    var instructions = method.instructions.toArray();
-    var length = instructions.length;
-    for (var i = 0; i < length; i++) {
-        var node = instructions[i];
-        if (node instanceof VarInsnNode && node.getOpcode().equals(Opcodes.FLOAD) && node.var.equals(2)) {
-            var nextNode = node.getNext();
-            if (nextNode instanceof InsnNode && nextNode.getOpcode().equals(Opcodes.FCONST_0)) {
-                nextNode = nextNode.getNext();
-                if (nextNode instanceof InsnNode && nextNode.getOpcode().equals(Opcodes.FCMPL)) {
-                    foundNode = node;
-                    break;
-                }
-            }
-        }
-    }
-    if (foundNode != null) {
-        var insnList = new InsnList();
-        insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
-        insnList.add(new VarInsnNode(Opcodes.ALOAD, 1));
-        insnList.add(new VarInsnNode(Opcodes.FLOAD, 2));
-        insnList.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "net/minecraft/entity/LivingEntity", attackEntityFrom, "(Lnet/minecraft/util/DamageSource;F)Z", false));
-        insnList.add(new InsnNode(Opcodes.IRETURN));
-        method.instructions.insertBefore(foundNode, insnList);
-        return true;
-    }
-}
-
 function patchToolItemHitEntity(method, obfuscated) {
     var foundNode = null;
     var instructions = method.instructions.toArray();
@@ -286,7 +252,7 @@ function patchToolItemHitEntity(method, obfuscated) {
         var insnList = new InsnList();
         insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
         insnList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/fuzs/swordblockingcombat/asm/Hooks", "hitEntityAmount", "(Lnet/minecraft/item/ToolItem;)I", false));
-        method.instructions.insertBefore(foundNode, insnList);
+        method.instructions.insert(foundNode, insnList);
         method.instructions.remove(foundNode);
         return true;
     }

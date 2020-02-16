@@ -6,10 +6,7 @@ import net.minecraft.dispenser.IPosition;
 import net.minecraft.dispenser.ProjectileDispenseBehavior;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.CreatureAttribute;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.IProjectile;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.*;
 import net.minecraft.entity.item.ArmorStandEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
@@ -42,7 +39,8 @@ public class ModernCombatHandler {
                 @Nonnull
                 protected IProjectile getProjectileEntity(@Nonnull World world, @Nonnull IPosition position, @Nonnull ItemStack stack) {
 
-                    TridentEntity tridentEntity = new TridentEntity(world, position.getX(), position.getY(), position.getZ());
+                    TridentEntity tridentEntity = new TridentEntity(EntityType.TRIDENT, world);
+                    tridentEntity.setPosition(position.getX(), position.getY(), position.getZ());
                     tridentEntity.pickupStatus = AbstractArrowEntity.PickupStatus.ALLOWED;
                     if (stack.attemptDamageItem(1, world.getRandom(), null)) {
 

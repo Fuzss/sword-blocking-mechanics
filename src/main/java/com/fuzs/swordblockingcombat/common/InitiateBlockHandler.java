@@ -42,7 +42,8 @@ public class InitiateBlockHandler {
             if (noAction.test(stack) || food.test(stack) || bow.test(stack) || spear.test(stack)) {
 
                 player.setActiveHand(evt.getHand());
-                evt.setCancellationResult(ActionResultType.SUCCESS);
+                // cause reequip animation, but don't swing hand
+                evt.setCancellationResult(ActionResultType.CONSUME);
                 evt.setCanceled(true);
             }
         }
@@ -84,7 +85,7 @@ public class InitiateBlockHandler {
 
                 if (!evt.getSource().isUnblockable()) {
 
-                    float reducedAmount = (1.0F + evt.getAmount()) * (1.0F - ConfigValueHolder.SWORD_BLOCKING.blocked);
+                    float reducedAmount = 1.0F + evt.getAmount() * (1.0F - ConfigValueHolder.SWORD_BLOCKING.blocked);
                     if (reducedAmount <= 1.0F) {
                         reducedAmount = 0.0F;
                     }
