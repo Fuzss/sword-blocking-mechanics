@@ -8,31 +8,48 @@ import java.util.Set;
 
 public class ConfigValueHolder {
 
+    public static final SwordBlocking SWORD_BLOCKING = new SwordBlocking();
     public static final ClassicCombat CLASSIC_COMBAT = new ClassicCombat();
-    public static final ModernCombat MODERN_COMBAT = new ModernCombat();
     public static final MaterialChanger MATERIAL_CHANGER = new MaterialChanger();
+    public static final ModernCombat MODERN_COMBAT = new ModernCombat();
     public static final FoodBuffs FOOD_BUFFS = new FoodBuffs();
     public static final EnchantmentEnhancer ENCHANTMENT_ENHANCER = new EnchantmentEnhancer();
-    public static final SwordBlocking SWORD_BLOCKING = new SwordBlocking();
+
+    public static class SwordBlocking {
+
+        public Set<Item> exclude;
+        public Set<Item> include;
+        public float blocked;
+        public boolean damageSword;
+        public boolean deflectProjectiles;
+        public int blockDelay;
+    }
 
     public static class ClassicCombat {
 
-        public boolean sweepingRequired;
-        public boolean noSweepingSmoke;
-    }
-
-    public static class ModernCombat {
-
-        public boolean noProjectileResistance;
-        public Map<Item, Double> itemDelay;
-    }
-
-    public static class EnchantmentEnhancer {
+        public boolean removeCooldown;
+        public boolean boostSharpness;
+        public boolean attackingAllowsSprinting;
     }
 
     public static class MaterialChanger {
 
         public Map<Item, Map<String, AttributeModifier>> attributes;
+    }
+
+    public static class ModernCombat {
+
+        public boolean noProjectileResistance;
+        public boolean noAttackPenalty;
+        public Map<Item, Double> itemDelay;
+        public boolean sweepingRequired;
+        public boolean noSweepingSmoke;
+        public int shieldDelay;
+        public boolean boostImpaling;
+        public boolean dispenseTridents;
+    }
+
+    public static class EnchantmentEnhancer {
     }
 
     public static class FoodBuffs {
@@ -41,6 +58,7 @@ public class ConfigValueHolder {
         public int regenDelay;
         public int regenThreshold;
         public boolean drainFood;
+        public int eatingSpeed;
 
         @SuppressWarnings("unused")
         public enum FoodTicker {
@@ -56,16 +74,6 @@ public class ConfigValueHolder {
                 return this.id;
             }
         }
-    }
-
-    public static class SwordBlocking {
-
-        public Set<Item> exclude;
-        public Set<Item> include;
-        public float blocked;
-        public boolean damageSword;
-        public int damageAmount;
-        public int blockDelay;
     }
 
 }

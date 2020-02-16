@@ -10,14 +10,10 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 public class StringListParser {
-
-    private static final UUID ATTACK_DAMAGE_MODIFIER = UUID.fromString("C29FA54E-C2BD-4137-897D-D7B363DCA34B");
-    private static final UUID ATTACK_SPEED_MODIFIER = UUID.fromString("45A03570-9501-4902-ADA9-7E2EF5A2C2D8");
-    private static final UUID ARMOR_MODIFIER = UUID.fromString("2202169B-0BD6-4597-B623-DA8F7161F135");
-    private static final UUID ARMOR_TOUGHNESS_MODIFIER = UUID.fromString("4BAB58F7-1BB5-47EB-9A5F-8EB41ECB2289");
 
     private final Item itemRegistryDefault = ForgeRegistries.ITEMS.getValue(ForgeRegistries.ITEMS.getDefaultKey());
 
@@ -63,10 +59,6 @@ public class StringListParser {
         SwordBlockingCombat.LOGGER.error("Unable to parse entry \"" + item + "\": " + message);
     }
 
-    Set<Item> buildItemSet(List<String> locations) {
-        return this.buildItemSetWithCondition(locations, flag -> true, "");
-    }
-
     Set<Item> buildItemSetWithCondition(List<String> locations, Predicate<Item> condition, String message) {
 
         Set<Item> set = Sets.newHashSet();
@@ -88,10 +80,10 @@ public class StringListParser {
     }
 
     Map<Item, Double> buildItemMap(List<String> locations) {
-        return this.buildItemMapWithCondition(locations, flag -> true, "");
+        return this.buildItemMapWithCondition(locations, (item, value) -> true, "");
     }
 
-    Map<Item, Double> buildItemMapWithCondition(List<String> locations, Predicate<Double> condition, String message) {
+    Map<Item, Double> buildItemMapWithCondition(List<String> locations, BiPredicate<Item, Double> condition, String message) {
 
         Map<Item, Double> map = Maps.newHashMap();
         for (String source : locations) {
@@ -111,7 +103,7 @@ public class StringListParser {
 
                 if (item.isPresent() && size.isPresent()) {
 
-                    if (condition.test(size.get())) {
+                    if (condition.test(item.get(), size.get())) {
 
                         map.put(item.get(), size.get());
                     } else {
@@ -148,10 +140,10 @@ public class StringListParser {
 
     enum AttributeModifierType {
 
-        ATTACK_DAMAGE(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), ATTACK_DAMAGE_MODIFIER),
-        ATTACK_SPEED(SharedMonsterAttributes.ATTACK_SPEED.getName(), Item.ATTACK_SPEED_MODIFIER),
-        ARMOR(SharedMonsterAttributes.ARMOR.getName(), ARMOR_MODIFIER),
-        ARMOR_TOUGHNESS(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName(), ARMOR_TOUGHNESS_MODIFIER);
+        ATTACK_DAMAGE(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), Item.ATTACK_DAMAGE_MODIFIER),
+        ATTACK_SPEED(SharedMonsterAttributes.ATTACK_SPEED.getName(), Item.ATTACK_SPEED_MODIFIER);
+//        ARMOR(SharedMonsterAttributes.ARMOR.getName(), ARMOR_MODIFIER),
+//        ARMOR_TOUGHNESS(SharedMonsterAttributes.ARMOR_TOUGHNESS.getName(), ARMOR_TOUGHNESS_MODIFIER);
 
         private final String name;
         private final UUID modifier;

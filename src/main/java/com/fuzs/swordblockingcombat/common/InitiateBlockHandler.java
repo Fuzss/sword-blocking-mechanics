@@ -8,10 +8,7 @@ import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.UseAction;
 import net.minecraft.util.ActionResultType;
-import net.minecraft.util.math.EntityRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.event.entity.ProjectileImpactEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -55,7 +52,7 @@ public class InitiateBlockHandler {
     @SubscribeEvent
     public void onItemUseStart(final LivingEntityUseItemEvent.Start evt) {
 
-        if (ItemBlockingHelper.getCanStackBlock(evt.getItem())) {
+        if (evt.getEntityLiving() instanceof PlayerEntity && ItemBlockingHelper.getCanStackBlock(evt.getItem())) {
 
             evt.setDuration(this.blockingHelper.swordUseDuration);
         }
@@ -63,28 +60,13 @@ public class InitiateBlockHandler {
 
     @SuppressWarnings("unused")
     @SubscribeEvent
-    public void onProjectileImpact(final ProjectileImpactEvent.Arrow evt) {
+    public void onLivingAttack(final LivingAttackEvent evt) {
 
-        final AbstractArrowEntity arrow = evt.getArrow();
+        if (ConfigValueHolder.SWORD_BLOCKING.deflectProjectiles && evt.getEntityLiving() instanceof PlayerEntity && evt.getSource().getImmediateSource() instanceof AbstractArrowEntity
+                && this.blockingHelper.getIsBlocking((PlayerEntity) evt.getEntityLiving())) {
 
-        if (evt.getRayTraceResult().getType() == RayTraceResult.Type.ENTITY) {
-            EntityRayTraceResult rayTrace = (EntityRayTraceResult) evt.getRayTraceResult();
-            if (rayTrace.getEntity() instanceof PlayerEntity) {
-                PlayerEntity player = (PlayerEntity) rayTrace.getEntity();
-
-                if (this.blockingHelper.getIsBlocking(player)) {
-                    Vec3d playerVec3 = player.getLookVec();
-//                    arrow.knockBack(player, 0.5F, player.func_226277_ct_() - player.func_226277_ct_(), player.func_226281_cx_() - player.func_226281_cx_());
-
-                    arrow.shoot(playerVec3.x, playerVec3.y, playerVec3.z, 1.1F, 0.05F);
-
-                    arrow.shootingEntity = player.getUniqueID();
-
-                    evt.setCanceled(true);
-                }
-            }
+            evt.setCanceled(true);
         }
-
     }
 
     @SuppressWarnings("unused")

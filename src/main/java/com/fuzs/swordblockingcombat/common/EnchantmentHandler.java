@@ -5,8 +5,8 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.CreatureAttribute;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
@@ -17,8 +17,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.ArrowNockEvent;
-import net.minecraftforge.event.entity.player.CriticalHitEvent;
-import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -37,37 +35,6 @@ public class EnchantmentHandler {
                 Optional.ofNullable(ForgeRegistries.ENCHANTMENTS.getValue(new ResourceLocation(enchantment))).ifPresent(it -> it.type = type));
         adjustType.accept(Lists.newArrayList("sharpness", "smite", "bane_of_arthropods", "knockback", "fire_aspect", "looting", "sweeping"), ACTUAL_WEAPON);
         adjustType.accept(Lists.newArrayList("flame", "punch", "power", "infinity", "piercing", "multishot", "quick_charge"), ARROW_LAUNCHER);
-    }
-
-    @SuppressWarnings("unused")
-    //@SubscribeEvent
-    public void onCriticalHit(final CriticalHitEvent evt) {
-
-        // hijacking this event to be able to make modifications to the current attack damage
-        int sharpness = EnchantmentHelper.getEnchantmentLevel(Enchantments.SHARPNESS, evt.getPlayer().getHeldItemMainhand());
-        int impaling = EnchantmentHelper.getEnchantmentLevel(Enchantments.IMPALING, evt.getPlayer().getHeldItemMainhand());
-        float f = (float) evt.getPlayer().getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getValue();
-
-        if (sharpness > 1 || impaling > 0) {
-
-            evt.setResult(Event.Result.ALLOW);
-        }
-
-        // every level of sharpness adds 1.0F attack damage
-        if (sharpness > 1) {
-
-            float previous = evt.getDamageModifier() - evt.getOldDamageModifier();
-            float damage = -0.5F + sharpness * 0.5F;
-            evt.setDamageModifier((evt.getOldDamageModifier() - 1.0F + damage) / f + 1.0F + previous);
-        }
-
-        // makes impaling work on all mobs in water or rain, not just those classified as water creatures
-        if (impaling > 0 && evt.getTarget() instanceof LivingEntity && ((LivingEntity) evt.getTarget()).getCreatureAttribute()
-                != CreatureAttribute.WATER && evt.getTarget().isInWaterRainOrBubbleColumn()) {
-
-            float previous = evt.getDamageModifier() - evt.getOldDamageModifier();
-            evt.setDamageModifier((evt.getOldDamageModifier() - 1.0F + impaling * 2.5F) / f + 1.0F + previous);
-        }
     }
 
     @SuppressWarnings("unused")

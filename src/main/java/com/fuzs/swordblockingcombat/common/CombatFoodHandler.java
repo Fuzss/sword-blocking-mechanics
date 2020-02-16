@@ -57,7 +57,7 @@ public class CombatFoodHandler {
                     if (id == 2 || id == 3 && ConfigValueHolder.FOOD_BUFFS.drainFood) {
                         this.foodLevel = Math.max(this.foodLevel - 1, 0);
                     } else {
-                        this.addExhaustion(6.0F); // was 3.0F originally
+                        this.addExhaustion(3.0F); // is 6.0F in current vanilla
                     }
                     this.foodTimer = 0;
                 }

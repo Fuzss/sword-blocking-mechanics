@@ -1,5 +1,6 @@
 package com.fuzs.swordblockingcombat;
 
+import com.fuzs.swordblockingcombat.client.SharpnessDamageHandler;
 import com.fuzs.swordblockingcombat.client.NoCooldownHandler;
 import com.fuzs.swordblockingcombat.client.RenderBlockingHandler;
 import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
@@ -47,6 +48,7 @@ public class SwordBlockingCombat {
 
         MinecraftForge.EVENT_BUS.register(new RenderBlockingHandler());
         MinecraftForge.EVENT_BUS.register(new NoCooldownHandler());
+        MinecraftForge.EVENT_BUS.register(new SharpnessDamageHandler());
     }
 
 }
