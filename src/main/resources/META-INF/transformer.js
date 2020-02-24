@@ -101,6 +101,21 @@ function initializeCoreMod() {
                 }], classNode, "Item");
                 return classNode;
             }
+        },
+        'game_renderer_patch': {
+            'target': {
+                'type': 'CLASS',
+                'name': 'net.minecraft.client.renderer.GameRenderer'
+            },
+            'transformer': function(classNode) {
+                patch([{
+                    obfName: "func_78473_a",
+                    name: "getMouseOver",
+                    desc: "(F)V",
+                    patch: patchGameRendererGetMouseOver
+                }], classNode, "GameRenderer");
+                return classNode;
+            }
         }
     };
 }
@@ -130,6 +145,34 @@ function patch(entries, classNode, name) {
         } else {
             log("Patching " + name + "#" + entry.name + " failed");
         }
+    }
+}
+
+function patchGameRendererGetMouseOver(method, obfuscated) {
+    var foundNode = null;
+    var instructions = method.instructions.toArray();
+    var length = instructions.length;
+    for (var i = 0; i < length; i++) {
+        var node = instructions[i];
+        if (node instanceof LdcInsnNode) {
+            var nextNode = node.getNext();
+            if (nextNode instanceof InsnNode && nextNode.getOpcode().equals(Opcodes.DCMPL)) {
+                nextNode = node.getPrevious();
+                if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.DLOAD) && nextNode.var.equals(17)) {
+                    foundNode = node;
+                    break;
+                }
+            }
+        }
+    }
+    if (foundNode != null) {
+        var insnList = new InsnList();
+        insnList.add(new VarInsnNode(Opcodes.DLOAD, 17));
+        insnList.add(new VarInsnNode(Opcodes.DLOAD, 3));
+        insnList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/fuzs/swordblockingcombat/asm/Hooks", "getMaxSqRange", "(DD)D", false));
+        method.instructions.insert(foundNode, insnList);
+        method.instructions.remove(foundNode);
+        return true;
     }
 }
 

@@ -94,4 +94,10 @@ public class Hooks {
         return item.getFood().isFastEating() ? speed / 2 : speed;
     }
 
+    public static double getMaxSqRange(double d2, double distance) {
+
+        System.out.println(d2);
+        return true ? Math.pow(distance * 2.0 / 3.0, 2.0) : 9.0;
+    }
+
 }
