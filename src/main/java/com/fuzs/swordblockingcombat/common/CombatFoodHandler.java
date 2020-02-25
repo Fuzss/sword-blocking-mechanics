@@ -2,6 +2,7 @@ package com.fuzs.swordblockingcombat.common;
 
 import com.fuzs.swordblockingcombat.config.ConfigValueHolder;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.FoodStats;
 import net.minecraft.world.Difficulty;
@@ -19,6 +20,18 @@ public class CombatFoodHandler {
         if (ConfigValueHolder.FOOD_BUFFS.foodTicker.getId() != 0 && evt.getEntity() instanceof PlayerEntity) {
             ((PlayerEntity) evt.getEntity()).foodStats = new CombatFoodStats(((PlayerEntity) evt.getEntity()).foodStats);
         }
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    public static int getFoodDuration(Item item) {
+
+        int speed = ConfigValueHolder.FOOD_BUFFS.eatingSpeed;
+        return item.getFood().isFastEating() ? speed / 2 : speed;
+    }
+
+    public static float getSprintingLevel() {
+
+        return ConfigValueHolder.FOOD_BUFFS.sprintingLevel;
     }
 
     private static class CombatFoodStats extends FoodStats {

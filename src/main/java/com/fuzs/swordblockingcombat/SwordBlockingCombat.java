@@ -39,7 +39,6 @@ public class SwordBlockingCombat {
 
         MinecraftForge.EVENT_BUS.register(new InitiateBlockHandler());
         MinecraftForge.EVENT_BUS.register(new CombatFoodHandler());
-//        MinecraftForge.EVENT_BUS.register(new EnchantmentHandler());
         MinecraftForge.EVENT_BUS.register(new ClassicCombatHandler());
         MinecraftForge.EVENT_BUS.register(new ModernCombatHandler());
     }

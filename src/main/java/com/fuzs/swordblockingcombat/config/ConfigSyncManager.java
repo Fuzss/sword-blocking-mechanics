@@ -35,6 +35,8 @@ public class ConfigSyncManager {
         ConfigValueHolder.CLASSIC_COMBAT.removeCooldown = ConfigBuildHandler.REMOVE_ATTACK_COOLDOWN.get();
         ConfigValueHolder.CLASSIC_COMBAT.boostSharpness = ConfigBuildHandler.BOOST_SHARPNESS.get();
         ConfigValueHolder.CLASSIC_COMBAT.attackingAllowsSprinting = ConfigBuildHandler.SPRINT_WHILE_ATTACKING.get();
+        ConfigValueHolder.CLASSIC_COMBAT.sweepingRequired = ConfigBuildHandler.SWEEPING_REQUIRED.get();
+        ConfigValueHolder.CLASSIC_COMBAT.noSweepingSmoke = ConfigBuildHandler.NO_SWEEPING_SMOKE.get();
         // material changer
         ConfigValueHolder.MATERIAL_CHANGER.attributes = this.syncAttributeMap();
         this.syncStackSize();
@@ -44,8 +46,6 @@ public class ConfigSyncManager {
         ConfigValueHolder.MODERN_COMBAT.noAttackPenalty = ConfigBuildHandler.NO_AXE_ATTACK_PENALTY.get();
         ConfigValueHolder.MODERN_COMBAT.itemDelay = this.parser.buildItemMapWithCondition(ConfigBuildHandler.ITEM_DELAY.get(),
                 (item, value) -> value >= 0.0 && value <= 72000.0, "Item delay out of bounds");
-        ConfigValueHolder.MODERN_COMBAT.sweepingRequired = ConfigBuildHandler.SWEEPING_REQUIRED.get();
-        ConfigValueHolder.MODERN_COMBAT.noSweepingSmoke = ConfigBuildHandler.NO_SWEEPING_SMOKE.get();
         ConfigValueHolder.MODERN_COMBAT.shieldDelay = ConfigBuildHandler.SHIELD_DELAY.get() - 5;
         ConfigValueHolder.MODERN_COMBAT.boostImpaling = ConfigBuildHandler.BOOST_IMPALING.get();
         ConfigValueHolder.MODERN_COMBAT.dispenseTridents = ConfigBuildHandler.DISPENSE_TRIDENT.get();
@@ -55,6 +55,7 @@ public class ConfigSyncManager {
         ConfigValueHolder.FOOD_BUFFS.regenThreshold = ConfigBuildHandler.REGEN_THRESHOLD.get();
         ConfigValueHolder.FOOD_BUFFS.eatingSpeed = ConfigBuildHandler.EATING_SPEED.get();
         ConfigValueHolder.FOOD_BUFFS.regenThreshold = ConfigBuildHandler.REGEN_THRESHOLD.get();
+        ConfigValueHolder.FOOD_BUFFS.sprintingLevel = ConfigBuildHandler.SPRINTING_LEVEL.get().floatValue();
     }
 
     private Map<Item, Map<String, AttributeModifier>> syncAttributeMap() {

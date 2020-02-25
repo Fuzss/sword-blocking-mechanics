@@ -21,6 +21,8 @@ public class ConfigBuildHandler {
     static final ForgeConfigSpec.BooleanValue REMOVE_ATTACK_COOLDOWN;
     static final ForgeConfigSpec.BooleanValue BOOST_SHARPNESS;
     static final ForgeConfigSpec.BooleanValue SPRINT_WHILE_ATTACKING;
+    static final ForgeConfigSpec.BooleanValue SWEEPING_REQUIRED;
+    static final ForgeConfigSpec.BooleanValue NO_SWEEPING_SMOKE;
     // material changer
     static final ForgeConfigSpec.ConfigValue<List<String>> ATTACK_DAMAGE;
     static final ForgeConfigSpec.ConfigValue<List<String>> ATTACK_SPEED;
@@ -30,8 +32,6 @@ public class ConfigBuildHandler {
     static final ForgeConfigSpec.BooleanValue NO_PROJECTILE_RESISTANCE;
     static final ForgeConfigSpec.BooleanValue NO_AXE_ATTACK_PENALTY;
     static final ForgeConfigSpec.ConfigValue<List<String>> ITEM_DELAY;
-    static final ForgeConfigSpec.BooleanValue SWEEPING_REQUIRED;
-    static final ForgeConfigSpec.BooleanValue NO_SWEEPING_SMOKE;
     static final ForgeConfigSpec.IntValue SHIELD_DELAY;
     static final ForgeConfigSpec.BooleanValue BOOST_IMPALING;
     static final ForgeConfigSpec.BooleanValue DISPENSE_TRIDENT;
@@ -41,7 +41,7 @@ public class ConfigBuildHandler {
     static final ForgeConfigSpec.IntValue REGEN_THRESHOLD;
     static final ForgeConfigSpec.BooleanValue DRAIN_FOOD;
     static final ForgeConfigSpec.IntValue EATING_SPEED;
-    // enchantment enhancements
+    static final ForgeConfigSpec.IntValue SPRINTING_LEVEL;
 
     static {
 
@@ -60,6 +60,8 @@ public class ConfigBuildHandler {
         REMOVE_ATTACK_COOLDOWN = ConfigBuildHandler.BUILDER.comment("Completely remove the attack cooldown as if it never even existed in the first place.").define("Remove Attack Cooldown", true);
         BOOST_SHARPNESS = ConfigBuildHandler.BUILDER.comment("Boost sharpness enchantment to add +1.0 attack damage per level instead of +0.5 damage.").define("Boost Sharpness", true);
         SPRINT_WHILE_ATTACKING = ConfigBuildHandler.BUILDER.comment("Don't automatically stop sprinting when attacking.").define("Sprint While Attacking", true);
+        SWEEPING_REQUIRED = ConfigBuildHandler.BUILDER.comment("Is the sweeping edge enchantment required to perform a sweep attack.").define("Require Sweeping Edge", true);
+        NO_SWEEPING_SMOKE = ConfigBuildHandler.BUILDER.comment("Prevent particles created by a sweep attack from appearing.").define("No Sweeping Particles", true);
         BUILDER.pop();
 
         BUILDER.comment("Allows changing various stats of items, mainly for restoring pre-combat update values.");
@@ -75,8 +77,6 @@ public class ConfigBuildHandler {
         NO_PROJECTILE_RESISTANCE = ConfigBuildHandler.BUILDER.comment("Disables the default 0.5 second damage immunity when hit by a projectile. This makes it possible for entities to be hit by multiple projectiles at once, e. g. from a multishot enchanted crossbow.").define("No Projectile Immunity", true);
         NO_AXE_ATTACK_PENALTY = ConfigBuildHandler.BUILDER.comment("Only damages axes by 1 durability instead of 2 when attacking so they properly be used as weapons.").define("No Axe Attack Penalty", true);
         ITEM_DELAY = ConfigBuildHandler.BUILDER.comment("Items to add a delay in ticks to after using. Doesn't override a delay an item has by default.").define("Item Delay List", Lists.newArrayList("minecraft:snowball,4", "minecraft:egg,4"));
-        SWEEPING_REQUIRED = ConfigBuildHandler.BUILDER.comment("Is the sweeping edge enchantment required to perform a sweep attack.").define("Require Sweeping Edge", true);
-        NO_SWEEPING_SMOKE = ConfigBuildHandler.BUILDER.comment("Prevent particles created by a sweep attack from appearing.").define("No Sweeping Particles", true);
         SHIELD_DELAY = ConfigBuildHandler.BUILDER.comment("Amount of ticks after which blocking using a shield is effective. Used to be 5 ticks before combat snapshots.").defineInRange("Shield Warm-Up Delay", 0, 0, 72000);
         BOOST_IMPALING = ConfigBuildHandler.BUILDER.comment("Makes the impaling enchantment apply when attack any creature in contact with rain or water; not just to aquatic mobs.").define("Boost Impaling", true);
         DISPENSE_TRIDENT = ConfigBuildHandler.BUILDER.comment("Allow tridents to be fired from dispensers.").define("Dispense Tridents", true);
@@ -89,6 +89,7 @@ public class ConfigBuildHandler {
         REGEN_THRESHOLD = ConfigBuildHandler.BUILDER.comment("Food level required to be able to regenerate health. Only applies when \"Food Ticker\" is set to \"CUSTOM\".").defineInRange("Regeneration Food Level", 18, 0, 20);
         DRAIN_FOOD = ConfigBuildHandler.BUILDER.comment("Drain food instead of saturation when regenerating. Only applies when \"Food Ticker\" is set to \"CUSTOM\".").define("Regenerate From Food", false);
         EATING_SPEED = ConfigBuildHandler.BUILDER.comment("Amount of ticks it takes to consume a food item. Vanilla default is 32.").defineInRange("Eating Speed", 40, 0, 72000);
+        SPRINTING_LEVEL = ConfigBuildHandler.BUILDER.comment("Food level from which on sprinting is disabled. Set to \"-1\" to always allow sprinting.").defineInRange("Sprinting Level", -1, -1, 20);
         BUILDER.pop();
     }
 

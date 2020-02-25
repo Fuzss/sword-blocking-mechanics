@@ -3,7 +3,13 @@ package com.fuzs.swordblockingcombat.common;
 import com.fuzs.swordblockingcombat.config.ConfigValueHolder;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.item.ArmorStandEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.SoundEvents;
+import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -43,6 +49,28 @@ public class ClassicCombatHandler {
         if (ConfigValueHolder.CLASSIC_COMBAT.attackingAllowsSprinting && EnchantmentHelper.getKnockbackModifier(player) < knockback) {
 
             player.setSprinting(true);
+        }
+    }
+
+    public static void doSweeping(boolean flag, PlayerEntity player, Entity targetEntity, float damage) {
+
+        if (flag && (!ConfigValueHolder.CLASSIC_COMBAT.sweepingRequired || EnchantmentHelper.getSweepingDamageRatio(player) > 0)) {
+
+            float f3 = 1.0F + EnchantmentHelper.getSweepingDamageRatio(player) * damage;
+            for (LivingEntity livingentity : player.world.getEntitiesWithinAABB(LivingEntity.class, targetEntity.getBoundingBox().grow(1.0D, 0.25D, 1.0D))) {
+
+                if (livingentity != player && livingentity != targetEntity && !player.isOnSameTeam(livingentity) && (!(livingentity instanceof ArmorStandEntity) || !((ArmorStandEntity) livingentity).hasMarker()) && player.getDistanceSq(livingentity) < 9.0D) {
+
+                    livingentity.knockBack(player, 0.4F, MathHelper.sin(player.rotationYaw * ((float) Math.PI / 180F)), -MathHelper.cos(player.rotationYaw * ((float) Math.PI / 180F)));
+                    livingentity.attackEntityFrom(DamageSource.causePlayerDamage(player), f3);
+                }
+            }
+
+            player.world.playSound(null, player.func_226277_ct_(), player.func_226278_cu_(), player.func_226281_cx_(), SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, player.getSoundCategory(), 1.0F, 1.0F);
+            if (!ConfigValueHolder.CLASSIC_COMBAT.noSweepingSmoke) {
+
+                player.spawnSweepParticles();
+            }
         }
     }
 

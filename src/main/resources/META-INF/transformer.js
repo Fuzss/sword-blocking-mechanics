@@ -12,36 +12,7 @@ var FrameNode = Java.type('org.objectweb.asm.tree.FrameNode');
 
 function initializeCoreMod() {
     return {
-        'infinity_enchantment_patch': {
-            'target': {
-                'type': 'CLASS',
-                'name': 'net.minecraft.enchantment.InfinityEnchantment'
-            },
-            'transformer': function(classNode) {
-                patch([{
-                    obfName: "func_77326_a",
-                    name: "canApplyTogether",
-                    desc: "(Lnet/minecraft/enchantment/Enchantment;)Z",
-                    patch: patchInfinityEnchantmentCanApplyTogether
-                }], classNode, "InfinityEnchantment");
-                return classNode;
-            }
-        },
-        'damage_enchantment_patch': {
-            'target': {
-                'type': 'CLASS',
-                'name': 'net.minecraft.enchantment.DamageEnchantment'
-            },
-            'transformer': function(classNode) {
-                patch([{
-                    obfName: "func_77326_a",
-                    name: "canApplyTogether",
-                    desc: "(Lnet/minecraft/enchantment/Enchantment;)Z",
-                    patch: patchDamageEnchantmentCanApplyTogether
-                }], classNode, "DamageEnchantment");
-                return classNode;
-            }
-        },
+        // axes only take one damage when attacking
         'tool_item_patch': {
             'target': {
                 'type': 'CLASS',
@@ -57,6 +28,7 @@ function initializeCoreMod() {
                 return classNode;
             }
         },
+        // disable sweeping without enchantment && more damage from sharpness + impaling
         'player_entity_patch': {
             'target': {
                 'type': 'CLASS',
@@ -72,6 +44,7 @@ function initializeCoreMod() {
                 return classNode;
             }
         },
+        // apply custom attributes for every item
         'item_stack_patch': {
             'target': {
                 'type': 'CLASS',
@@ -87,6 +60,7 @@ function initializeCoreMod() {
                 return classNode;
             }
         },
+        // modify food use duration
         'item_patch': {
             'target': {
                 'type': 'CLASS',
@@ -102,18 +76,19 @@ function initializeCoreMod() {
                 return classNode;
             }
         },
-        'game_renderer_patch': {
+        // modify food level required for sprinting
+        'client_player_entity_patch': {
             'target': {
                 'type': 'CLASS',
-                'name': 'net.minecraft.client.renderer.GameRenderer'
+                'name': 'net.minecraft.client.entity.player.ClientPlayerEntity'
             },
             'transformer': function(classNode) {
                 patch([{
-                    obfName: "func_78473_a",
-                    name: "getMouseOver",
-                    desc: "(F)V",
-                    patch: patchGameRendererGetMouseOver
-                }], classNode, "GameRenderer");
+                    obfName: "func_70636_d",
+                    name: "livingTick",
+                    desc: "()V",
+                    patch: patchClientPlayerEntityLivingTick
+                }], classNode, "ClientPlayerEntity");
                 return classNode;
             }
         }
@@ -148,18 +123,19 @@ function patch(entries, classNode, name) {
     }
 }
 
-function patchGameRendererGetMouseOver(method, obfuscated) {
+function patchClientPlayerEntityLivingTick(method, obfuscated) {
+    var getFoodLevel = obfuscated ? "func_75116_a" : "getFoodLevel";
     var foundNode = null;
     var instructions = method.instructions.toArray();
     var length = instructions.length;
     for (var i = 0; i < length; i++) {
         var node = instructions[i];
-        if (node instanceof LdcInsnNode) {
+        if (node instanceof MethodInsnNode && node.getOpcode().equals(Opcodes.INVOKEVIRTUAL) && node.owner.equals("net/minecraft/util/FoodStats") && node.name.equals(getFoodLevel) && node.desc.equals("()I")) {
             var nextNode = node.getNext();
-            if (nextNode instanceof InsnNode && nextNode.getOpcode().equals(Opcodes.DCMPL)) {
-                nextNode = node.getPrevious();
-                if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.DLOAD) && nextNode.var.equals(17)) {
-                    foundNode = node;
+            if (nextNode instanceof InsnNode && nextNode.getOpcode().equals(Opcodes.I2F)) {
+                nextNode = nextNode.getNext();
+                if (nextNode instanceof LdcInsnNode) {
+                    foundNode = nextNode;
                     break;
                 }
             }
@@ -167,9 +143,7 @@ function patchGameRendererGetMouseOver(method, obfuscated) {
     }
     if (foundNode != null) {
         var insnList = new InsnList();
-        insnList.add(new VarInsnNode(Opcodes.DLOAD, 17));
-        insnList.add(new VarInsnNode(Opcodes.DLOAD, 3));
-        insnList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/fuzs/swordblockingcombat/asm/Hooks", "getMaxSqRange", "(DD)D", false));
+        insnList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/fuzs/swordblockingcombat/asm/Hooks", "getSprintingLevel", "()F", false));
         method.instructions.insert(foundNode, insnList);
         method.instructions.remove(foundNode);
         return true;
@@ -297,44 +271,6 @@ function patchToolItemHitEntity(method, obfuscated) {
         insnList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/fuzs/swordblockingcombat/asm/Hooks", "hitEntityAmount", "(Lnet/minecraft/item/ToolItem;)I", false));
         method.instructions.insert(foundNode, insnList);
         method.instructions.remove(foundNode);
-        return true;
-    }
-}
-
-function patchDamageEnchantmentCanApplyTogether(method, obfuscated) {
-    var foundNode = null;
-    var instructions = method.instructions.toArray();
-    var length = instructions.length;
-    for (var i = 0; i < length; i++) {
-        var node = instructions[i];
-        if (node instanceof TypeInsnNode && node.getOpcode().equals(Opcodes.INSTANCEOF) && node.desc.equals("net/minecraft/enchantment/DamageEnchantment")) {
-            var nextNode = node.getNext();
-            if (nextNode instanceof JumpInsnNode) {
-                foundNode = node;
-                break;
-            }
-        }
-    }
-    if (foundNode != null) {
-        var insnList = new InsnList();
-        insnList.add(new JumpInsnNode(Opcodes.IFNE, getNthNode(foundNode, 1).label));
-        insnList.add(new VarInsnNode(Opcodes.ALOAD, 1));
-        insnList.add(new TypeInsnNode(Opcodes.INSTANCEOF, "net/minecraft/enchantment/ImpalingEnchantment"));
-        method.instructions.insert(foundNode, insnList);
-        return true;
-    }
-}
-
-function patchInfinityEnchantmentCanApplyTogether(method, obfuscated) {
-    var canApplyTogether = obfuscated ? "func_77326_a" : "canApplyTogether";
-    var instructions = method.instructions.toArray();
-    if (instructions.length > 0) {
-        var insnList = new InsnList();
-        insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
-        insnList.add(new VarInsnNode(Opcodes.ALOAD, 1));
-        insnList.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "net/minecraft/enchantment/Enchantment", canApplyTogether, "(Lnet/minecraft/enchantment/Enchantment;)Z", false));
-        insnList.add(new InsnNode(Opcodes.IRETURN));
-        method.instructions.insertBefore(instructions[0], insnList);
         return true;
     }
 }

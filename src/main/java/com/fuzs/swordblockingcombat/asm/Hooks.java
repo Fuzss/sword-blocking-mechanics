@@ -1,6 +1,7 @@
 package com.fuzs.swordblockingcombat.asm;
 
 import com.fuzs.swordblockingcombat.common.ClassicCombatHandler;
+import com.fuzs.swordblockingcombat.common.CombatFoodHandler;
 import com.fuzs.swordblockingcombat.common.ModernCombatHandler;
 import com.fuzs.swordblockingcombat.config.ConfigValueHolder;
 import com.google.common.collect.Multimap;
@@ -24,6 +25,7 @@ public class Hooks {
      * make attacking an entity in {@link net.minecraft.item.ToolItem} only consume one durability point
      */
     public static int hitEntityAmount(ToolItem instance) {
+
         return ModernCombatHandler.hitEntityAmount(instance);
     }
 
@@ -33,7 +35,7 @@ public class Hooks {
      */
     public static void doSweeping(boolean flag, PlayerEntity player, Entity targetEntity, float damage) {
 
-        ModernCombatHandler.doSweeping(flag, player, targetEntity, damage);
+        ClassicCombatHandler.doSweeping(flag, player, targetEntity, damage);
     }
 
     /**
@@ -87,17 +89,17 @@ public class Hooks {
     /**
      * overwrite returned use duration for food items in {@link net.minecraft.item.Item#getUseDuration}
      */
-    @SuppressWarnings("ConstantConditions")
     public static int getFoodDuration(Item item) {
 
-        int speed = ConfigValueHolder.FOOD_BUFFS.eatingSpeed;
-        return item.getFood().isFastEating() ? speed / 2 : speed;
+        return CombatFoodHandler.getFoodDuration(item);
     }
 
-    public static double getMaxSqRange(double d2, double distance) {
+    /**
+     * overwrite minimum food level required for sprinting to start
+     */
+    public static float getSprintingLevel() {
 
-        System.out.println(d2);
-        return true ? Math.pow(distance * 2.0 / 3.0, 2.0) : 9.0;
+        return CombatFoodHandler.getSprintingLevel();
     }
 
 }

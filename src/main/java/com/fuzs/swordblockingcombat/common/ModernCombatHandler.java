@@ -7,14 +7,10 @@ import net.minecraft.dispenser.ProjectileDispenseBehavior;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.*;
-import net.minecraft.entity.item.ArmorStandEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.entity.projectile.TridentEntity;
 import net.minecraft.item.*;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -108,28 +104,6 @@ public class ModernCombatHandler {
 
     public static int hitEntityAmount(ToolItem instance) {
         return ConfigValueHolder.MODERN_COMBAT.noAttackPenalty && instance instanceof AxeItem ? 1 : 2;
-    }
-
-    public static void doSweeping(boolean flag, PlayerEntity player, Entity targetEntity, float damage) {
-
-        if (flag && (!ConfigValueHolder.MODERN_COMBAT.sweepingRequired || EnchantmentHelper.getSweepingDamageRatio(player) > 0)) {
-
-            float f3 = 1.0F + EnchantmentHelper.getSweepingDamageRatio(player) * damage;
-            for (LivingEntity livingentity : player.world.getEntitiesWithinAABB(LivingEntity.class, targetEntity.getBoundingBox().grow(1.0D, 0.25D, 1.0D))) {
-
-                if (livingentity != player && livingentity != targetEntity && !player.isOnSameTeam(livingentity) && (!(livingentity instanceof ArmorStandEntity) || !((ArmorStandEntity) livingentity).hasMarker()) && player.getDistanceSq(livingentity) < 9.0D) {
-
-                    livingentity.knockBack(player, 0.4F, MathHelper.sin(player.rotationYaw * ((float) Math.PI / 180F)), -MathHelper.cos(player.rotationYaw * ((float) Math.PI / 180F)));
-                    livingentity.attackEntityFrom(DamageSource.causePlayerDamage(player), f3);
-                }
-            }
-
-            player.world.playSound(null, player.func_226277_ct_(), player.func_226278_cu_(), player.func_226281_cx_(), SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, player.getSoundCategory(), 1.0F, 1.0F);
-            if (!ConfigValueHolder.MODERN_COMBAT.noSweepingSmoke) {
-
-                player.spawnSweepParticles();
-            }
-        }
     }
 
     public static float addEnchantmentDamage(PlayerEntity player, Entity targetEntity) {

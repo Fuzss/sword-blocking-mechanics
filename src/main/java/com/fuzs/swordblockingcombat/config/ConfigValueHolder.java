@@ -30,6 +30,8 @@ public class ConfigValueHolder {
         public boolean removeCooldown;
         public boolean boostSharpness;
         public boolean attackingAllowsSprinting;
+        public boolean sweepingRequired;
+        public boolean noSweepingSmoke;
     }
 
     public static class MaterialChanger {
@@ -42,8 +44,6 @@ public class ConfigValueHolder {
         public boolean noProjectileResistance;
         public boolean noAttackPenalty;
         public Map<Item, Double> itemDelay;
-        public boolean sweepingRequired;
-        public boolean noSweepingSmoke;
         public int shieldDelay;
         public boolean boostImpaling;
         public boolean dispenseTridents;
@@ -59,6 +59,7 @@ public class ConfigValueHolder {
         public int regenThreshold;
         public boolean drainFood;
         public int eatingSpeed;
+        public float sprintingLevel;
 
         @SuppressWarnings("unused")
         public enum FoodTicker {
