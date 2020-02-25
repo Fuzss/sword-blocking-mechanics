@@ -42,14 +42,12 @@ public class CombatFoodHandler {
             this.foodSaturationLevel = oldStats.foodSaturationLevel;
             this.foodExhaustionLevel = oldStats.foodExhaustionLevel;
             this.foodTimer = oldStats.foodTimer;
-            this.prevFoodLevel = oldStats.prevFoodLevel;
         }
 
         @Override
         public void tick(PlayerEntity player) {
 
             Difficulty difficulty = player.world.getDifficulty();
-            this.prevFoodLevel = this.foodLevel;
             if (this.foodExhaustionLevel > 4.0F) {
                 this.foodExhaustionLevel -= 4.0F;
                 if (this.foodSaturationLevel > 0.0F) {

@@ -13,7 +13,6 @@ public class ConfigValueHolder {
     public static final MaterialChanger MATERIAL_CHANGER = new MaterialChanger();
     public static final ModernCombat MODERN_COMBAT = new ModernCombat();
     public static final FoodBuffs FOOD_BUFFS = new FoodBuffs();
-    public static final EnchantmentEnhancer ENCHANTMENT_ENHANCER = new EnchantmentEnhancer();
 
     public static class SwordBlocking {
 
@@ -47,9 +46,6 @@ public class ConfigValueHolder {
         public int shieldDelay;
         public boolean boostImpaling;
         public boolean dispenseTridents;
-    }
-
-    public static class EnchantmentEnhancer {
     }
 
     public static class FoodBuffs {

@@ -5,7 +5,6 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.client.renderer.FirstPersonRenderer;
 import net.minecraft.client.renderer.Vector3f;
 import net.minecraft.client.renderer.entity.model.BipedModel;
 import net.minecraft.client.renderer.entity.model.PlayerModel;
@@ -62,13 +61,12 @@ public class RenderBlockingHandler {
             ItemStack stack = evt.getItemStack();
             if (ItemBlockingHelper.getCanStackBlock(stack)) {
 
-                FirstPersonRenderer itemRenderer = this.mc.getFirstPersonRenderer();
                 MatrixStack matrixStack = evt.getMatrixStack();
                 matrixStack.func_227860_a_();
 
                 boolean rightHanded = (evt.getHand() == Hand.MAIN_HAND ? player.getPrimaryHand() : player.getPrimaryHand().opposite()) == HandSide.RIGHT;
                 this.transformSideFirstPerson(matrixStack, rightHanded ? 1.0F : -1.0F, evt.getEquipProgress());
-                itemRenderer.func_228397_a_(player, stack, rightHanded ? net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND :
+                this.mc.getFirstPersonRenderer().func_228397_a_(player, stack, rightHanded ? net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND :
                         net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND, !rightHanded, matrixStack, evt.getBuffers(), evt.getLight());
 
                 matrixStack.func_227865_b_();

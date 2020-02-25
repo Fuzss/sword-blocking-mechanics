@@ -41,6 +41,7 @@ public class NoCooldownHandler {
 
                 // disable attack indicator from rendering when pointing at a living entity
                 if (flag) {
+
                     this.pointedEntity = this.mc.pointedEntity;
                     this.mc.pointedEntity = null;
                 }
@@ -66,8 +67,7 @@ public class NoCooldownHandler {
         if (ConfigValueHolder.CLASSIC_COMBAT.removeCooldown && evt.getGui() instanceof VideoSettingsScreen) {
 
             // disable attack indicator button in video settings screen
-            VideoSettingsScreen screen = (VideoSettingsScreen) evt.getGui();
-            screen.optionsRowList.children().stream().flatMap(it -> it.children().stream()).filter(it -> it instanceof OptionButton)
+            ((VideoSettingsScreen) evt.getGui()).optionsRowList.children().stream().flatMap(it -> it.children().stream()).filter(it -> it instanceof OptionButton)
                     .map(it -> (OptionButton) it).filter(it -> it.enumOptions.equals(AbstractOption.ATTACK_INDICATOR)).findFirst().ifPresent(it -> it.active = false);
         }
     }

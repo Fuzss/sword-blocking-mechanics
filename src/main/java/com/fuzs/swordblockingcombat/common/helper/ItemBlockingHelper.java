@@ -30,6 +30,7 @@ public class ItemBlockingHelper {
             if (stack.isEmpty()) {
 
                 player.setItemStackToSlot(hand == Hand.MAIN_HAND ? EquipmentSlotType.MAINHAND : EquipmentSlotType.OFFHAND, ItemStack.EMPTY);
+                player.resetActiveHand();
                 player.playSound(SoundEvents.ENTITY_ITEM_BREAK, 0.8F, 0.8F + player.world.rand.nextFloat() * 0.4F);
             }
         }
