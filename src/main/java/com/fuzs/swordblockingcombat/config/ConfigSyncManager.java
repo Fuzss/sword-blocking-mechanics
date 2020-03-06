@@ -33,6 +33,8 @@ public class ConfigSyncManager {
         ConfigValueHolder.SWORD_BLOCKING.deflectProjectiles = ConfigBuildHandler.DEFLECT_PROJECTILES.get();
         // classic combat
         ConfigValueHolder.CLASSIC_COMBAT.removeCooldown = ConfigBuildHandler.REMOVE_ATTACK_COOLDOWN.get();
+        ConfigValueHolder.CLASSIC_COMBAT.noTooltip = ConfigBuildHandler.NO_COOLDOWN_TOOLTIP.get();
+        ConfigValueHolder.CLASSIC_COMBAT.hideIndicator = ConfigBuildHandler.DISABLE_ATTACK_INDICATOR.get();
         ConfigValueHolder.CLASSIC_COMBAT.boostSharpness = ConfigBuildHandler.BOOST_SHARPNESS.get();
         ConfigValueHolder.CLASSIC_COMBAT.attackingAllowsSprinting = ConfigBuildHandler.SPRINT_WHILE_ATTACKING.get();
         ConfigValueHolder.CLASSIC_COMBAT.sweepingRequired = ConfigBuildHandler.SWEEPING_REQUIRED.get();
@@ -49,6 +51,7 @@ public class ConfigSyncManager {
         ConfigValueHolder.MODERN_COMBAT.shieldDelay = ConfigBuildHandler.SHIELD_DELAY.get() - 5;
         ConfigValueHolder.MODERN_COMBAT.boostImpaling = ConfigBuildHandler.BOOST_IMPALING.get();
         ConfigValueHolder.MODERN_COMBAT.dispenseTridents = ConfigBuildHandler.DISPENSE_TRIDENT.get();
+        ConfigValueHolder.MODERN_COMBAT.swingThroughGrass = ConfigBuildHandler.SWING_THROUGH_GRASS.get();
         // food buffs
         ConfigValueHolder.FOOD_BUFFS.foodTicker = ConfigBuildHandler.FOOD_TICKER.get();
         ConfigValueHolder.FOOD_BUFFS.regenDelay = ConfigBuildHandler.REGEN_DELAY.get();

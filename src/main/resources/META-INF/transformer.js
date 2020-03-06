@@ -91,6 +91,22 @@ function initializeCoreMod() {
                 }], classNode, "ClientPlayerEntity");
                 return classNode;
             }
+        },
+        // swing through grass
+        'game_renderer_patch': {
+            'target': {
+                'type': 'CLASS',
+                'name': 'net.minecraft.client.renderer.GameRenderer'
+            },
+            'transformer': function(classNode) {
+                patch([{
+                    obfName: "func_78473_a",
+                    name: "getMouseOver",
+                    desc: "(F)V",
+                    patch: patchGameRendererGetMouseOver
+                }], classNode, "GameRenderer");
+                return classNode;
+            }
         }
     };
 }
@@ -120,6 +136,37 @@ function patch(entries, classNode, name) {
         } else {
             log("Patching " + name + "#" + entry.name + " failed");
         }
+    }
+}
+
+function patchGameRendererGetMouseOver(method, obfuscated) {
+    var getLook = obfuscated ? "" : "getLook";
+    var foundNode1 = null;
+    var foundNode = null;
+    var instructions = method.instructions.toArray();
+    var length = instructions.length;
+    for (var i = 0; i < length; i++) {
+        var node = instructions[i];
+        if (node instanceof VarInsnNode && node.getOpcode().equals(Opcodes.ALOAD) && node.var.equals(2)) {
+            nextNode = node.getNext();
+            if (nextNode instanceof InsnNode && nextNode.getOpcode().equals(Opcodes.FCONST_1)) {
+                nextNode = nextNode.getNext();
+                if (nextNode instanceof MethodInsnNode && nextNode.getOpcode().equals(Opcodes.INVOKEVIRTUAL) && nextNode.owner.equals("net/minecraft/entity/Entity") && nextNode.name.equals(getLook) && nextNode.desc.equals("(F)Lnet/minecraft/util/math/Vec3d;")) {
+                    foundNode = node;
+                }
+            }
+        }
+    }
+    if (foundNode != null) {
+        var insnList = new InsnList();
+        insnList.add(new VarInsnNode(Opcodes.FLOAD, 1));
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 2));
+        insnList.add(new VarInsnNode(Opcodes.DLOAD, 3));
+        insnList.add(new VarInsnNode(Opcodes.DLOAD, 8));
+        insnList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/fuzs/swordblockingcombat/asm/Hooks", "rayTraceCollidingBlocks", "(FLnet/minecraft/entity/Entity;DD)D", false));
+        insnList.add(new VarInsnNode(Opcodes.DSTORE, 8));
+        method.instructions.insert(foundNode, insnList);
+        return true;
     }
 }
 

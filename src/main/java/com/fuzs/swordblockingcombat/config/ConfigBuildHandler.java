@@ -19,6 +19,8 @@ public class ConfigBuildHandler {
     static final ForgeConfigSpec.ConfigValue<List<String>> INCLUDE;
     // classic combat
     static final ForgeConfigSpec.BooleanValue REMOVE_ATTACK_COOLDOWN;
+    static final ForgeConfigSpec.BooleanValue NO_COOLDOWN_TOOLTIP;
+    static final ForgeConfigSpec.BooleanValue DISABLE_ATTACK_INDICATOR;
     static final ForgeConfigSpec.BooleanValue BOOST_SHARPNESS;
     static final ForgeConfigSpec.BooleanValue SPRINT_WHILE_ATTACKING;
     static final ForgeConfigSpec.BooleanValue SWEEPING_REQUIRED;
@@ -35,6 +37,7 @@ public class ConfigBuildHandler {
     static final ForgeConfigSpec.IntValue SHIELD_DELAY;
     static final ForgeConfigSpec.BooleanValue BOOST_IMPALING;
     static final ForgeConfigSpec.BooleanValue DISPENSE_TRIDENT;
+    static final ForgeConfigSpec.BooleanValue SWING_THROUGH_GRASS;
     // food buffs
     static final ForgeConfigSpec.EnumValue<ConfigValueHolder.FoodBuffs.FoodTicker> FOOD_TICKER;
     static final ForgeConfigSpec.IntValue REGEN_DELAY;
@@ -58,6 +61,8 @@ public class ConfigBuildHandler {
         BUILDER.comment("Restores pre-combat update combat mechanics.");
         BUILDER.push("classic_combat");
         REMOVE_ATTACK_COOLDOWN = ConfigBuildHandler.BUILDER.comment("Completely remove the attack cooldown as if it never even existed in the first place.").define("Remove Attack Cooldown", true);
+        NO_COOLDOWN_TOOLTIP = ConfigBuildHandler.BUILDER.comment("Remove \"Attack Speed\" attribute from tooltips.").define("No Attack Speed Tooltip", true);
+        DISABLE_ATTACK_INDICATOR = ConfigBuildHandler.BUILDER.comment("Prevent attack indicator from showing regardless of what's been set in \"Video Settings\".").define("Disable Attack Indicator", true);
         BOOST_SHARPNESS = ConfigBuildHandler.BUILDER.comment("Boost sharpness enchantment to add +1.0 attack damage per level instead of +0.5 damage.").define("Boost Sharpness", true);
         SPRINT_WHILE_ATTACKING = ConfigBuildHandler.BUILDER.comment("Don't automatically stop sprinting when attacking.").define("Sprint While Attacking", true);
         SWEEPING_REQUIRED = ConfigBuildHandler.BUILDER.comment("Is the sweeping edge enchantment required to perform a sweep attack.").define("Require Sweeping Edge", true);
@@ -80,6 +85,7 @@ public class ConfigBuildHandler {
         SHIELD_DELAY = ConfigBuildHandler.BUILDER.comment("Amount of ticks after which blocking using a shield is effective. Used to be 5 ticks before combat snapshots.").defineInRange("Shield Warm-Up Delay", 0, 0, 72000);
         BOOST_IMPALING = ConfigBuildHandler.BUILDER.comment("Makes the impaling enchantment apply when attack any creature in contact with rain or water; not just to aquatic mobs.").define("Boost Impaling", true);
         DISPENSE_TRIDENT = ConfigBuildHandler.BUILDER.comment("Allow tridents to be fired from dispensers.").define("Dispense Tridents", true);
+        SWING_THROUGH_GRASS = ConfigBuildHandler.BUILDER.comment("Hit mobs through non-full-sized blocks such as grass.").define("Swing Through Grass", true);
         BUILDER.pop();
 
         BUILDER.comment("Changes the way the player heals from food.");

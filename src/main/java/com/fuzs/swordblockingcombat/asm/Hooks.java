@@ -18,6 +18,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * this class is only used for redirecting hooks to their appropriate place
+ */
 @SuppressWarnings("unused")
 public class Hooks {
 
@@ -100,6 +103,15 @@ public class Hooks {
     public static float getSprintingLevel() {
 
         return CombatFoodHandler.getSprintingLevel();
+    }
+
+    /**
+     * run block ray tracing a second time to only check for blocks with a collision shape
+     * the result is then used to ray trace for an entity
+     */
+    public static double rayTraceCollidingBlocks(float partialTicks, Entity entity, double d0, double d1) {
+
+        return ModernCombatHandler.rayTraceCollidingBlocks(partialTicks, entity, d0, d1);
     }
 
 }

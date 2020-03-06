@@ -66,7 +66,7 @@ public class ClassicCombatHandler {
                 }
             }
 
-            player.world.playSound(null, player.func_226277_ct_(), player.func_226278_cu_(), player.func_226281_cx_(), SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, player.getSoundCategory(), 1.0F, 1.0F);
+            player.world.playSound(null, player.getPosX(), player.getPosY(), player.getPosZ(), SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, player.getSoundCategory(), 1.0F, 1.0F);
             if (!ConfigValueHolder.CLASSIC_COMBAT.noSweepingSmoke) {
 
                 player.spawnSweepParticles();

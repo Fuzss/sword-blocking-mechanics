@@ -62,14 +62,14 @@ public class RenderBlockingHandler {
             if (ItemBlockingHelper.getCanStackBlock(stack)) {
 
                 MatrixStack matrixStack = evt.getMatrixStack();
-                matrixStack.func_227860_a_();
+                matrixStack.push();
 
                 boolean rightHanded = (evt.getHand() == Hand.MAIN_HAND ? player.getPrimaryHand() : player.getPrimaryHand().opposite()) == HandSide.RIGHT;
                 this.transformSideFirstPerson(matrixStack, rightHanded ? 1.0F : -1.0F, evt.getEquipProgress());
-                this.mc.getFirstPersonRenderer().func_228397_a_(player, stack, rightHanded ? net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND :
+                this.mc.getFirstPersonRenderer().renderItemSide(player, stack, rightHanded ? net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND :
                         net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND, !rightHanded, matrixStack, evt.getBuffers(), evt.getLight());
 
-                matrixStack.func_227865_b_();
+                matrixStack.pop();
                 evt.setCanceled(true);
             }
         }
@@ -80,11 +80,11 @@ public class RenderBlockingHandler {
      */
     private void transformSideFirstPerson(MatrixStack matrixStack, float side, float equippedProg) {
 
-        matrixStack.func_227861_a_(side * 0.56F, -0.52F + equippedProg * -0.6F, -0.72F);
-        matrixStack.func_227861_a_(side * -0.14142136F, 0.08F, 0.14142136F);
-        matrixStack.func_227863_a_(Vector3f.field_229179_b_.func_229187_a_(-102.25F));
-        matrixStack.func_227863_a_(Vector3f.field_229181_d_.func_229187_a_(side * 13.365F));
-        matrixStack.func_227863_a_(Vector3f.field_229183_f_.func_229187_a_(side * 78.05F));
+        matrixStack.translate(side * 0.56F, -0.52F + equippedProg * -0.6F, -0.72F);
+        matrixStack.translate(side * -0.14142136F, 0.08F, 0.14142136F);
+        matrixStack.rotate(Vector3f.XP.rotationDegrees(-102.25F));
+        matrixStack.rotate(Vector3f.YP.rotationDegrees(side * 13.365F));
+        matrixStack.rotate(Vector3f.ZP.rotationDegrees(side * 78.05F));
     }
 
 }

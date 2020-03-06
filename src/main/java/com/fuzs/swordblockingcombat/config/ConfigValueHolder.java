@@ -27,6 +27,8 @@ public class ConfigValueHolder {
     public static class ClassicCombat {
 
         public boolean removeCooldown;
+        public boolean noTooltip;
+        public boolean hideIndicator;
         public boolean boostSharpness;
         public boolean attackingAllowsSprinting;
         public boolean sweepingRequired;
@@ -46,6 +48,7 @@ public class ConfigValueHolder {
         public int shieldDelay;
         public boolean boostImpaling;
         public boolean dispenseTridents;
+        public boolean swingThroughGrass;
     }
 
     public static class FoodBuffs {
