@@ -31,6 +31,7 @@ public class ConfigSyncManager {
         ConfigValueHolder.SWORD_BLOCKING.blocked = ConfigBuildHandler.BLOCKED.get().floatValue();
         ConfigValueHolder.SWORD_BLOCKING.damageSword = ConfigBuildHandler.DAMAGE_SWORD.get();
         ConfigValueHolder.SWORD_BLOCKING.deflectProjectiles = ConfigBuildHandler.DEFLECT_PROJECTILES.get();
+        ConfigValueHolder.SWORD_BLOCKING.noSlow = ConfigBuildHandler.WALKING_MODIFIER.get().floatValue();
         // classic combat
         ConfigValueHolder.CLASSIC_COMBAT.removeCooldown = ConfigBuildHandler.REMOVE_ATTACK_COOLDOWN.get();
         ConfigValueHolder.CLASSIC_COMBAT.noTooltip = ConfigBuildHandler.NO_COOLDOWN_TOOLTIP.get();
@@ -52,6 +53,13 @@ public class ConfigSyncManager {
         ConfigValueHolder.MODERN_COMBAT.boostImpaling = ConfigBuildHandler.BOOST_IMPALING.get();
         ConfigValueHolder.MODERN_COMBAT.dispenseTridents = ConfigBuildHandler.DISPENSE_TRIDENT.get();
         ConfigValueHolder.MODERN_COMBAT.swingThroughGrass = ConfigBuildHandler.SWING_THROUGH_GRASS.get();
+        ConfigValueHolder.MODERN_COMBAT.coyoteTimer = ConfigBuildHandler.COYOTE_TIME.get();
+        ConfigValueHolder.MODERN_COMBAT.coyoteSmall = ConfigBuildHandler.COYOTE_SMALL.get();
+        ConfigValueHolder.MODERN_COMBAT.holdAttack = ConfigBuildHandler.HOLD_ATTACK.get();
+        ConfigValueHolder.MODERN_COMBAT.fistStrength = ConfigBuildHandler.FIST_STRENGTH.get();
+        ConfigValueHolder.MODERN_COMBAT.swingAnimation = ConfigBuildHandler.SWING_ANIMATION.get();
+        ConfigValueHolder.MODERN_COMBAT.attackAlive = ConfigBuildHandler.HIT_ONLY_ALIVE.get();
+        ConfigValueHolder.MODERN_COMBAT.itemProjectiles = ConfigBuildHandler.BETTER_PROJECTILES.get();
         // food buffs
         ConfigValueHolder.FOOD_BUFFS.foodTicker = ConfigBuildHandler.FOOD_TICKER.get();
         ConfigValueHolder.FOOD_BUFFS.regenDelay = ConfigBuildHandler.REGEN_DELAY.get();

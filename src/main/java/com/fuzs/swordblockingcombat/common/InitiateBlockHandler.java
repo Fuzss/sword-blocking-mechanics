@@ -1,6 +1,6 @@
 package com.fuzs.swordblockingcombat.common;
 
-import com.fuzs.swordblockingcombat.common.helper.ItemBlockingHelper;
+import com.fuzs.swordblockingcombat.common.helper.BlockingItemHelper;
 import com.fuzs.swordblockingcombat.config.ConfigValueHolder;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.PlayerEntity;
@@ -18,14 +18,14 @@ import java.util.function.Predicate;
 
 public class InitiateBlockHandler {
 
-    private final ItemBlockingHelper blockingHelper = new ItemBlockingHelper();
+    private final BlockingItemHelper blockingHelper = new BlockingItemHelper();
 
     @SuppressWarnings("unused")
     @SubscribeEvent
     public void onRightClickItem(final PlayerInteractEvent.RightClickItem evt) {
 
         PlayerEntity player = evt.getPlayer();
-        if (ItemBlockingHelper.getCanStackBlock(evt.getItemStack())) {
+        if (BlockingItemHelper.canItemStackBlock(evt.getItemStack())) {
 
             ItemStack stack = player.getHeldItemOffhand();
             Predicate<ItemStack> noAction = item -> item.getItem().getUseAction(item) == UseAction.NONE;
@@ -53,7 +53,7 @@ public class InitiateBlockHandler {
     @SubscribeEvent
     public void onItemUseStart(final LivingEntityUseItemEvent.Start evt) {
 
-        if (evt.getEntityLiving() instanceof PlayerEntity && ItemBlockingHelper.getCanStackBlock(evt.getItem())) {
+        if (evt.getEntityLiving() instanceof PlayerEntity && BlockingItemHelper.canItemStackBlock(evt.getItem())) {
 
             evt.setDuration(this.blockingHelper.swordUseDuration);
         }
@@ -64,7 +64,7 @@ public class InitiateBlockHandler {
     public void onLivingAttack(final LivingAttackEvent evt) {
 
         if (ConfigValueHolder.SWORD_BLOCKING.deflectProjectiles && evt.getEntityLiving() instanceof PlayerEntity && evt.getSource().getImmediateSource() instanceof AbstractArrowEntity
-                && this.blockingHelper.getIsBlocking((PlayerEntity) evt.getEntityLiving())) {
+                && this.blockingHelper.isActiveItemStackActuallyBlocking((PlayerEntity) evt.getEntityLiving())) {
 
             evt.setCanceled(true);
         }
@@ -79,7 +79,7 @@ public class InitiateBlockHandler {
             PlayerEntity player = (PlayerEntity) evt.getEntityLiving();
             float damage = evt.getAmount();
 
-            if (damage > 0.0F && this.blockingHelper.getIsBlocking(player)) {
+            if (damage > 0.0F && this.blockingHelper.isActiveItemStackActuallyBlocking(player)) {
 
                 this.blockingHelper.damageSword(player, damage);
 

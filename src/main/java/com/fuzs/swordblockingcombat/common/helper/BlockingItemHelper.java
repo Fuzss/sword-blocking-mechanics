@@ -10,7 +10,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 
-public class ItemBlockingHelper {
+public class BlockingItemHelper {
 
     public final int swordUseDuration = 72000;
 
@@ -36,13 +36,18 @@ public class ItemBlockingHelper {
         }
     }
 
-    public boolean getIsBlocking(PlayerEntity player) {
+    public boolean isActiveItemStackActuallyBlocking(PlayerEntity player) {
 
         boolean ready = this.swordUseDuration - player.getItemInUseCount() >= ConfigValueHolder.SWORD_BLOCKING.blockDelay;
-        return ready && getCanStackBlock(player.getActiveItemStack());
+        return ready && isActiveItemStackBlocking(player);
     }
 
-    public static boolean getCanStackBlock(ItemStack stack) {
+    public static boolean isActiveItemStackBlocking(PlayerEntity player) {
+
+        return player.isHandActive() && canItemStackBlock(player.getActiveItemStack());
+    }
+
+    public static boolean canItemStackBlock(ItemStack stack) {
 
         Item item = stack.getItem();
         if (ConfigValueHolder.SWORD_BLOCKING.exclude.contains(item)) {

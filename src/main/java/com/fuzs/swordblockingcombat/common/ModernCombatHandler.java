@@ -1,22 +1,26 @@
 package com.fuzs.swordblockingcombat.common;
 
 import com.fuzs.swordblockingcombat.config.ConfigValueHolder;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.DispenserBlock;
 import net.minecraft.dispenser.IPosition;
 import net.minecraft.dispenser.ProjectileDispenseBehavior;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.*;
+import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
+import net.minecraft.entity.projectile.ProjectileItemEntity;
 import net.minecraft.entity.projectile.TridentEntity;
-import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.*;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.*;
-import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.EntityRayTraceResult;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -24,8 +28,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import javax.annotation.Nonnull;
 import java.util.function.Predicate;
-
-import static net.minecraft.world.IBlockReader.func_217300_a;
 
 public class ModernCombatHandler {
 
@@ -49,10 +51,12 @@ public class ModernCombatHandler {
 
                         stack.shrink(1);
                     }
+
                     if (stack.getItem() == Items.TRIDENT || stack.isEmpty()) {
 
                         tridentEntity.thrownStack = stack.copy();
                     }
+
                     return tridentEntity;
                 }
             });
@@ -61,12 +65,53 @@ public class ModernCombatHandler {
 
     @SuppressWarnings("unused")
     @SubscribeEvent
+    public void onEntityJoinWorld(final EntityJoinWorldEvent evt) {
+
+        if (evt.getEntity() instanceof PlayerEntity) {
+
+            // make sure another mod hasn't already changed something
+            IAttributeInstance attributeInstance = ((PlayerEntity) evt.getEntity()).getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
+            if (attributeInstance.getBaseValue() == 1.0) {
+
+                attributeInstance.setBaseValue(ConfigValueHolder.MODERN_COMBAT.fistStrength);
+            }
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @SubscribeEvent
     public void onLivingHurt(final LivingHurtEvent evt) {
 
         // immediately reset damage immunity after being hit by any projectile
-        if (ConfigValueHolder.MODERN_COMBAT.noProjectileResistance && evt.getSource().isProjectile()) {
+        if (evt.getSource().isProjectile() && (ConfigValueHolder.MODERN_COMBAT.noProjectileResistance ||
+                evt.getSource().getTrueSource() == null && evt.getAmount() == 0.0F)) {
 
             evt.getEntity().hurtResistantTime = 0;
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @SubscribeEvent
+    public void onProjectileImpact(final ProjectileImpactEvent evt) {
+
+        if (ConfigValueHolder.MODERN_COMBAT.itemProjectiles && evt.getEntity() instanceof ProjectileItemEntity) {
+
+            ProjectileItemEntity projectileItemEntity = (ProjectileItemEntity) evt.getEntity();
+            if (evt.getRayTraceResult().getType() == RayTraceResult.Type.BLOCK) {
+
+                // enable item projectiles to pass through blocks without a collision shape
+                World world = projectileItemEntity.getEntityWorld();
+                BlockPos pos = ((BlockRayTraceResult) evt.getRayTraceResult()).getPos();
+                if (world.getBlockState(pos).getCollisionShape(world, pos).isEmpty()) {
+
+                    evt.setCanceled(true);
+                }
+            } else if (evt.getRayTraceResult().getType() == RayTraceResult.Type.ENTITY && projectileItemEntity.getThrower() == null) {
+
+                // enable knockback for item projectiles fired from dispensers by making true source not be null
+                Entity target = ((EntityRayTraceResult) evt.getRayTraceResult()).getEntity();
+                target.attackEntityFrom(DamageSource.causeThrownDamage(projectileItemEntity, projectileItemEntity), 0.0F);
+            }
         }
     }
 
@@ -112,67 +157,17 @@ public class ModernCombatHandler {
         }
     }
 
-    public static int hitEntityAmount(ToolItem instance) {
-        return ConfigValueHolder.MODERN_COMBAT.noAttackPenalty && instance instanceof AxeItem ? 1 : 2;
-    }
-
     public static float addEnchantmentDamage(PlayerEntity player, Entity targetEntity) {
 
-        if (ConfigValueHolder.MODERN_COMBAT.boostImpaling) {
+        // makes impaling work on all mobs in water or rain, not just those classified as water creatures
+        int impaling = EnchantmentHelper.getEnchantmentLevel(Enchantments.IMPALING, player.getHeldItemMainhand());
+        if (impaling > 0 && targetEntity instanceof LivingEntity && ((LivingEntity) targetEntity).getCreatureAttribute()
+                != CreatureAttribute.WATER && targetEntity.isInWaterRainOrBubbleColumn()) {
 
-            // makes impaling work on all mobs in water or rain, not just those classified as water creatures
-            int impaling = EnchantmentHelper.getEnchantmentLevel(Enchantments.IMPALING, player.getHeldItemMainhand());
-            if (impaling > 0 && targetEntity instanceof LivingEntity && ((LivingEntity) targetEntity).getCreatureAttribute()
-                    != CreatureAttribute.WATER && targetEntity.isInWaterRainOrBubbleColumn()) {
-
-                return impaling * 2.5F;
-            }
+            return impaling * 2.5F;
         }
 
         return 0;
-    }
-
-    public static double rayTraceCollidingBlocks(float partialTicks, Entity entity, double blockReachDistance, double originalReach) {
-
-        if (!ConfigValueHolder.MODERN_COMBAT.swingThroughGrass) {
-            return originalReach;
-        }
-
-        RayTraceResult objectMouseOver = rayTraceBlocks(entity, blockReachDistance, partialTicks);
-        Vec3d vec3d = entity.getEyePosition(partialTicks);
-
-        return objectMouseOver.getHitVec().squareDistanceTo(vec3d);
-    }
-
-    private static RayTraceResult rayTraceBlocks(Entity entity, double blockReachDistance, float partialTicks) {
-
-        Vec3d vec3d = entity.getEyePosition(partialTicks);
-        Vec3d vec3d1 = entity.getLook(partialTicks);
-        Vec3d vec3d2 = vec3d.add(vec3d1.x * blockReachDistance, vec3d1.y * blockReachDistance, vec3d1.z * blockReachDistance);
-        return rayTraceBlocks(entity.world, new RayTraceContext(vec3d, vec3d2, RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, entity));
-    }
-
-    private static BlockRayTraceResult rayTraceBlocks(World world, RayTraceContext context) {
-
-        return func_217300_a(context, (rayTraceContext, pos) -> {
-            BlockState blockstate = world.getBlockState(pos);
-            IFluidState ifluidstate = world.getFluidState(pos);
-            Vec3d vec3d = rayTraceContext.func_222253_b();
-            Vec3d vec3d1 = rayTraceContext.func_222250_a();
-            BlockRayTraceResult blockraytraceresult = null;
-            if (!blockstate.getCollisionShape(world, pos).isEmpty()) {
-                VoxelShape voxelshape = rayTraceContext.getBlockShape(blockstate, world, pos);
-                blockraytraceresult = world.rayTraceBlocks(vec3d, vec3d1, pos, voxelshape, blockstate);
-            }
-            VoxelShape voxelshape1 = rayTraceContext.getFluidShape(ifluidstate, world, pos);
-            BlockRayTraceResult blockraytraceresult1 = voxelshape1.rayTrace(vec3d, vec3d1, pos);
-            double d0 = blockraytraceresult == null ? Double.MAX_VALUE : rayTraceContext.func_222253_b().squareDistanceTo(blockraytraceresult.getHitVec());
-            double d1 = blockraytraceresult1 == null ? Double.MAX_VALUE : rayTraceContext.func_222253_b().squareDistanceTo(blockraytraceresult1.getHitVec());
-            return d0 <= d1 ? blockraytraceresult : blockraytraceresult1;
-        }, rayTraceContext -> {
-            Vec3d vec3d = rayTraceContext.func_222253_b().subtract(rayTraceContext.func_222250_a());
-            return BlockRayTraceResult.createMiss(rayTraceContext.func_222250_a(), Direction.getFacingFromVector(vec3d.x, vec3d.y, vec3d.z), new BlockPos(rayTraceContext.func_222250_a()));
-        });
     }
 
 }

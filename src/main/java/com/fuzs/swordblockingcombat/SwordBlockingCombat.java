@@ -1,11 +1,14 @@
 package com.fuzs.swordblockingcombat;
 
-import com.fuzs.swordblockingcombat.client.SharpnessDamageHandler;
+import com.fuzs.swordblockingcombat.client.GrassSwingHandler;
 import com.fuzs.swordblockingcombat.client.NoCooldownHandler;
 import com.fuzs.swordblockingcombat.client.RenderBlockingHandler;
+import com.fuzs.swordblockingcombat.common.ClassicCombatHandler;
+import com.fuzs.swordblockingcombat.common.CombatFoodHandler;
+import com.fuzs.swordblockingcombat.common.InitiateBlockHandler;
+import com.fuzs.swordblockingcombat.common.ModernCombatHandler;
 import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
 import com.fuzs.swordblockingcombat.config.ConfigSyncManager;
-import com.fuzs.swordblockingcombat.common.*;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -37,17 +40,24 @@ public class SwordBlockingCombat {
 
     private void onCommonSetup(final FMLCommonSetupEvent evt) {
 
+        // sword blocking
         MinecraftForge.EVENT_BUS.register(new InitiateBlockHandler());
+        // food buffs
         MinecraftForge.EVENT_BUS.register(new CombatFoodHandler());
+        // classic combat
         MinecraftForge.EVENT_BUS.register(new ClassicCombatHandler());
+        // modern combat
         MinecraftForge.EVENT_BUS.register(new ModernCombatHandler());
     }
 
     private void onClientSetup(final FMLClientSetupEvent evt) {
 
+        // sword blocking
         MinecraftForge.EVENT_BUS.register(new RenderBlockingHandler());
+        // classic combat
         MinecraftForge.EVENT_BUS.register(new NoCooldownHandler());
-        MinecraftForge.EVENT_BUS.register(new SharpnessDamageHandler());
+        // modern combat
+        MinecraftForge.EVENT_BUS.register(new GrassSwingHandler());
     }
 
 }

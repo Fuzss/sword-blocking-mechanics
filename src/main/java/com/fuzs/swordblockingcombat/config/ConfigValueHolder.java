@@ -22,6 +22,7 @@ public class ConfigValueHolder {
         public boolean damageSword;
         public boolean deflectProjectiles;
         public int blockDelay;
+        public float noSlow;
     }
 
     public static class ClassicCombat {
@@ -49,6 +50,13 @@ public class ConfigValueHolder {
         public boolean boostImpaling;
         public boolean dispenseTridents;
         public boolean swingThroughGrass;
+        public int coyoteTimer;
+        public boolean coyoteSmall;
+        public boolean holdAttack;
+        public double fistStrength;
+        public boolean swingAnimation;
+        public boolean attackAlive;
+        public boolean itemProjectiles;
     }
 
     public static class FoodBuffs {

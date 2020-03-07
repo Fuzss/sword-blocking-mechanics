@@ -15,6 +15,7 @@ public class ConfigBuildHandler {
     static final ForgeConfigSpec.BooleanValue DAMAGE_SWORD;
     static final ForgeConfigSpec.BooleanValue DEFLECT_PROJECTILES;
     static final ForgeConfigSpec.IntValue BLOCK_DELAY;
+    static final ForgeConfigSpec.DoubleValue WALKING_MODIFIER;
     static final ForgeConfigSpec.ConfigValue<List<String>> EXCLUDE;
     static final ForgeConfigSpec.ConfigValue<List<String>> INCLUDE;
     // classic combat
@@ -38,6 +39,13 @@ public class ConfigBuildHandler {
     static final ForgeConfigSpec.BooleanValue BOOST_IMPALING;
     static final ForgeConfigSpec.BooleanValue DISPENSE_TRIDENT;
     static final ForgeConfigSpec.BooleanValue SWING_THROUGH_GRASS;
+    static final ForgeConfigSpec.IntValue COYOTE_TIME;
+    static final ForgeConfigSpec.BooleanValue COYOTE_SMALL;
+    static final ForgeConfigSpec.BooleanValue HOLD_ATTACK;
+    static final ForgeConfigSpec.DoubleValue FIST_STRENGTH;
+    static final ForgeConfigSpec.BooleanValue SWING_ANIMATION;
+    static final ForgeConfigSpec.BooleanValue HIT_ONLY_ALIVE;
+    static final ForgeConfigSpec.BooleanValue BETTER_PROJECTILES;
     // food buffs
     static final ForgeConfigSpec.EnumValue<ConfigValueHolder.FoodBuffs.FoodTicker> FOOD_TICKER;
     static final ForgeConfigSpec.IntValue REGEN_DELAY;
@@ -54,6 +62,7 @@ public class ConfigBuildHandler {
         DAMAGE_SWORD = ConfigBuildHandler.BUILDER.comment("Damage sword when blocking an attack depending on the amount of damage blocked. Sword is only damaged when at least three damage points have been blocked, just like a shield.").define("Damage Sword", false);
         DEFLECT_PROJECTILES = ConfigBuildHandler.BUILDER.comment("Incoming projectiles such as arrows or tridents will ricochet while blocking.").define("Deflect Projectiles", false);
         BLOCK_DELAY = ConfigBuildHandler.BUILDER.comment("Amount of ticks after which blocking using a sword is effective.").defineInRange("Warm-Up Delay", 0, 0, 72000);
+        WALKING_MODIFIER = ConfigBuildHandler.BUILDER.comment("Percentage to slow down movement to while blocking.").defineInRange("Walking Modifier", 0.2, 0.0, Float.MAX_VALUE);
         EXCLUDE = ConfigBuildHandler.BUILDER.comment("Swords to exclude from blocking. Intended for modded swords that already have their own right-click function. Format for every entry is \"<namespace>:<id>\".").define("Blocking Exclusion List", Lists.newArrayList());
         INCLUDE = ConfigBuildHandler.BUILDER.comment("Items to include for blocking. Intended for modded swords that don't extend vanilla swords. Format for every entry is \"<namespace>:<id>\".").define("Blocking Inclusion List", Lists.newArrayList());
         BUILDER.pop();
@@ -66,7 +75,7 @@ public class ConfigBuildHandler {
         BOOST_SHARPNESS = ConfigBuildHandler.BUILDER.comment("Boost sharpness enchantment to add +1.0 attack damage per level instead of +0.5 damage.").define("Boost Sharpness", true);
         SPRINT_WHILE_ATTACKING = ConfigBuildHandler.BUILDER.comment("Don't automatically stop sprinting when attacking.").define("Sprint While Attacking", true);
         SWEEPING_REQUIRED = ConfigBuildHandler.BUILDER.comment("Is the sweeping edge enchantment required to perform a sweep attack.").define("Require Sweeping Edge", true);
-        NO_SWEEPING_SMOKE = ConfigBuildHandler.BUILDER.comment("Prevent particles created by a sweep attack from appearing.").define("No Sweeping Particles", true);
+        NO_SWEEPING_SMOKE = ConfigBuildHandler.BUILDER.comment("Prevent particles created by a sweep attack from appearing.").define("No Sweeping Particles", false);
         BUILDER.pop();
 
         BUILDER.comment("Allows changing various stats of items, mainly for restoring pre-combat update values.");
@@ -85,7 +94,14 @@ public class ConfigBuildHandler {
         SHIELD_DELAY = ConfigBuildHandler.BUILDER.comment("Amount of ticks after which blocking using a shield is effective. Used to be 5 ticks before combat snapshots.").defineInRange("Shield Warm-Up Delay", 0, 0, 72000);
         BOOST_IMPALING = ConfigBuildHandler.BUILDER.comment("Makes the impaling enchantment apply when attack any creature in contact with rain or water; not just to aquatic mobs.").define("Boost Impaling", true);
         DISPENSE_TRIDENT = ConfigBuildHandler.BUILDER.comment("Allow tridents to be fired from dispensers.").define("Dispense Tridents", true);
-        SWING_THROUGH_GRASS = ConfigBuildHandler.BUILDER.comment("Hit mobs through non-full-sized blocks such as grass.").define("Swing Through Grass", true);
+        SWING_THROUGH_GRASS = ConfigBuildHandler.BUILDER.comment("Hit mobs through blocks without a collision shape such as grass without breaking the block.").define("Swing Through Grass", true);
+        COYOTE_TIME = ConfigBuildHandler.BUILDER.comment("Amount of ticks a mob can still be interacted with after no longer aiming at it.").defineInRange("Coyote Time", 0, 0, Integer.MAX_VALUE);
+        COYOTE_SMALL = ConfigBuildHandler.BUILDER.comment("Make \"Coyote Time\" only work on small mobs.").define("Coyote Small Mobs", false);
+        HOLD_ATTACK = ConfigBuildHandler.BUILDER.comment("Hold down the attack key to attack automatically whenever possible.").define("Hold Attack Button", false);
+        FIST_STRENGTH = ConfigBuildHandler.BUILDER.comment("Base attack damage of the player. Attack strength of weapons and tools is added on top.").defineInRange("Fist Attack Strength", 1.0, 0.0, 2048.0);
+        SWING_ANIMATION = ConfigBuildHandler.BUILDER.comment("Improved arm swing animation to emphasize the rhythm of the attacks.").define("Better Swing Animation", true);
+        HIT_ONLY_ALIVE = ConfigBuildHandler.BUILDER.comment("Ray tracing will no longer target entities that have already died.").define("Hit Only Alive", true);
+        BETTER_PROJECTILES = ConfigBuildHandler.BUILDER.comment("Item projectiles like snowballs and ender pearls pass through blocks without a collision shape and deal knockback to players.").define("Improve Item Projectiles", true);
         BUILDER.pop();
 
         BUILDER.comment("Changes the way the player heals from food.");
