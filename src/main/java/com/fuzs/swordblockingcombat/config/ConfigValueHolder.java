@@ -57,6 +57,8 @@ public class ConfigValueHolder {
         public boolean swingAnimation;
         public boolean attackAlive;
         public boolean itemProjectiles;
+        public boolean fastSwitching;
+        public boolean upwardsKnockback;
     }
 
     public static class FoodBuffs {
@@ -70,6 +72,7 @@ public class ConfigValueHolder {
 
         @SuppressWarnings("unused")
         public enum FoodTicker {
+
             DEFAULT(0), CLASSIC(1), COMBAT(2), CUSTOM(3);
 
             private final int id;

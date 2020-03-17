@@ -60,6 +60,8 @@ public class ConfigSyncManager {
         ConfigValueHolder.MODERN_COMBAT.swingAnimation = ConfigBuildHandler.SWING_ANIMATION.get();
         ConfigValueHolder.MODERN_COMBAT.attackAlive = ConfigBuildHandler.HIT_ONLY_ALIVE.get();
         ConfigValueHolder.MODERN_COMBAT.itemProjectiles = ConfigBuildHandler.BETTER_PROJECTILES.get();
+        ConfigValueHolder.MODERN_COMBAT.fastSwitching = ConfigBuildHandler.FAST_SWITCHING.get();
+        ConfigValueHolder.MODERN_COMBAT.upwardsKnockback = ConfigBuildHandler.UPWARDS_KNOCKBACK.get();
         // food buffs
         ConfigValueHolder.FOOD_BUFFS.foodTicker = ConfigBuildHandler.FOOD_TICKER.get();
         ConfigValueHolder.FOOD_BUFFS.regenDelay = ConfigBuildHandler.REGEN_DELAY.get();

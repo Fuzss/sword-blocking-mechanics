@@ -12,17 +12,19 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.entity.projectile.ProjectileItemEntity;
 import net.minecraft.entity.projectile.TridentEntity;
-import net.minecraft.item.*;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.ShieldItem;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.EntityRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.*;
 import net.minecraft.world.World;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.LivingKnockBackEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -113,6 +115,47 @@ public class ModernCombatHandler {
                 target.attackEntityFrom(DamageSource.causeThrownDamage(projectileItemEntity, projectileItemEntity), 0.0F);
             }
         }
+    }
+
+    @SuppressWarnings("unused")
+    @SubscribeEvent
+    public void onPlayerTick(TickEvent.PlayerTickEvent evt) {
+
+        if (ConfigValueHolder.MODERN_COMBAT.fastSwitching && evt.phase == TickEvent.Phase.START) {
+
+            // switching items no longer triggers the attack cooldown
+            PlayerEntity player = evt.player;
+            ItemStack itemstack = player.getHeldItemMainhand();
+            if (!ItemStack.areItemStacksEqual(player.itemStackMainHand, itemstack)) {
+
+                player.itemStackMainHand = itemstack.copy();
+            }
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @SubscribeEvent
+    public void onLivingKnockBack(final LivingKnockBackEvent evt) {
+
+        if (!ConfigValueHolder.MODERN_COMBAT.upwardsKnockback) {
+
+            return;
+        }
+
+        LivingEntity entity = evt.getEntityLiving();
+        float strength = evt.getOriginalStrength();
+        // makes knockback resistance a scale instead of being random
+        strength = (float)(strength * (1.0 - entity.getAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).getValue()));
+        if (strength > 0.0F) {
+
+            entity.isAirBorne = true;
+            Vec3d vec3d = entity.getMotion();
+            Vec3d vec3d1 = (new Vec3d(evt.getOriginalRatioX(), 0.0, evt.getOriginalRatioZ())).normalize().scale(strength);
+            // upwards knockback
+            entity.setMotion(vec3d.x / 2.0 - vec3d1.x, entity.onGround ? Math.min(0.4, strength) : Math.max(0.4, vec3d.y + strength / 2.0F), vec3d.z / 2.0 - vec3d1.z);
+        }
+
+        evt.setCanceled(true);
     }
 
     @SuppressWarnings("unused")

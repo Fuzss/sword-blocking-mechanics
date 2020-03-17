@@ -28,6 +28,8 @@ import java.util.function.BiPredicate;
 @OnlyIn(Dist.CLIENT)
 public class NoCooldownHandler {
 
+    private boolean hasOptiFine;
+
     private final Minecraft mc = Minecraft.getInstance();
     private final FirstPersonRenderer itemRenderer = new FirstPersonRenderer(this.mc);
 
@@ -84,11 +86,18 @@ public class NoCooldownHandler {
     @SubscribeEvent
     public void onGuiInit(final GuiScreenEvent.InitGuiEvent.Post evt) {
 
-        if (ConfigValueHolder.CLASSIC_COMBAT.hideIndicator && evt.getGui() instanceof VideoSettingsScreen) {
+        // no easy way to detect OptiFine, so this has to throw an exception once
+        if (!this.hasOptiFine && ConfigValueHolder.CLASSIC_COMBAT.hideIndicator && evt.getGui() instanceof VideoSettingsScreen) {
 
-            // disable attack indicator button in video settings screen
-            ((VideoSettingsScreen) evt.getGui()).optionsRowList.children().stream().flatMap(it -> it.children().stream()).filter(it -> it instanceof OptionButton)
-                    .map(it -> (OptionButton) it).filter(it -> it.enumOptions.equals(AbstractOption.ATTACK_INDICATOR)).findFirst().ifPresent(it -> it.active = false);
+            try {
+
+                // disable attack indicator button in video settings screen
+                ((VideoSettingsScreen) evt.getGui()).optionsRowList.children().stream().flatMap(it -> it.children().stream()).filter(it -> it instanceof OptionButton)
+                        .map(it -> (OptionButton) it).filter(it -> it.enumOptions.equals(AbstractOption.ATTACK_INDICATOR)).findFirst().ifPresent(it -> it.active = false);
+            } catch (NoSuchFieldError ignored) {
+
+                this.hasOptiFine = true;
+            }
         }
     }
 
