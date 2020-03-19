@@ -1,6 +1,6 @@
-package com.fuzs.swordblockingcombat.client;
+package com.fuzs.swordblockingcombat.client.handler;
 
-import com.fuzs.swordblockingcombat.config.ConfigValueHolder;
+import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.VideoSettingsScreen;
 import net.minecraft.client.gui.widget.button.OptionButton;
@@ -40,8 +40,8 @@ public class NoCooldownHandler {
     @SubscribeEvent
     public void onRenderGameOverlay(final RenderGameOverlayEvent.Pre evt) {
 
-        boolean hide = ConfigValueHolder.CLASSIC_COMBAT.hideIndicator;
-        if ((ConfigValueHolder.CLASSIC_COMBAT.removeCooldown || hide) && this.mc.player != null) {
+        boolean hide = ConfigBuildHandler.HIDE_ATTACK_INDICATOR.get();
+        if ((ConfigBuildHandler.REMOVE_ATTACK_COOLDOWN.get() || hide) && this.mc.player != null) {
 
             boolean crosshairs = evt.getType() == RenderGameOverlayEvent.ElementType.CROSSHAIRS;
             if (crosshairs || evt.getType() == RenderGameOverlayEvent.ElementType.HOTBAR) {
@@ -64,8 +64,8 @@ public class NoCooldownHandler {
     @SubscribeEvent
     public void onRenderGameOverlay(final RenderGameOverlayEvent.Post evt) {
 
-        boolean hide = ConfigValueHolder.CLASSIC_COMBAT.hideIndicator;
-        if ((ConfigValueHolder.CLASSIC_COMBAT.removeCooldown || hide) && this.mc.player != null) {
+        boolean hide = ConfigBuildHandler.HIDE_ATTACK_INDICATOR.get();
+        if ((ConfigBuildHandler.REMOVE_ATTACK_COOLDOWN.get() || hide) && this.mc.player != null) {
 
             boolean crosshairs = evt.getType() == RenderGameOverlayEvent.ElementType.CROSSHAIRS;
             if (crosshairs || evt.getType() == RenderGameOverlayEvent.ElementType.HOTBAR) {
@@ -87,7 +87,7 @@ public class NoCooldownHandler {
     public void onGuiInit(final GuiScreenEvent.InitGuiEvent.Post evt) {
 
         // no easy way to detect OptiFine, so this has to throw an exception once
-        if (!this.hasOptiFine && ConfigValueHolder.CLASSIC_COMBAT.hideIndicator && evt.getGui() instanceof VideoSettingsScreen) {
+        if (!this.hasOptiFine && ConfigBuildHandler.HIDE_ATTACK_INDICATOR.get() && evt.getGui() instanceof VideoSettingsScreen) {
 
             try {
 
@@ -106,12 +106,12 @@ public class NoCooldownHandler {
     public void onItemTooltip(final ItemTooltipEvent evt) {
 
         // remove attack speed entry for every tooltip containing it
-        if (ConfigValueHolder.CLASSIC_COMBAT.noTooltip) {
+        if (ConfigBuildHandler.NO_COOLDOWN_TOOLTIP.get()) {
 
             evt.getToolTip().removeIf(component -> component.toString().contains("attribute.name.generic.attackSpeed"));
         }
 
-        if (ConfigValueHolder.CLASSIC_COMBAT.boostSharpness) {
+        if (ConfigBuildHandler.BOOST_SHARPNESS.get()) {
 
             BiPredicate<Object, String> translation = (component, sequence) -> component instanceof TranslationTextComponent
                     && ((TranslationTextComponent) component).getKey().contains(sequence);
@@ -150,7 +150,7 @@ public class NoCooldownHandler {
     @SubscribeEvent
     public void onClientTick(final TickEvent.ClientTickEvent evt) {
 
-        if (ConfigValueHolder.CLASSIC_COMBAT.removeCooldown && evt.phase == TickEvent.Phase.END) {
+        if (ConfigBuildHandler.REMOVE_ATTACK_COOLDOWN.get() && evt.phase == TickEvent.Phase.END) {
 
             if (this.mc.world != null && this.mc.player != null && !this.mc.isGamePaused()) {
 
@@ -165,7 +165,7 @@ public class NoCooldownHandler {
     @SubscribeEvent
     public void onRenderTick(final TickEvent.RenderTickEvent evt) {
 
-        if (ConfigValueHolder.CLASSIC_COMBAT.removeCooldown && evt.phase == TickEvent.Phase.START) {
+        if (ConfigBuildHandler.REMOVE_ATTACK_COOLDOWN.get() && evt.phase == TickEvent.Phase.START) {
 
             this.syncProgress(this.mc.getFirstPersonRenderer());
         }

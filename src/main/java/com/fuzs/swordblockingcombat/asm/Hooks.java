@@ -1,27 +1,17 @@
 package com.fuzs.swordblockingcombat.asm;
 
-import com.fuzs.swordblockingcombat.client.GrassSwingHandler;
-import com.fuzs.swordblockingcombat.common.ClassicCombatHandler;
-import com.fuzs.swordblockingcombat.common.ModernCombatHandler;
-import com.fuzs.swordblockingcombat.config.ConfigValueHolder;
-import com.google.common.collect.Multimap;
+import com.fuzs.swordblockingcombat.client.handler.GrassSwingHandler;
+import com.fuzs.swordblockingcombat.common.handler.ClassicCombatHandler;
+import com.fuzs.swordblockingcombat.common.handler.ModernCombatHandler;
+import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.AxeItem;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.item.ToolItem;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * this class is mostly used for redirecting hooks to their appropriate place
@@ -34,7 +24,7 @@ public class Hooks {
      */
     public static int hitEntityAmount(ToolItem toolItem) {
 
-        return ConfigValueHolder.MODERN_COMBAT.noAttackPenalty && toolItem instanceof AxeItem ? 1 : 2;
+        return ConfigBuildHandler.NO_AXE_ATTACK_PENALTY.get() && toolItem instanceof AxeItem ? 1 : 2;
     }
 
     /**
@@ -51,40 +41,10 @@ public class Hooks {
      */
     public static void restoreSprinting(PlayerEntity player, int knockback) {
 
-        if (ConfigValueHolder.CLASSIC_COMBAT.attackingAllowsSprinting) {
+        if (ConfigBuildHandler.SPRINT_WHILE_ATTACKING.get()) {
 
             ClassicCombatHandler.restoreSprinting(player, knockback);
         }
-    }
-
-    /**
-     * add custom attributes to an item when the attribute mmap is generated in {@link net.minecraft.item.Item#getAttributeModifiers}
-     * attributes already present will be modified to ensure the item tooltip displaying values properly
-     */
-    public static Multimap<String, AttributeModifier> adjustAttributeMap(Multimap<String, AttributeModifier> multimap, EquipmentSlotType equipmentSlot, ItemStack stack) {
-
-        Map<Item, Map<String, AttributeModifier>> itemMap = ConfigValueHolder.MATERIAL_CHANGER.attributes;
-        if (itemMap != null && equipmentSlot == EquipmentSlotType.MAINHAND) {
-
-            Map<String, AttributeModifier> attributeMap = itemMap.get(stack.getItem());
-            if (attributeMap != null) {
-
-                attributeMap.forEach((key, value) -> {
-
-                    List<AttributeModifier> matchingAttributes = multimap.entries().stream().filter(set -> set.getKey().equals(key)).map(Map.Entry::getValue).collect(Collectors.toList());
-                    Optional<AttributeModifier> matchingID = matchingAttributes.stream().filter(attributeModifier -> attributeModifier.getID().equals(value.getID())).findFirst();
-                    if (matchingID.isPresent()) {
-
-                        matchingID.get().amount += value.getAmount();
-                    } else {
-
-                        multimap.put(key, value);
-                    }
-                });
-            }
-        }
-
-        return multimap;
     }
 
     /**
@@ -92,12 +52,12 @@ public class Hooks {
      */
     public static float addEnchantmentDamage(float damage, PlayerEntity player, Entity targetEntity) {
 
-        if (ConfigValueHolder.CLASSIC_COMBAT.boostSharpness) {
+        if (ConfigBuildHandler.BOOST_SHARPNESS.get()) {
 
             damage += ClassicCombatHandler.addEnchantmentDamage(player);
         }
 
-        if (ConfigValueHolder.MODERN_COMBAT.boostImpaling) {
+        if (ConfigBuildHandler.BOOST_IMPALING.get()) {
 
             damage += ModernCombatHandler.addEnchantmentDamage(player, targetEntity);
         }
@@ -111,7 +71,7 @@ public class Hooks {
     @SuppressWarnings("ConstantConditions")
     public static int getFoodDuration(Item item) {
 
-        int speed = ConfigValueHolder.FOOD_BUFFS.eatingSpeed;
+        int speed = ConfigBuildHandler.EATING_SPEED.get();
         return item.getFood().isFastEating() ? speed / 2 : speed;
     }
 
@@ -121,7 +81,8 @@ public class Hooks {
     @OnlyIn(Dist.CLIENT)
     public static float getSprintingLevel(float level) {
 
-        return ConfigValueHolder.FOOD_BUFFS.sprintingLevel != 3.0F ? ConfigValueHolder.FOOD_BUFFS.sprintingLevel : level;
+        float f = ConfigBuildHandler.SPRINTING_LEVEL.get();
+        return f != 3.0F ? f : level;
     }
 
     /**
@@ -131,7 +92,7 @@ public class Hooks {
     @OnlyIn(Dist.CLIENT)
     public static double rayTraceCollidingBlocks(float partialTicks, Entity entity, double d0, double d1) {
 
-        return ConfigValueHolder.MODERN_COMBAT.swingThroughGrass ? GrassSwingHandler.rayTraceCollidingBlocks(partialTicks, entity, d0) : d1;
+        return ConfigBuildHandler.SWING_THROUGH_GRASS.get() ? GrassSwingHandler.rayTraceCollidingBlocks(partialTicks, entity, d0) : d1;
     }
 
     /**
@@ -141,7 +102,7 @@ public class Hooks {
     @OnlyIn(Dist.CLIENT)
     public static void applyCoyoteTime() {
 
-        if (ConfigValueHolder.MODERN_COMBAT.coyoteTimer > 0) {
+        if (ConfigBuildHandler.COYOTE_TIME.get() > 0) {
 
             GrassSwingHandler.applyCoyoteTime();
         }
@@ -153,16 +114,7 @@ public class Hooks {
     @OnlyIn(Dist.CLIENT)
     public static float getSwingProgress(float swingProgress, LivingEntity entity, float partialTickTime) {
 
-        return ConfigValueHolder.MODERN_COMBAT.swingAnimation ? GrassSwingHandler.getSwingProgress(swingProgress, entity, partialTickTime) : swingProgress;
-    }
-
-    /**
-     * adjust entity ray tracing predicate to only match entities that are alive in {@link net.minecraft.client.renderer.GameRenderer#getMouseOver}
-     */
-    @OnlyIn(Dist.CLIENT)
-    public static Predicate<Entity> getEntityRayTraceFilter(Predicate<Entity> predicate) {
-
-        return ConfigValueHolder.MODERN_COMBAT.attackAlive ? entity -> predicate.test(entity) && entity.isAlive() : predicate;
+        return ConfigBuildHandler.SWING_ANIMATION.get() ? GrassSwingHandler.getSwingProgress(swingProgress, entity, partialTickTime) : swingProgress;
     }
 
 }

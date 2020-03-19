@@ -10,6 +10,13 @@ loaderVersion="[${loader_version},)"
     authors="${mod_author}"
 
 [[dependencies.swordblockingcombat]]
+    modId="materialmaster"
+    mandatory=true
+    versionRange="[1.0,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.swordblockingcombat]]
     modId="forge"
     mandatory=true
     versionRange="[${forge_version},)"

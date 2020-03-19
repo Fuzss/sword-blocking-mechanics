@@ -1,13 +1,13 @@
-package com.fuzs.swordblockingcombat.common;
+package com.fuzs.swordblockingcombat.common.handler;
 
-import com.fuzs.swordblockingcombat.config.ConfigValueHolder;
+import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
+import com.fuzs.swordblockingcombat.config.ConfigSyncManager;
 import net.minecraft.block.DispenserBlock;
 import net.minecraft.dispenser.IPosition;
 import net.minecraft.dispenser.ProjectileDispenseBehavior;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.*;
-import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.entity.projectile.ProjectileItemEntity;
@@ -20,7 +20,6 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -35,7 +34,7 @@ public class ModernCombatHandler {
 
     public ModernCombatHandler() {
 
-        if (ConfigValueHolder.MODERN_COMBAT.dispenseTridents) {
+        if (ConfigBuildHandler.DISPENSE_TRIDENT.get()) {
 
             DispenserBlock.registerDispenseBehavior(Items.TRIDENT, new ProjectileDispenseBehavior() {
 
@@ -67,25 +66,10 @@ public class ModernCombatHandler {
 
     @SuppressWarnings("unused")
     @SubscribeEvent
-    public void onEntityJoinWorld(final EntityJoinWorldEvent evt) {
-
-        if (evt.getEntity() instanceof PlayerEntity) {
-
-            // make sure another mod hasn't already changed something
-            IAttributeInstance attributeInstance = ((PlayerEntity) evt.getEntity()).getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
-            if (attributeInstance.getBaseValue() == 1.0) {
-
-                attributeInstance.setBaseValue(ConfigValueHolder.MODERN_COMBAT.fistStrength);
-            }
-        }
-    }
-
-    @SuppressWarnings("unused")
-    @SubscribeEvent
     public void onLivingHurt(final LivingHurtEvent evt) {
 
         // immediately reset damage immunity after being hit by any projectile
-        if (evt.getSource().isProjectile() && (ConfigValueHolder.MODERN_COMBAT.noProjectileResistance ||
+        if (evt.getSource().isProjectile() && (ConfigBuildHandler.NO_PROJECTILE_RESISTANCE.get() ||
                 evt.getSource().getTrueSource() == null && evt.getAmount() == 0.0F)) {
 
             evt.getEntity().hurtResistantTime = 0;
@@ -96,7 +80,7 @@ public class ModernCombatHandler {
     @SubscribeEvent
     public void onProjectileImpact(final ProjectileImpactEvent evt) {
 
-        if (ConfigValueHolder.MODERN_COMBAT.itemProjectiles && evt.getEntity() instanceof ProjectileItemEntity) {
+        if (ConfigBuildHandler.BETTER_PROJECTILES.get() && evt.getEntity() instanceof ProjectileItemEntity) {
 
             ProjectileItemEntity projectileItemEntity = (ProjectileItemEntity) evt.getEntity();
             if (evt.getRayTraceResult().getType() == RayTraceResult.Type.BLOCK) {
@@ -121,7 +105,7 @@ public class ModernCombatHandler {
     @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent evt) {
 
-        if (ConfigValueHolder.MODERN_COMBAT.fastSwitching && evt.phase == TickEvent.Phase.START) {
+        if (ConfigBuildHandler.FAST_SWITCHING.get() && evt.phase == TickEvent.Phase.START) {
 
             // switching items no longer triggers the attack cooldown
             PlayerEntity player = evt.player;
@@ -137,7 +121,7 @@ public class ModernCombatHandler {
     @SubscribeEvent
     public void onLivingKnockBack(final LivingKnockBackEvent evt) {
 
-        if (!ConfigValueHolder.MODERN_COMBAT.upwardsKnockback) {
+        if (!ConfigBuildHandler.UPWARDS_KNOCKBACK.get()) {
 
             return;
         }
@@ -165,7 +149,7 @@ public class ModernCombatHandler {
         // remove shield activation delay
         if (evt.getItem().getItem() instanceof ShieldItem) {
 
-            evt.setDuration(evt.getItem().getUseDuration() + ConfigValueHolder.MODERN_COMBAT.shieldDelay);
+            evt.setDuration(evt.getItem().getUseDuration() + ConfigBuildHandler.SHIELD_DELAY.get() - 5);
         }
     }
 
@@ -191,7 +175,7 @@ public class ModernCombatHandler {
             Item item = stack.getItem();
             if (useDuration.test(item.getUseDuration(stack))) {
 
-                Double delay = ConfigValueHolder.MODERN_COMBAT.itemDelay.get(item);
+                Double delay = ConfigSyncManager.itemDelay.get(item);
                 if (delay != null) {
 
                     ((PlayerEntity) entityLiving).getCooldownTracker().setCooldown(item, delay.intValue());

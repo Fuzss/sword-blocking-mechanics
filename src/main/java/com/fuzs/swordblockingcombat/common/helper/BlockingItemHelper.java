@@ -1,6 +1,7 @@
 package com.fuzs.swordblockingcombat.common.helper;
 
-import com.fuzs.swordblockingcombat.config.ConfigValueHolder;
+import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
+import com.fuzs.swordblockingcombat.config.ConfigSyncManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
@@ -16,7 +17,7 @@ public class BlockingItemHelper {
 
     public void damageSword(PlayerEntity player, float damage) {
 
-        if (ConfigValueHolder.SWORD_BLOCKING.damageSword && damage >= 3.0F) {
+        if (ConfigBuildHandler.DAMAGE_SWORD.get() && damage >= 3.0F) {
 
             ItemStack stack = player.getActiveItemStack();
             Hand hand = player.getActiveHand();
@@ -38,7 +39,7 @@ public class BlockingItemHelper {
 
     public boolean isActiveItemStackActuallyBlocking(PlayerEntity player) {
 
-        boolean ready = this.swordUseDuration - player.getItemInUseCount() >= ConfigValueHolder.SWORD_BLOCKING.blockDelay;
+        boolean ready = this.swordUseDuration - player.getItemInUseCount() >= ConfigBuildHandler.BLOCK_DELAY.get();
         return ready && isActiveItemStackBlocking(player);
     }
 
@@ -50,7 +51,7 @@ public class BlockingItemHelper {
     public static boolean canItemStackBlock(ItemStack stack) {
 
         Item item = stack.getItem();
-        if (ConfigValueHolder.SWORD_BLOCKING.exclude.contains(item)) {
+        if (ConfigSyncManager.exclude.contains(item)) {
             return false;
         }
 
@@ -58,7 +59,7 @@ public class BlockingItemHelper {
             return true;
         }
 
-        return ConfigValueHolder.SWORD_BLOCKING.include.contains(item);
+        return ConfigSyncManager.include.contains(item);
     }
 
 }

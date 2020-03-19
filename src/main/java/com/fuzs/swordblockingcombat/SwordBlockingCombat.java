@@ -1,12 +1,15 @@
 package com.fuzs.swordblockingcombat;
 
-import com.fuzs.swordblockingcombat.client.GrassSwingHandler;
-import com.fuzs.swordblockingcombat.client.NoCooldownHandler;
-import com.fuzs.swordblockingcombat.client.RenderBlockingHandler;
-import com.fuzs.swordblockingcombat.common.ClassicCombatHandler;
-import com.fuzs.swordblockingcombat.common.CombatFoodHandler;
-import com.fuzs.swordblockingcombat.common.InitiateBlockHandler;
-import com.fuzs.swordblockingcombat.common.ModernCombatHandler;
+import com.fuzs.materialmaster.api.PropertyProviderUtils;
+import com.fuzs.swordblockingcombat.client.handler.GrassSwingHandler;
+import com.fuzs.swordblockingcombat.client.handler.NoCooldownHandler;
+import com.fuzs.swordblockingcombat.client.handler.RenderBlockingHandler;
+import com.fuzs.swordblockingcombat.common.CombatPropertyProvider;
+import com.fuzs.swordblockingcombat.common.handler.ClassicCombatHandler;
+import com.fuzs.swordblockingcombat.common.handler.CombatFoodHandler;
+import com.fuzs.swordblockingcombat.common.handler.InitiateBlockHandler;
+import com.fuzs.swordblockingcombat.common.handler.ModernCombatHandler;
+import com.fuzs.swordblockingcombat.common.BlockingPropertyProvider;
 import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
 import com.fuzs.swordblockingcombat.config.ConfigSyncManager;
 import net.minecraftforge.common.MinecraftForge;
@@ -35,11 +38,13 @@ public class SwordBlockingCombat {
 
         // config setup
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigBuildHandler.SPEC, MODID + ".toml");
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(new ConfigSyncManager()::onModConfig);
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent evt) {
 
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(new ConfigSyncManager()::onModConfig);
+        PropertyProviderUtils.registerProvider(new BlockingPropertyProvider());
+        PropertyProviderUtils.registerProvider(new CombatPropertyProvider());
         // sword blocking
         MinecraftForge.EVENT_BUS.register(new InitiateBlockHandler());
         // food buffs

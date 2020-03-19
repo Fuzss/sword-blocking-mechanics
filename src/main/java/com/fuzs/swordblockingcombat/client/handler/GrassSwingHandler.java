@@ -1,6 +1,6 @@
-package com.fuzs.swordblockingcombat.client;
+package com.fuzs.swordblockingcombat.client.handler;
 
-import com.fuzs.swordblockingcombat.config.ConfigValueHolder;
+import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntitySize;
@@ -29,14 +29,14 @@ public class GrassSwingHandler {
     @SubscribeEvent
     public void onClientTick(final TickEvent.ClientTickEvent evt) {
 
-        if (ConfigValueHolder.MODERN_COMBAT.holdAttack && evt.phase == TickEvent.Phase.END) {
+        if (ConfigBuildHandler.HOLD_ATTACK.get() && evt.phase == TickEvent.Phase.END) {
 
             if (this.leftClickCounter <= 0) {
 
                 if (mc.gameSettings.keyBindAttack.isKeyDown() && mc.objectMouseOver != null && mc.objectMouseOver.getType() != RayTraceResult.Type.MISS) {
 
                     // same tick value for checking attack strength as in PlayerEntity#attackTargetEntityWithCurrentItem
-                    if (ConfigValueHolder.CLASSIC_COMBAT.removeCooldown || mc.player != null && mc.player.getCooledAttackStrength(0.5F) == 1.0F) {
+                    if (ConfigBuildHandler.REMOVE_ATTACK_COOLDOWN.get() || mc.player != null && mc.player.getCooledAttackStrength(0.5F) == 1.0F) {
 
                         mc.clickMouse();
                         this.leftClickCounter = 10;
@@ -73,10 +73,10 @@ public class GrassSwingHandler {
 
             Entity entity = ((EntityRayTraceResult) mc.objectMouseOver).getEntity();
             EntitySize size = entity.getSize(entity.getPose());
-            if ((!ConfigValueHolder.MODERN_COMBAT.coyoteSmall || size.width * size.width * size.height < 1.0F) && entity.isAlive()) {
+            if ((!ConfigBuildHandler.COYOTE_SMALL.get() || size.width * size.width * size.height < 1.0F) && entity.isAlive()) {
 
                 objectMouseOver = (EntityRayTraceResult) mc.objectMouseOver;
-                objectMouseOverTimer = ConfigValueHolder.MODERN_COMBAT.coyoteTimer;
+                objectMouseOverTimer = ConfigBuildHandler.COYOTE_TIME.get();
                 pointedEntity = mc.pointedEntity;
             }
         } else if (objectMouseOverTimer > 0 && objectMouseOver.getEntity().isAlive()) {
@@ -95,7 +95,7 @@ public class GrassSwingHandler {
             cooldown = ((PlayerEntity) entity).getCooledAttackStrength(partialTickTime);
         }
 
-        return ((swingProgress > 0.4F) && ((ConfigValueHolder.CLASSIC_COMBAT.removeCooldown ? swingProgress : cooldown) < 0.95F)) ?
+        return ((swingProgress > 0.4F) && ((ConfigBuildHandler.REMOVE_ATTACK_COOLDOWN.get() ? swingProgress : cooldown) < 0.95F)) ?
                 (0.4F + (0.6F * (float) Math.pow((swingProgress - 0.4F) / 0.6F, 4.0))) : swingProgress;
     }
 

@@ -1,6 +1,6 @@
-package com.fuzs.swordblockingcombat.common;
+package com.fuzs.swordblockingcombat.common.handler;
 
-import com.fuzs.swordblockingcombat.config.ConfigValueHolder;
+import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
@@ -20,7 +20,7 @@ public class ClassicCombatHandler {
     public void onAttackEntity(final AttackEntityEvent evt) {
 
         // disable cooldown right before every attack
-        if (ConfigValueHolder.CLASSIC_COMBAT.removeCooldown) {
+        if (ConfigBuildHandler.REMOVE_ATTACK_COOLDOWN.get()) {
 
             evt.getPlayer().ticksSinceLastSwing = (int) Math.ceil(evt.getPlayer().getCooldownPeriod());
         }
@@ -51,7 +51,7 @@ public class ClassicCombatHandler {
 
     public static void doSweeping(boolean flag, PlayerEntity player, Entity targetEntity, float damage) {
 
-        if (flag && (!ConfigValueHolder.CLASSIC_COMBAT.sweepingRequired || EnchantmentHelper.getSweepingDamageRatio(player) > 0)) {
+        if (flag && (!ConfigBuildHandler.SWEEPING_REQUIRED.get() || EnchantmentHelper.getSweepingDamageRatio(player) > 0)) {
 
             float f3 = 1.0F + EnchantmentHelper.getSweepingDamageRatio(player) * damage;
             for (LivingEntity livingentity : player.world.getEntitiesWithinAABB(LivingEntity.class, targetEntity.getBoundingBox().grow(1.0D, 0.25D, 1.0D))) {
@@ -64,7 +64,7 @@ public class ClassicCombatHandler {
             }
 
             player.world.playSound(null, player.getPosX(), player.getPosY(), player.getPosZ(), SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, player.getSoundCategory(), 1.0F, 1.0F);
-            if (!ConfigValueHolder.CLASSIC_COMBAT.noSweepingSmoke) {
+            if (!ConfigBuildHandler.NO_SWEEPING_SMOKE.get()) {
 
                 player.spawnSweepParticles();
             }

@@ -1,6 +1,6 @@
-package com.fuzs.swordblockingcombat.common;
+package com.fuzs.swordblockingcombat.common.handler;
 
-import com.fuzs.swordblockingcombat.config.ConfigValueHolder;
+import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.FoodStats;
@@ -16,7 +16,7 @@ public class CombatFoodHandler {
     public void onEntityJoinWorld(final EntityJoinWorldEvent evt) {
 
         // replace food stats with one having some tweaks in the tick method
-        if (ConfigValueHolder.FOOD_BUFFS.foodTicker.getId() != 0 && evt.getEntity() instanceof PlayerEntity) {
+        if (ConfigBuildHandler.FOOD_TICKER.get().getId() != 0 && evt.getEntity() instanceof PlayerEntity) {
             ((PlayerEntity) evt.getEntity()).foodStats = new CombatFoodStats(((PlayerEntity) evt.getEntity()).foodStats);
         }
     }
@@ -44,15 +44,15 @@ public class CombatFoodHandler {
                 }
             }
 
-            int id = ConfigValueHolder.FOOD_BUFFS.foodTicker.getId();
-            int delay = id == 2 ? 60 : id == 3 ? ConfigValueHolder.FOOD_BUFFS.regenDelay : 80;
-            int threshold = id == 2 ? 6 : id == 3 ? ConfigValueHolder.FOOD_BUFFS.regenThreshold : 18;
+            int id = ConfigBuildHandler.FOOD_TICKER.get().getId();
+            int delay = id == 2 ? 60 : id == 3 ? ConfigBuildHandler.REGEN_DELAY.get() : 80;
+            int threshold = id == 2 ? 6 : id == 3 ? ConfigBuildHandler.REGEN_THRESHOLD.get() : 18;
             boolean naturalRegen = player.world.getGameRules().getBoolean(GameRules.NATURAL_REGENERATION);
             if (naturalRegen && this.foodLevel >= threshold && player.shouldHeal()) {
                 ++this.foodTimer;
                 if (this.foodTimer >= delay) {
                     player.heal(1.0F);
-                    if (id == 2 || id == 3 && ConfigValueHolder.FOOD_BUFFS.drainFood) {
+                    if (id == 2 || id == 3 && ConfigBuildHandler.DRAIN_FOOD.get()) {
                         this.foodLevel = Math.max(this.foodLevel - 1, 0);
                     } else {
                         this.addExhaustion(3.0F); // is 6.0F in current vanilla

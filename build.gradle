@@ -58,6 +58,8 @@ dependencies {
 
     minecraft "net.minecraftforge:forge:${project.ext.mc}-${loader_version}"
 
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
 }
 
 processResources {

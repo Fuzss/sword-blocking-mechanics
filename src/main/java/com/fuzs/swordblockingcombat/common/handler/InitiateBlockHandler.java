@@ -1,7 +1,7 @@
-package com.fuzs.swordblockingcombat.common;
+package com.fuzs.swordblockingcombat.common.handler;
 
 import com.fuzs.swordblockingcombat.common.helper.BlockingItemHelper;
-import com.fuzs.swordblockingcombat.config.ConfigValueHolder;
+import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
@@ -63,7 +63,7 @@ public class InitiateBlockHandler {
     @SubscribeEvent
     public void onLivingAttack(final LivingAttackEvent evt) {
 
-        if (ConfigValueHolder.SWORD_BLOCKING.deflectProjectiles && evt.getEntityLiving() instanceof PlayerEntity && evt.getSource().getImmediateSource() instanceof AbstractArrowEntity
+        if (ConfigBuildHandler.DEFLECT_PROJECTILES.get() && evt.getEntityLiving() instanceof PlayerEntity && evt.getSource().getImmediateSource() instanceof AbstractArrowEntity
                 && this.blockingHelper.isActiveItemStackActuallyBlocking((PlayerEntity) evt.getEntityLiving())) {
 
             evt.setCanceled(true);
@@ -85,7 +85,7 @@ public class InitiateBlockHandler {
 
                 if (!evt.getSource().isUnblockable()) {
 
-                    float reducedAmount = 1.0F + evt.getAmount() * (1.0F - ConfigValueHolder.SWORD_BLOCKING.blocked);
+                    float reducedAmount = 1.0F + evt.getAmount() * (1.0F - ConfigBuildHandler.BLOCKED_AMOUNT.get().floatValue());
                     if (reducedAmount <= 1.0F) {
                         reducedAmount = 0.0F;
                     }

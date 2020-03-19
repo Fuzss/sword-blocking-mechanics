@@ -1,7 +1,7 @@
-package com.fuzs.swordblockingcombat.client;
+package com.fuzs.swordblockingcombat.client.handler;
 
 import com.fuzs.swordblockingcombat.common.helper.BlockingItemHelper;
-import com.fuzs.swordblockingcombat.config.ConfigValueHolder;
+import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
@@ -91,7 +91,7 @@ public class RenderBlockingHandler {
     public void onPushOutOfBlocks(final PlayerSPPushOutOfBlocksEvent evt) {
 
         ClientPlayerEntity player = (ClientPlayerEntity) evt.getPlayer();
-        float movementModifier = ConfigValueHolder.SWORD_BLOCKING.noSlow;
+        double movementModifier = ConfigBuildHandler.WALKING_MODIFIER.get();
         if (movementModifier != 0.2F && !player.isPassenger() && BlockingItemHelper.isActiveItemStackBlocking(player)) {
 
             player.movementInput.moveStrafe *= 5.0F * movementModifier;
