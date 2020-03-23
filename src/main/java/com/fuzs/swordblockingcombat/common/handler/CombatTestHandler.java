@@ -1,7 +1,8 @@
 package com.fuzs.swordblockingcombat.common.handler;
 
+import com.fuzs.materialmaster.api.SyncProvider;
 import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
-import com.fuzs.swordblockingcombat.config.ConfigSyncManager;
+import com.google.common.collect.Maps;
 import net.minecraft.block.DispenserBlock;
 import net.minecraft.dispenser.IPosition;
 import net.minecraft.dispenser.ProjectileDispenseBehavior;
@@ -12,10 +13,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.entity.projectile.ProjectileItemEntity;
 import net.minecraft.entity.projectile.TridentEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.ShieldItem;
+import net.minecraft.item.*;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.*;
 import net.minecraft.world.World;
@@ -28,11 +26,15 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import javax.annotation.Nonnull;
+import java.util.Map;
 import java.util.function.Predicate;
 
-public class ModernCombatHandler {
+public class CombatTestHandler {
 
-    public ModernCombatHandler() {
+    @SyncProvider(path = {"combat_test", "Item Delay List"})
+    public static Map<Item, Double> itemDelay = Maps.newHashMap();
+
+    public CombatTestHandler() {
 
         if (ConfigBuildHandler.DISPENSE_TRIDENT.get()) {
 
@@ -147,9 +149,9 @@ public class ModernCombatHandler {
     public void onItemUseStart(final LivingEntityUseItemEvent.Start evt) {
 
         // remove shield activation delay
-        if (evt.getItem().getItem() instanceof ShieldItem) {
+        if (!ConfigBuildHandler.SHIELD_DELAY.get() && evt.getItem().getUseAction() == UseAction.BLOCK) {
 
-            evt.setDuration(evt.getItem().getUseDuration() + ConfigBuildHandler.SHIELD_DELAY.get() - 5);
+            evt.setDuration(evt.getItem().getUseDuration() - 5);
         }
     }
 
@@ -175,7 +177,7 @@ public class ModernCombatHandler {
             Item item = stack.getItem();
             if (useDuration.test(item.getUseDuration(stack))) {
 
-                Double delay = ConfigSyncManager.itemDelay.get(item);
+                Double delay = itemDelay.get(item);
                 if (delay != null) {
 
                     ((PlayerEntity) entityLiving).getCooldownTracker().setCooldown(item, delay.intValue());

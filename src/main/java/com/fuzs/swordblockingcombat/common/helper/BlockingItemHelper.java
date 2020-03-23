@@ -1,19 +1,34 @@
 package com.fuzs.swordblockingcombat.common.helper;
 
+import com.fuzs.materialmaster.api.SyncProvider;
 import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
-import com.fuzs.swordblockingcombat.config.ConfigSyncManager;
+import com.google.common.collect.Sets;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.item.SwordItem;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
+
+import java.util.Set;
 
 public class BlockingItemHelper {
 
-    public final int swordUseDuration = 72000;
+    @SyncProvider(path = {"sword_blocking", "Blocking Exclusion List"})
+    public static Set<Item> exclude = Sets.newHashSet();
+    @SyncProvider(path = {"sword_blocking", "Blocking Inclusion List"})
+    public static Set<Item> include = Sets.newHashSet();
+
+    public static final int SWORD_USE_DURATION = 72000;
+    private Item activeItem = Items.AIR;
+    private boolean activeBlock;
 
     public void damageSword(PlayerEntity player, float damage) {
 
@@ -37,29 +52,65 @@ public class BlockingItemHelper {
         }
     }
 
-    public boolean isActiveItemStackActuallyBlocking(PlayerEntity player) {
+    public int getBlockUseDuration(PlayerEntity player) {
 
-        boolean ready = this.swordUseDuration - player.getItemInUseCount() >= ConfigBuildHandler.BLOCK_DELAY.get();
-        return ready && isActiveItemStackBlocking(player);
+        return SWORD_USE_DURATION - player.getItemInUseCount();
     }
 
-    public static boolean isActiveItemStackBlocking(PlayerEntity player) {
+    public boolean isActiveItemStackBlocking(PlayerEntity player) {
 
-        return player.isHandActive() && canItemStackBlock(player.getActiveItemStack());
+        return player.isHandActive() && this.canItemStackBlock(player.getActiveItemStack());
     }
 
-    public static boolean canItemStackBlock(ItemStack stack) {
+    public boolean canItemStackBlock(ItemStack stack) {
 
         Item item = stack.getItem();
-        if (ConfigSyncManager.exclude.contains(item)) {
-            return false;
+        if (item != this.activeItem) {
+
+            this.activeItem = item;
+            if (exclude.contains(item)) {
+
+                this.activeBlock = false;
+            } else if (item instanceof SwordItem) {
+
+                this.activeBlock = true;
+            } else {
+
+                this.activeBlock = include.contains(item);
+            }
         }
 
-        if (item instanceof SwordItem) {
-            return true;
+        return this.activeBlock;
+    }
+
+    /**
+     * modeled after net.minecraft.entity.LivingEntity#canBlockDamageSource
+     */
+    public boolean canBlockDamageSource(PlayerEntity player, DamageSource damageSourceIn) {
+
+        Entity entity = damageSourceIn.getImmediateSource();
+        if (entity instanceof AbstractArrowEntity) {
+
+            AbstractArrowEntity abstractarrowentity = (AbstractArrowEntity)entity;
+            if (abstractarrowentity.getPierceLevel() > 0) {
+
+                return false;
+            }
         }
 
-        return ConfigSyncManager.include.contains(item);
+        if (!damageSourceIn.isUnblockable()) {
+
+            Vec3d vec3d2 = damageSourceIn.getDamageLocation();
+            if (vec3d2 != null) {
+
+                Vec3d vec3d = player.getLook(1.0F);
+                Vec3d vec3d1 = vec3d2.subtractReverse(player.getPositionVec()).normalize();
+                vec3d1 = new Vec3d(vec3d1.x, 0.0D, vec3d1.z);
+                return vec3d1.dotProduct(vec3d) < 0.0D;
+            }
+        }
+
+        return false;
     }
 
 }

@@ -2,7 +2,7 @@ package com.fuzs.swordblockingcombat.asm;
 
 import com.fuzs.swordblockingcombat.client.handler.GrassSwingHandler;
 import com.fuzs.swordblockingcombat.common.handler.ClassicCombatHandler;
-import com.fuzs.swordblockingcombat.common.handler.ModernCombatHandler;
+import com.fuzs.swordblockingcombat.common.handler.CombatTestHandler;
 import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -59,7 +59,7 @@ public class Hooks {
 
         if (ConfigBuildHandler.BOOST_IMPALING.get()) {
 
-            damage += ModernCombatHandler.addEnchantmentDamage(player, targetEntity);
+            damage += CombatTestHandler.addEnchantmentDamage(player, targetEntity);
         }
 
         return damage;
@@ -82,7 +82,7 @@ public class Hooks {
     public static float getSprintingLevel(float level) {
 
         float f = ConfigBuildHandler.SPRINTING_LEVEL.get();
-        return f != 3.0F ? f : level;
+        return f != 6.0F ? f : level;
     }
 
     /**

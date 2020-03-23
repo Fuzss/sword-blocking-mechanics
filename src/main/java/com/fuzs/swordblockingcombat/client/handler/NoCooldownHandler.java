@@ -1,14 +1,16 @@
 package com.fuzs.swordblockingcombat.client.handler;
 
 import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
+import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.screen.VideoSettingsScreen;
 import net.minecraft.client.gui.widget.button.OptionButton;
 import net.minecraft.client.renderer.FirstPersonRenderer;
 import net.minecraft.client.settings.AbstractOption;
+import net.minecraft.client.settings.AttackIndicatorStatus;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -24,6 +26,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 
 @OnlyIn(Dist.CLIENT)
 public class NoCooldownHandler {
@@ -33,52 +36,48 @@ public class NoCooldownHandler {
     private final Minecraft mc = Minecraft.getInstance();
     private final FirstPersonRenderer itemRenderer = new FirstPersonRenderer(this.mc);
 
-    private Entity pointedEntity;
     private int ticksSinceLastSwing;
+    private AttackIndicatorStatus attackIndicator = AttackIndicatorStatus.OFF;
 
     @SuppressWarnings("unused")
     @SubscribeEvent
-    public void onRenderGameOverlay(final RenderGameOverlayEvent.Pre evt) {
+    public void onRenderGameOverlay(final RenderGameOverlayEvent evt) {
 
-        boolean hide = ConfigBuildHandler.HIDE_ATTACK_INDICATOR.get();
-        if ((ConfigBuildHandler.REMOVE_ATTACK_COOLDOWN.get() || hide) && this.mc.player != null) {
+        if (evt.getType() != RenderGameOverlayEvent.ElementType.ALL) {
 
-            boolean crosshairs = evt.getType() == RenderGameOverlayEvent.ElementType.CROSSHAIRS;
-            if (crosshairs || evt.getType() == RenderGameOverlayEvent.ElementType.HOTBAR) {
+            return;
+        }
 
-                // disable attack indicator from rendering
-                this.ticksSinceLastSwing = this.mc.player.ticksSinceLastSwing;
-                this.mc.player.ticksSinceLastSwing = (int) Math.ceil(this.mc.player.getCooldownPeriod());
+        if (evt instanceof RenderGameOverlayEvent.Pre) {
 
-                // disable attack indicator from rendering when pointing at a living entity
-                if (hide && crosshairs) {
+            this.modifyValues(player -> {
 
-                    this.pointedEntity = this.mc.pointedEntity;
-                    this.mc.pointedEntity = null;
-                }
-            }
+                this.ticksSinceLastSwing = player.ticksSinceLastSwing;
+                player.ticksSinceLastSwing = (int) Math.ceil(player.getCooldownPeriod());
+            }, gamesettings -> {
+
+                this.attackIndicator = gamesettings.attackIndicator;
+                gamesettings.attackIndicator = AttackIndicatorStatus.OFF;
+            });
+        } else if (evt instanceof RenderGameOverlayEvent.Post) {
+
+            this.modifyValues(player -> player.ticksSinceLastSwing = this.ticksSinceLastSwing,
+                    gamesettings -> gamesettings.attackIndicator = this.attackIndicator);
         }
     }
 
-    @SuppressWarnings("unused")
-    @SubscribeEvent
-    public void onRenderGameOverlay(final RenderGameOverlayEvent.Post evt) {
+    private void modifyValues(Consumer<ClientPlayerEntity> noCooldown, Consumer<GameSettings> hideIndicator) {
 
-        boolean hide = ConfigBuildHandler.HIDE_ATTACK_INDICATOR.get();
-        if ((ConfigBuildHandler.REMOVE_ATTACK_COOLDOWN.get() || hide) && this.mc.player != null) {
+        if (this.mc.player != null && ConfigBuildHandler.REMOVE_ATTACK_COOLDOWN.get()) {
 
-            boolean crosshairs = evt.getType() == RenderGameOverlayEvent.ElementType.CROSSHAIRS;
-            if (crosshairs || evt.getType() == RenderGameOverlayEvent.ElementType.HOTBAR) {
+            // disable attack indicator from rendering
+            noCooldown.accept(this.mc.player);
+        }
 
-                // disable attack indicator from rendering
-                this.mc.player.ticksSinceLastSwing = this.ticksSinceLastSwing;
+        if (ConfigBuildHandler.HIDE_ATTACK_INDICATOR.get()) {
 
-                // disable attack indicator from rendering when pointing at a living entity
-                if (hide && crosshairs) {
-
-                    this.mc.pointedEntity = this.pointedEntity;
-                }
-            }
+            // disable attack indicator from rendering when pointing at a living entity
+            hideIndicator.accept(this.mc.gameSettings);
         }
     }
 
@@ -154,7 +153,7 @@ public class NoCooldownHandler {
 
             if (this.mc.world != null && this.mc.player != null && !this.mc.isGamePaused()) {
 
-                // calculate equipped progress in our own item renderer where it's not reset occasionally
+                // calculate equipped progress in a separate item renderer where it's not reset occasionally
                 this.mc.player.ticksSinceLastSwing = (int) Math.ceil(this.mc.player.getCooldownPeriod());
                 this.itemRenderer.tick();
             }

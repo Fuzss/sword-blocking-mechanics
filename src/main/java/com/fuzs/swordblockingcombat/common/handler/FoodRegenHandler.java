@@ -9,7 +9,7 @@ import net.minecraft.world.GameRules;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-public class CombatFoodHandler {
+public class FoodRegenHandler {
 
     @SuppressWarnings("unused")
     @SubscribeEvent
@@ -36,10 +36,13 @@ public class CombatFoodHandler {
 
             Difficulty difficulty = player.world.getDifficulty();
             if (this.foodExhaustionLevel > 4.0F) {
+
                 this.foodExhaustionLevel -= 4.0F;
                 if (this.foodSaturationLevel > 0.0F) {
+
                     this.foodSaturationLevel = Math.max(this.foodSaturationLevel - 1.0F, 0.0F);
                 } else if (difficulty != Difficulty.PEACEFUL) {
+
                     this.foodLevel = Math.max(this.foodLevel - 1, 0);
                 }
             }
@@ -49,20 +52,27 @@ public class CombatFoodHandler {
             int threshold = id == 2 ? 6 : id == 3 ? ConfigBuildHandler.REGEN_THRESHOLD.get() : 18;
             boolean naturalRegen = player.world.getGameRules().getBoolean(GameRules.NATURAL_REGENERATION);
             if (naturalRegen && this.foodLevel >= threshold && player.shouldHeal()) {
+
                 ++this.foodTimer;
                 if (this.foodTimer >= delay) {
+
                     player.heal(1.0F);
                     if (id == 2 || id == 3 && ConfigBuildHandler.DRAIN_FOOD.get()) {
+
                         this.foodLevel = Math.max(this.foodLevel - 1, 0);
                     } else {
+
                         this.addExhaustion(3.0F); // is 6.0F in current vanilla
                     }
                     this.foodTimer = 0;
                 }
             } else if (this.foodLevel <= 0) {
+
                 ++this.foodTimer;
                 if (this.foodTimer >= delay) {
+
                     if (player.getHealth() > 10.0F || difficulty == Difficulty.HARD || player.getHealth() > 1.0F && difficulty == Difficulty.NORMAL) {
+
                         player.attackEntityFrom(DamageSource.STARVE, 1.0F);
                     }
 
@@ -72,7 +82,6 @@ public class CombatFoodHandler {
                 this.foodTimer = 0;
             }
         }
-
     }
 
 }

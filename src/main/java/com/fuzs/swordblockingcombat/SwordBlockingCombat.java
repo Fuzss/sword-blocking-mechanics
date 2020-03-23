@@ -4,14 +4,11 @@ import com.fuzs.materialmaster.api.PropertyProviderUtils;
 import com.fuzs.swordblockingcombat.client.handler.GrassSwingHandler;
 import com.fuzs.swordblockingcombat.client.handler.NoCooldownHandler;
 import com.fuzs.swordblockingcombat.client.handler.RenderBlockingHandler;
-import com.fuzs.swordblockingcombat.common.CombatPropertyProvider;
 import com.fuzs.swordblockingcombat.common.handler.ClassicCombatHandler;
-import com.fuzs.swordblockingcombat.common.handler.CombatFoodHandler;
+import com.fuzs.swordblockingcombat.common.handler.FoodRegenHandler;
 import com.fuzs.swordblockingcombat.common.handler.InitiateBlockHandler;
-import com.fuzs.swordblockingcombat.common.handler.ModernCombatHandler;
-import com.fuzs.swordblockingcombat.common.BlockingPropertyProvider;
+import com.fuzs.swordblockingcombat.common.handler.CombatTestHandler;
 import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
-import com.fuzs.swordblockingcombat.config.ConfigSyncManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -35,6 +32,7 @@ public class SwordBlockingCombat {
         // general setup
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onCommonSetup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
+        PropertyProviderUtils.registerModProvider();
 
         // config setup
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigBuildHandler.SPEC, MODID + ".toml");
@@ -42,17 +40,14 @@ public class SwordBlockingCombat {
 
     private void onCommonSetup(final FMLCommonSetupEvent evt) {
 
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(new ConfigSyncManager()::onModConfig);
-        PropertyProviderUtils.registerProvider(new BlockingPropertyProvider());
-        PropertyProviderUtils.registerProvider(new CombatPropertyProvider());
         // sword blocking
         MinecraftForge.EVENT_BUS.register(new InitiateBlockHandler());
         // food buffs
-        MinecraftForge.EVENT_BUS.register(new CombatFoodHandler());
+        MinecraftForge.EVENT_BUS.register(new FoodRegenHandler());
         // classic combat
         MinecraftForge.EVENT_BUS.register(new ClassicCombatHandler());
-        // modern combat
-        MinecraftForge.EVENT_BUS.register(new ModernCombatHandler());
+        // combat test
+        MinecraftForge.EVENT_BUS.register(new CombatTestHandler());
     }
 
     private void onClientSetup(final FMLClientSetupEvent evt) {

@@ -12,7 +12,7 @@ loaderVersion="[${loader_version},)"
 [[dependencies.swordblockingcombat]]
     modId="materialmaster"
     mandatory=true
-    versionRange="[1.0,)"
+    versionRange="[1.1.1,)"
     ordering="NONE"
     side="BOTH"
 
