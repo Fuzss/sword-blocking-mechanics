@@ -26,6 +26,8 @@ public class ConfigBuildHandler {
     public static final ForgeConfigSpec.BooleanValue SWEEPING_REQUIRED;
     public static final ForgeConfigSpec.BooleanValue NO_SWEEPING_SMOKE;
     public static final ForgeConfigSpec.BooleanValue OLD_DAMAGE_VALUES;
+    public static final ForgeConfigSpec.BooleanValue RED_ARMOR;
+    public static final ForgeConfigSpec.BooleanValue OLD_FISHING_ROD;
     // combat test
     public static final ForgeConfigSpec.BooleanValue NO_PROJECTILE_RESISTANCE;
     public static final ForgeConfigSpec.BooleanValue SNOWBALL_STACKSIZE;
@@ -75,6 +77,8 @@ public class ConfigBuildHandler {
         SWEEPING_REQUIRED = ConfigBuildHandler.BUILDER.comment("Is the sweeping edge enchantment required to perform a sweep attack.").define("Require Sweeping Edge", true);
         NO_SWEEPING_SMOKE = ConfigBuildHandler.BUILDER.comment("Prevent particles created by a sweep attack from appearing.").define("No Sweeping Particles", false);
         OLD_DAMAGE_VALUES = ConfigBuildHandler.BUILDER.comment("Revert weapon and tool attack damage to old values.").define("Old Damage Values", true);
+        RED_ARMOR = ConfigBuildHandler.BUILDER.comment("Armor on entities turns red when they receive damage.").define("Armor Shows Hurt", true);
+        OLD_FISHING_ROD = ConfigBuildHandler.BUILDER.comment("Fishing bobbers deal knockback upon hitting an entity, also entities being pulled in are slightly propelled upwards.").define("Old Fishing Bobber Behaviour", true);
         BUILDER.pop();
 
         BUILDER.comment("Introduces various tweaks from Combat Test Snapshots.");

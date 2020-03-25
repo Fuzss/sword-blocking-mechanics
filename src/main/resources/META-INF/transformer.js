@@ -122,6 +122,50 @@ function initializeCoreMod() {
                 }], classNode, "LivingEntity");
                 return classNode;
             }
+        },
+
+        // armor layer shows damage
+        'armor_layer_patch': {
+            'target': {
+                'type': 'CLASS',
+                'name': 'net.minecraft.client.renderer.entity.layers.ArmorLayer'
+            },
+            'transformer': function(classNode) {
+                patchMethod([{
+                    obfName: "func_229129_a_",
+                    name: "renderArmorPart",
+                    desc: "(Lcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/client/renderer/IRenderTypeBuffer;Lnet/minecraft/entity/LivingEntity;FFFFFFLnet/minecraft/inventory/EquipmentSlotType;I)V",
+                    patches: [patchArmorLayerRenderArmorPart]
+                }, {
+                    obfName: "renderArmor",
+                    name: "renderArmor",
+                    desc: "(Lcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/client/renderer/IRenderTypeBuffer;IZLnet/minecraft/client/renderer/entity/model/BipedModel;FFFLnet/minecraft/util/ResourceLocation;)V",
+                    patches: [patchArmorLayerRenderArmor]
+                }], classNode, "ArmorLayer");
+                return classNode;
+            }
+        },
+
+        // old fishing bobber behaviour
+        'fishing_bobber_entity_patch': {
+            'target': {
+                'type': 'CLASS',
+                'name': 'net.minecraft.entity.projectile.FishingBobberEntity'
+            },
+            'transformer': function(classNode) {
+                patchMethod([{
+                    obfName: "func_190624_r",
+                    name: "checkCollision",
+                    desc: "()V",
+                    patches: [patchFishingBobberEntityCheckCollision]
+                }, {
+                    obfName: "func_184527_k",
+                    name: "bringInHookedEntity",
+                    desc: "()V",
+                    patches: [patchFishingBobberEntityBringInHookedEntity]
+                }], classNode, "FishingBobberEntity");
+                return classNode;
+            }
         }
     };
 }
@@ -182,6 +226,78 @@ function patchInstructions(method, filter, action, obfuscated) {
     }
 }
 
+var patchFishingBobberEntityBringInHookedEntity = {
+    filter: function(node, obfuscated) {
+        if (matchesMethod(node, "net/minecraft/entity/Entity", obfuscated ? "func_213322_ci" : "getMotion", "()Lnet/minecraft/util/math/Vec3d;")) {
+            var nextNode = node.getNext();
+            if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.ALOAD) && nextNode.var.equals(1)) {
+                return nextNode;
+            }
+        }
+    },
+    action: function(node, instructions, obfuscated) {
+        var insnList = new InsnList();
+        insnList.add(generateHook("getCaughtEntityMotion", "(Lnet/minecraft/util/math/Vec3d;)Lnet/minecraft/util/math/Vec3d;"));
+        instructions.insert(node, insnList);
+    }
+};
+
+var patchFishingBobberEntityCheckCollision = {
+    filter: function(node, obfuscated) {
+        if (node instanceof VarInsnNode && node.getOpcode().equals(Opcodes.ALOAD) && node.var.equals(0)) {
+            var nextNode = node.getNext();
+            if (matchesMethod(nextNode, "net/minecraft/entity/projectile/FishingBobberEntity", obfuscated ? "func_190622_s" : "setHookedEntity", "()V")) {
+                return nextNode;
+            }
+        }
+    },
+    action: function(node, instructions, obfuscated) {
+        var insnList = new InsnList();
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        insnList.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/entity/projectile/FishingBobberEntity", obfuscated ? "field_146042_b" : "angler", "Lnet/minecraft/entity/player/PlayerEntity;"));
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        insnList.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/entity/projectile/FishingBobberEntity", obfuscated ? "field_146043_c" : "caughtEntity", "Lnet/minecraft/entity/Entity;"));
+        insnList.add(generateHook("onFishingBobberCollision", "(Lnet/minecraft/entity/projectile/FishingBobberEntity;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/entity/Entity;)V"));
+        instructions.insert(node, insnList);
+    }
+};
+
+var patchArmorLayerRenderArmor = {
+    filter: function(node, obfuscated) {
+        if (node instanceof VarInsnNode && node.getOpcode().equals(Opcodes.ILOAD) && node.var.equals(3)) {
+            var nextNode = node.getNext();
+            // obfuscated is inverted as this is a Forge method which only has a deobfuscated name, obfuscated variable is not designed to handle such a case
+            if (matchesField(nextNode, "net/minecraft/client/renderer/texture/OverlayTexture", !obfuscated ? "field_229196_a_" : "NO_OVERLAY", "I")) {
+                return nextNode;
+            }
+        }
+    },
+    action: function(node, instructions, obfuscated) {
+        var insnList = new InsnList();
+        insnList.add(generateHook("getArmorLayerOverlay", "(I)I"));
+        instructions.insert(node, insnList);
+    }
+};
+
+var patchArmorLayerRenderArmorPart = {
+    filter: function(node, obfuscated) {
+        if (matchesMethod(node, "net/minecraft/item/ItemStack", obfuscated ? "func_77962_s" : "hasEffect", "()Z")) {
+            var nextNode = node.getNext();
+            if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.ISTORE) && nextNode.var.equals(16)) {
+                return nextNode;
+            }
+        }
+
+    },
+    action: function(node, instructions, obfuscated) {
+        var insnList = new InsnList();
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 3));
+        insnList.add(new FieldInsnNode(Opcodes.PUTSTATIC, "com/fuzs/swordblockingcombat/asm/Hooks", "armorLayerEntity", "Lnet/minecraft/entity/LivingEntity;"));
+        instructions.insert(node, insnList);
+    }
+};
+
 var patchPlayerEntityAttackEntityFrom = {
     filter: function(node, obfuscated) {
         if (node instanceof VarInsnNode && node.getOpcode().equals(Opcodes.FLOAD) && node.var.equals(2)) {
@@ -226,7 +342,7 @@ var patchGameRendererGetMouseOver1 = {
             var nextNode = node.getNext();
             if (nextNode instanceof InsnNode && nextNode.getOpcode().equals(Opcodes.FCONST_1)) {
                 nextNode = nextNode.getNext();
-                if (matchesNode(nextNode, "net/minecraft/entity/Entity", obfuscated ? "func_70676_i" : "getLook", "(F)Lnet/minecraft/util/math/Vec3d;")) {
+                if (matchesMethod(nextNode, "net/minecraft/entity/Entity", obfuscated ? "func_70676_i" : "getLook", "(F)Lnet/minecraft/util/math/Vec3d;")) {
                     return node;
                 }
             }
@@ -259,7 +375,7 @@ var patchGameRendererGetMouseOver2 = {
 
 var patchClientPlayerEntityLivingTick = {
     filter: function(node, obfuscated) {
-        if (matchesNode(node, "net/minecraft/util/FoodStats", obfuscated ? "func_75116_a" : "getFoodLevel", "()I")) {
+        if (matchesMethod(node, "net/minecraft/util/FoodStats", obfuscated ? "func_75116_a" : "getFoodLevel", "()I")) {
             var nextNode = node.getNext();
             if (nextNode instanceof InsnNode && nextNode.getOpcode().equals(Opcodes.I2F)) {
                 nextNode = nextNode.getNext();
@@ -280,7 +396,7 @@ var patchItemGetUseDuration = {
     filter: function(node, obfuscated) {
         if (node instanceof VarInsnNode && node.getOpcode().equals(Opcodes.ALOAD) && node.var.equals(0)) {
             var nextNode = getNthNode(node, 2);
-            if (matchesNode(nextNode, "net/minecraft/item/Food", obfuscated ? "func_221465_e" : "isFastEating", "()Z")) {
+            if (matchesMethod(nextNode, "net/minecraft/item/Food", obfuscated ? "func_221465_e" : "isFastEating", "()Z")) {
                 return node;
             }
         }
@@ -299,7 +415,7 @@ var patchPlayerEntityAttackTargetEntityWithCurrentItem1 = {
             var nextNode = node.getNext();
             if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.FSTORE) && nextNode.var.equals(2)) {
                 nextNode = node.getPrevious();
-                if (matchesNode(nextNode, "net/minecraft/entity/ai/attributes/IAttributeInstance", obfuscated ? "func_111126_e" : "getValue", "()D")) {
+                if (matchesMethod(nextNode, "net/minecraft/entity/ai/attributes/IAttributeInstance", obfuscated ? "func_111126_e" : "getValue", "()D")) {
                     return node;
                 }
             }
@@ -358,9 +474,19 @@ var patchToolItemHitEntity = {
     }
 };
 
+function matchesMethod(node, owner, name, desc) {
+
+    return node instanceof MethodInsnNode && matchesNode(node, owner, name, desc);
+}
+
+function matchesField(node, owner, name, desc) {
+
+    return node instanceof FieldInsnNode && matchesNode(node, owner, name, desc);
+}
+
 function matchesNode(node, owner, name, desc) {
 
-    return node instanceof MethodInsnNode && node.owner.equals(owner) && node.name.equals(name) && node.desc.equals(desc);
+    return node.owner.equals(owner) && node.name.equals(name) && node.desc.equals(desc);
 }
 
 function generateHook(name, desc) {
