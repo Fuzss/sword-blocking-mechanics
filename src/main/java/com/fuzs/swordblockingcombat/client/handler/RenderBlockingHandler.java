@@ -1,7 +1,7 @@
 package com.fuzs.swordblockingcombat.client.handler;
 
 import com.fuzs.swordblockingcombat.SwordBlockingCombat;
-import com.fuzs.swordblockingcombat.common.helper.BlockingItemHelper;
+import com.fuzs.swordblockingcombat.common.util.BlockingItemHelper;
 import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
 import com.fuzs.swordblockingcombat.config.ConfigBuildHandler.AttackIndicator;
 import com.mojang.blaze3d.matrix.MatrixStack;
@@ -50,17 +50,18 @@ public class RenderBlockingHandler {
                 PlayerModel<AbstractClientPlayerEntity> model = evt.getRenderer().getEntityModel();
                 boolean left1 = player.getActiveHand() == Hand.OFF_HAND && player.getPrimaryHand() == HandSide.RIGHT;
                 boolean left2 = player.getActiveHand() == Hand.MAIN_HAND && player.getPrimaryHand() == HandSide.LEFT;
+                BipedModel.ArmPose pose = ConfigBuildHandler.REQUIRE_BOTH_HANDS.get() ? BipedModel.ArmPose.CROSSBOW_CHARGE : BipedModel.ArmPose.BLOCK;
                 if (left1 || left2) {
 
                     if (model.leftArmPose == BipedModel.ArmPose.ITEM) {
 
-                        model.leftArmPose = BipedModel.ArmPose.BLOCK;
+                        model.leftArmPose = pose;
                     }
                 } else {
 
                     if (model.rightArmPose == BipedModel.ArmPose.ITEM) {
 
-                        model.rightArmPose = BipedModel.ArmPose.BLOCK;
+                        model.rightArmPose = pose;
                     }
                 }
             }
@@ -146,8 +147,8 @@ public class RenderBlockingHandler {
                     int width = this.mc.getMainWindow().getScaledWidth() / 2 - 8;
                     int height = this.mc.getMainWindow().getScaledHeight() / 2 - 7 + 16;
                     int i = (int) (f * 15.0F);
-                    AbstractGui.blit(width, height, 36, 0, 16, 14, 256, 256);
-                    AbstractGui.blit(width, height + i, 52, i, 16, 14 - i, 256, 256);
+                    AbstractGui.blit(width, height, 54, 0, 16, 14, 256, 256);
+                    AbstractGui.blit(width, height + i, 70, i, 16, 14 - i, 256, 256);
                 }
             }
         }

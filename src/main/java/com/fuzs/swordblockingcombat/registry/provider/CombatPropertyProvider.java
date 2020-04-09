@@ -1,4 +1,4 @@
-package com.fuzs.swordblockingcombat.common;
+package com.fuzs.swordblockingcombat.registry.provider;
 
 import com.fuzs.materialmaster.api.SyncProvider;
 import com.fuzs.materialmaster.api.provider.AbstractPropertyProvider;
@@ -11,6 +11,7 @@ import net.minecraft.item.Items;
 import java.util.Map;
 import java.util.UUID;
 
+@SuppressWarnings("unused")
 @SyncProvider
 public class CombatPropertyProvider extends AbstractPropertyProvider {
 

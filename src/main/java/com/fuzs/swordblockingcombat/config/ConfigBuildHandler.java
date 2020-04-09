@@ -17,17 +17,19 @@ public class ConfigBuildHandler {
     public static final ForgeConfigSpec.ConfigValue<List<String>> BLOCKING_EXCLUDE;
     public static final ForgeConfigSpec.ConfigValue<List<String>> BLOCKING_INCLUDE;
     public static final ForgeConfigSpec.IntValue PARRY_WINDOW;
+    public static final ForgeConfigSpec.BooleanValue REQUIRE_BOTH_HANDS;
+    public static final ForgeConfigSpec.ConfigValue<List<String>> OFF_HAND_BLACKLIST;
     // classic combat
     public static final ForgeConfigSpec.BooleanValue REMOVE_ATTACK_COOLDOWN;
     public static final ForgeConfigSpec.BooleanValue NO_COOLDOWN_TOOLTIP;
     public static final ForgeConfigSpec.BooleanValue HIDE_ATTACK_INDICATOR;
     public static final ForgeConfigSpec.BooleanValue BOOST_SHARPNESS;
-    public static final ForgeConfigSpec.BooleanValue SPRINT_WHILE_ATTACKING;
+    public static final ForgeConfigSpec.BooleanValue MORE_SPRINTING;
     public static final ForgeConfigSpec.BooleanValue SWEEPING_REQUIRED;
-    public static final ForgeConfigSpec.BooleanValue NO_SWEEPING_SMOKE;
     public static final ForgeConfigSpec.BooleanValue OLD_DAMAGE_VALUES;
     public static final ForgeConfigSpec.BooleanValue RED_ARMOR;
     public static final ForgeConfigSpec.BooleanValue OLD_FISHING_ROD;
+    public static final ForgeConfigSpec.BooleanValue NO_ATTACK_SOUNDS;
     // combat test
     public static final ForgeConfigSpec.BooleanValue NO_PROJECTILE_RESISTANCE;
     public static final ForgeConfigSpec.BooleanValue SNOWBALL_STACKSIZE;
@@ -36,6 +38,9 @@ public class ConfigBuildHandler {
     public static final ForgeConfigSpec.BooleanValue SHIELD_DELAY;
     public static final ForgeConfigSpec.BooleanValue BOOST_IMPALING;
     public static final ForgeConfigSpec.BooleanValue DISPENSE_TRIDENT;
+    public static final ForgeConfigSpec.BooleanValue RETURN_TRIDENT;
+    public static final ForgeConfigSpec.BooleanValue REPAIR_TRIDENT;
+    public static final ForgeConfigSpec.BooleanValue REMEMBER_TRIDENT;
     public static final ForgeConfigSpec.BooleanValue SWING_THROUGH_GRASS;
     public static final ForgeConfigSpec.IntValue COYOTE_TIME;
     public static final ForgeConfigSpec.BooleanValue COYOTE_SMALL;
@@ -45,7 +50,7 @@ public class ConfigBuildHandler {
     public static final ForgeConfigSpec.BooleanValue FAST_SWITCHING;
     public static final ForgeConfigSpec.BooleanValue UPWARDS_KNOCKBACK;
     public static final ForgeConfigSpec.EnumValue<AttackIndicator> SHIELD_INDICATOR;
-    public static final ForgeConfigSpec.BooleanValue HIDE_SHIELD;
+//    public static final ForgeConfigSpec.ConfigValue<List<String>> HIDE_OFFHAND;
     // food buffs
     public static final ForgeConfigSpec.EnumValue<FoodTicker> FOOD_TICKER;
     public static final ForgeConfigSpec.IntValue REGEN_DELAY;
@@ -64,7 +69,9 @@ public class ConfigBuildHandler {
         WALKING_MODIFIER = ConfigBuildHandler.BUILDER.comment("Percentage to slow down movement to while blocking.").defineInRange("Walking Modifier", 0.2, 0.0, Integer.MAX_VALUE);
         BLOCKING_EXCLUDE = ConfigBuildHandler.BUILDER.comment("Swords to exclude from blocking. Intended for modded swords that already have their own right-click function.", "Format for every entry is \"<namespace>:<path>\". Path may use single asterisk as wildcard parameter.").define("Blocking Exclusion List", Lists.newArrayList());
         BLOCKING_INCLUDE = ConfigBuildHandler.BUILDER.comment("Items to include for blocking. Intended for modded swords that don't extend vanilla swords.", "Format for every entry is \"<namespace>:<path>\". Path may use single asterisk as wildcard parameter.").define("Blocking Inclusion List", Lists.newArrayList());
-        PARRY_WINDOW = ConfigBuildHandler.BUILDER.comment("Amount of ticks after starting to block in which an attack will be completely nullified like when blocking with a shield.").defineInRange("Parry Window", 20, 0, 72000);
+        PARRY_WINDOW = ConfigBuildHandler.BUILDER.comment("Amount of ticks after starting to block in which an attack will be completely nullified like when blocking with a shield.").defineInRange("Parry Window", 10, 0, 72000);
+        REQUIRE_BOTH_HANDS = ConfigBuildHandler.BUILDER.comment("Blocking requires both hands, meaning the hand not holding the sword must be empty.").define("Require Two Hands", false);
+        OFF_HAND_BLACKLIST = ConfigBuildHandler.BUILDER.comment("Items that when held in the off-hand will disable sword blocking in the main hand. Intended for modded items with a use action this mod doesn't recognise and therefor overwrites.", "Format for every entry is \"<namespace>:<path>\". Path may use single asterisk as wildcard parameter.").define("Off-Hand Blacklist", Lists.newArrayList());
         BUILDER.pop();
 
         BUILDER.comment("Restores pre-Combat Update combat mechanics.");
@@ -73,12 +80,12 @@ public class ConfigBuildHandler {
         NO_COOLDOWN_TOOLTIP = ConfigBuildHandler.BUILDER.comment("Remove \"Attack Speed\" attribute from tooltips.").define("No Attack Speed Tooltip", true);
         HIDE_ATTACK_INDICATOR = ConfigBuildHandler.BUILDER.comment("Prevent attack indicator from showing regardless of what's been set in \"Video Settings\".").define("Disable Attack Indicator", true);
         BOOST_SHARPNESS = ConfigBuildHandler.BUILDER.comment("Boost sharpness enchantment to add +1.0 attack damage per level instead of +0.5 damage.").define("Boost Sharpness", true);
-        SPRINT_WHILE_ATTACKING = ConfigBuildHandler.BUILDER.comment("Don't automatically stop sprinting when attacking.").define("Sprint While Attacking", true);
+        MORE_SPRINTING = ConfigBuildHandler.BUILDER.comment("Sprinting and attacking no longer interfere, so you won't stop and critical hits are always possible.").define("Sprint While Attacking", true);
         SWEEPING_REQUIRED = ConfigBuildHandler.BUILDER.comment("Is the sweeping edge enchantment required to perform a sweep attack.").define("Require Sweeping Edge", true);
-        NO_SWEEPING_SMOKE = ConfigBuildHandler.BUILDER.comment("Prevent particles created by a sweep attack from appearing.").define("No Sweeping Particles", false);
         OLD_DAMAGE_VALUES = ConfigBuildHandler.BUILDER.comment("Revert weapon and tool attack damage to old values.").define("Old Damage Values", true);
         RED_ARMOR = ConfigBuildHandler.BUILDER.comment("Armor on entities turns red when they receive damage.").define("Armor Shows Hurt", true);
-        OLD_FISHING_ROD = ConfigBuildHandler.BUILDER.comment("Fishing bobbers deal knockback upon hitting an entity, also entities being pulled in are slightly propelled upwards.").define("Old Fishing Bobber Behaviour", true);
+        OLD_FISHING_ROD = ConfigBuildHandler.BUILDER.comment("Fishing bobbers deal knockback upon hitting an entity, also entities being pulled in are slightly propelled upwards.").define("Old Fishing Rod", true);
+        NO_ATTACK_SOUNDS = ConfigBuildHandler.BUILDER.comment("Don't play attack sounds when hitting an entity.").define("No Attack Sounds", false);
         BUILDER.pop();
 
         BUILDER.comment("Introduces various tweaks from Combat Test Snapshots.");
@@ -90,6 +97,9 @@ public class ConfigBuildHandler {
         SHIELD_DELAY = ConfigBuildHandler.BUILDER.comment("Is blocking using a shield only effective after 5 ticks like before Combat Test Snapshots.").define("Shield Warm-Up Delay", false);
         BOOST_IMPALING = ConfigBuildHandler.BUILDER.comment("Makes the impaling enchantment apply when attack any creature in contact with rain or water; not just to aquatic mobs.").define("Boost Impaling", true);
         DISPENSE_TRIDENT = ConfigBuildHandler.BUILDER.comment("Allow tridents to be fired from dispensers.").define("Dispense Tridents", true);
+        RETURN_TRIDENT = ConfigBuildHandler.BUILDER.comment("Tridents enchanted with loyalty will return when thrown into the void.").define("Return Tridents From Void", true);
+        REPAIR_TRIDENT = ConfigBuildHandler.BUILDER.comment("Allow tridents to be repaired using prismarine shards in an anvil.").define("Repair Tridents In Anvils", true);
+        REMEMBER_TRIDENT = ConfigBuildHandler.BUILDER.comment("Tridents will come back to the slot they were thrown from.").define("Remember Trident Slot", true);
         SWING_THROUGH_GRASS = ConfigBuildHandler.BUILDER.comment("Hit mobs through blocks without a collision shape such as grass without breaking the block.").define("Swing Through Grass", true);
         COYOTE_TIME = ConfigBuildHandler.BUILDER.comment("Amount of ticks a mob can still be interacted with after no longer aiming at it.").defineInRange("Coyote Time", 0, 0, Integer.MAX_VALUE);
         COYOTE_SMALL = ConfigBuildHandler.BUILDER.comment("Make \"Coyote Time\" only work on small mobs.").define("Coyote Small Mobs", false);
@@ -99,7 +109,7 @@ public class ConfigBuildHandler {
         FAST_SWITCHING = ConfigBuildHandler.BUILDER.comment("The attack timer is unaffected by switching items.").define("Fast Tool Switching", true);
         UPWARDS_KNOCKBACK = ConfigBuildHandler.BUILDER.comment("Turns knockback resistance into a scale instead of being random and makes knockback have an upwards tendency.").define("Upwards Knockback", false);
         SHIELD_INDICATOR = ConfigBuildHandler.BUILDER.comment("Show a shield indicator similar to the attack indicator when actively blocking.").defineEnum("Shield Indicator", AttackIndicator.CROSSHAIR);
-        HIDE_SHIELD = ConfigBuildHandler.BUILDER.comment("Prevent shield from rendering when actively blocking. Useful when \"Shield Indicator\" is enabled.").define("Hide Shield", false);
+//        HIDE_OFFHAND = ConfigBuildHandler.BUILDER.comment("Specify items to not be rendered when held in the offhand.", "Format for every entry is \"<namespace>:<path>\". Path may use single asterisk as wildcard parameter.").define("Hide Offhand", Lists.newArrayList("minecraft:totem_of_undying"));
         BUILDER.pop();
 
         BUILDER.comment("Changes the way the player heals from food.");

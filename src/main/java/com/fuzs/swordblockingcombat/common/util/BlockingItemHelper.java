@@ -1,4 +1,4 @@
-package com.fuzs.swordblockingcombat.common.helper;
+package com.fuzs.swordblockingcombat.common.util;
 
 import com.fuzs.materialmaster.api.SyncProvider;
 import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
@@ -105,8 +105,8 @@ public class BlockingItemHelper {
 
                 Vec3d vec3d = player.getLook(1.0F);
                 Vec3d vec3d1 = vec3d2.subtractReverse(player.getPositionVec()).normalize();
-                vec3d1 = new Vec3d(vec3d1.x, 0.0D, vec3d1.z);
-                return vec3d1.dotProduct(vec3d) < 0.0D;
+                vec3d1 = new Vec3d(vec3d1.x, 0.0, vec3d1.z);
+                return vec3d1.dotProduct(vec3d) * Math.PI < Math.PI / 3.6; // 100 degrees protection arc
             }
         }
 

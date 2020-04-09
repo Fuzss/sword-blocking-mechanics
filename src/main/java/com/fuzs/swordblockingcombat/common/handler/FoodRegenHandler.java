@@ -82,6 +82,7 @@ public class FoodRegenHandler {
                 this.foodTimer = 0;
             }
         }
+
     }
 
 }

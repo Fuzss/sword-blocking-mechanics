@@ -1,11 +1,10 @@
-package com.fuzs.swordblockingcombat.common;
+package com.fuzs.swordblockingcombat.registry.provider;
 
 import com.fuzs.materialmaster.api.SyncProvider;
 import com.fuzs.materialmaster.api.builder.AttributeMapBuilder;
 import com.fuzs.materialmaster.api.provider.AbstractPropertyProvider;
 import com.fuzs.swordblockingcombat.SwordBlockingCombat;
 import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.item.Item;
@@ -14,6 +13,7 @@ import net.minecraft.item.Items;
 import java.util.Map;
 import java.util.UUID;
 
+@SuppressWarnings("unused")
 @SyncProvider
 public class BlockingPropertyProvider extends AbstractPropertyProvider {
 

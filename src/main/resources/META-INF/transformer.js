@@ -1,3 +1,4 @@
+var ASM_API = Java.type('net.minecraftforge.coremod.api.ASMAPI');
 var Opcodes = Java.type('org.objectweb.asm.Opcodes');
 var InsnList = Java.type("org.objectweb.asm.tree.InsnList");
 var InsnNode = Java.type('org.objectweb.asm.tree.InsnNode');
@@ -45,7 +46,7 @@ function initializeCoreMod() {
                     obfName: "func_71059_n",
                     name: "attackTargetEntityWithCurrentItem",
                     desc: "(Lnet/minecraft/entity/Entity;)V",
-                    patches: [patchPlayerEntityAttackTargetEntityWithCurrentItem1, patchPlayerEntityAttackTargetEntityWithCurrentItem2]
+                    patches: [patchPlayerEntityAttackTargetEntityWithCurrentItem1, patchPlayerEntityAttackTargetEntityWithCurrentItem2, patchPlayerEntityAttackTargetEntityWithCurrentItem3]
                 }, {
                     obfName: "func_70097_a",
                     name: "attackEntityFrom",
@@ -166,6 +167,29 @@ function initializeCoreMod() {
                 }], classNode, "FishingBobberEntity");
                 return classNode;
             }
+        },
+
+        // save loyalty tridents from vanishing in the void
+        // return tridents to original slot when collecting
+        'trident_entity_patch': {
+            'target': {
+                'type': 'CLASS',
+                'name': 'net.minecraft.entity.projectile.TridentEntity'
+            },
+            'transformer': function(classNode) {
+                patchMethod([{
+                    obfName: "func_70071_h_",
+                    name: "tick",
+                    desc: "()V",
+                    patches: [patchTridentEntityTick]
+                }, {
+                    obfName: "func_70100_b_",
+                    name: "onCollideWithPlayer",
+                    desc: "(Lnet/minecraft/entity/player/PlayerEntity;)V",
+                    patches: [patchTridentEntityOnCollideWithPlayer]
+                }], classNode, "TridentEntity");
+                return classNode;
+            }
         }
     };
 }
@@ -226,6 +250,48 @@ function patchInstructions(method, filter, action, obfuscated) {
     }
 }
 
+var patchTridentEntityOnCollideWithPlayer = {
+    filter: function(node, obfuscated) {
+        if (node instanceof VarInsnNode && node.getOpcode().equals(Opcodes.ALOAD) && node.var.equals(0)) {
+            var nextNode = node.getNext();
+            if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.ALOAD) && nextNode.var.equals(1)) {
+                nextNode = nextNode.getNext();
+                if (matchesMethod(nextNode, "net/minecraft/entity/projectile/AbstractArrowEntity", obfuscated ? "func_70100_b_" : "onCollideWithPlayer", "(Lnet/minecraft/entity/player/PlayerEntity;)V")) {
+                    return nextNode;
+                }
+            }
+        }
+    },
+    action: function(node, instructions, obfuscated) {
+        var insnList = new InsnList();
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        insnList.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/entity/projectile/TridentEntity", obfuscated ? "field_70254_i" : "inGround", "Z"));
+        insnList.add(generateHook("onCollideWithPlayer", "(Lnet/minecraft/entity/projectile/TridentEntity;Lnet/minecraft/entity/player/PlayerEntity;Z)V"));
+        instructions.insert(node, insnList);
+        instructions.remove(node);
+    }
+};
+
+var patchTridentEntityTick = {
+    filter: function(node, obfuscated) {
+        return node;
+    },
+    action: function(node, instructions, obfuscated) {
+        var insnList = new InsnList();
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        insnList.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/entity/projectile/TridentEntity", obfuscated ? "field_70180_af" : "dataManager", "Lnet/minecraft/network/datasync/EntityDataManager;"));
+        insnList.add(new FieldInsnNode(Opcodes.GETSTATIC, "net/minecraft/entity/projectile/TridentEntity", obfuscated ? "field_203053_g" : "LOYALTY_LEVEL", "Lnet/minecraft/network/datasync/DataParameter;"));
+        insnList.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/network/datasync/EntityDataManager", obfuscated ? "func_187225_a" : "get", "(Lnet/minecraft/network/datasync/DataParameter;)Ljava/lang/Object;", false));
+        insnList.add(new TypeInsnNode(Opcodes.CHECKCAST, "java/lang/Byte"));
+        insnList.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Byte", "byteValue", "()B", false));
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        insnList.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "net/minecraft/entity/projectile/TridentEntity", obfuscated ? "func_207403_q" : "shouldReturnToThrower", "()Z", false));
+        insnList.add(generateHook("onTridentEnterVoid", "(Lnet/minecraft/entity/projectile/TridentEntity;IZ)V"));
+        instructions.insertBefore(node, insnList);
+    }
+};
+
 var patchFishingBobberEntityBringInHookedEntity = {
     filter: function(node, obfuscated) {
         if (matchesMethod(node, "net/minecraft/entity/Entity", obfuscated ? "func_213322_ci" : "getMotion", "()Lnet/minecraft/util/math/Vec3d;")) {
@@ -267,8 +333,7 @@ var patchArmorLayerRenderArmor = {
     filter: function(node, obfuscated) {
         if (node instanceof VarInsnNode && node.getOpcode().equals(Opcodes.ILOAD) && node.var.equals(3)) {
             var nextNode = node.getNext();
-            // obfuscated is inverted as this is a Forge method which only has a deobfuscated name, obfuscated variable is not designed to handle such a case
-            if (matchesField(nextNode, "net/minecraft/client/renderer/texture/OverlayTexture", !obfuscated ? "field_229196_a_" : "NO_OVERLAY", "I")) {
+            if (matchesField(nextNode, "net/minecraft/client/renderer/texture/OverlayTexture", ASM_API.mapField("field_229196_a_"), "I")) { // NO_OVERLAY
                 return nextNode;
             }
         }
@@ -387,7 +452,8 @@ var patchClientPlayerEntityLivingTick = {
     },
     action: function(node, instructions, obfuscated) {
         var insnList = new InsnList();
-        insnList.add(generateHook("getSprintingLevel", "(F)F"));
+        insnList.add(new InsnNode(Opcodes.POP));
+        insnList.add(generateHook("getSprintingLevel", "()F"));
         instructions.insert(node, insnList);
     }
 };
@@ -409,13 +475,50 @@ var patchItemGetUseDuration = {
     }
 };
 
+var patchPlayerEntityAttackTargetEntityWithCurrentItem3 = {
+    filter: function(node, obfuscated) {
+        if (matchesMethod(node, "net/minecraft/entity/player/PlayerEntity", obfuscated ? "func_70031_b" : "setSprinting", "(Z)V")) {
+            var nextNode = node.getNext();
+            if (nextNode instanceof LabelNode) {
+                return node.getPrevious();
+            }
+        }
+    },
+    action: function(node, instructions, obfuscated) {
+        var insnList = new InsnList();
+        insnList.add(new InsnNode(Opcodes.POP));
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        insnList.add(generateHook("restoreSprintAttack", "(Lnet/minecraft/entity/player/PlayerEntity;)Z"));
+        instructions.insert(node, insnList);
+    }
+};
+
+var patchPlayerEntityAttackTargetEntityWithCurrentItem2 = {
+    filter: function(node, obfuscated) {
+        if (node instanceof JumpInsnNode && node.getOpcode().equals(Opcodes.IFEQ)) {
+            var nextNode = node.getNext();
+            if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.ALOAD) && nextNode.var.equals(0)) {
+                nextNode = nextNode.getNext();
+                if (matchesMethod(nextNode, "net/minecraft/entity/player/PlayerEntity", obfuscated ? "func_70051_ag" : "isSprinting", "()Z")) {
+                    return nextNode;
+                }
+            }
+        }
+    },
+    action: function(node, instructions, obfuscated) {
+        var insnList = new InsnList();
+        insnList.add(generateHook("allowCriticalSprinting", "(Z)Z"));
+        instructions.insert(node, insnList);
+    }
+};
+
 var patchPlayerEntityAttackTargetEntityWithCurrentItem1 = {
     filter: function(node, obfuscated) {
-        if (node instanceof InsnNode && node.getOpcode().equals(Opcodes.D2F)) {
+        if (node instanceof VarInsnNode && node.getOpcode().equals(Opcodes.FLOAD) && node.var.equals(3)) {
             var nextNode = node.getNext();
-            if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.FSTORE) && nextNode.var.equals(2)) {
-                nextNode = node.getPrevious();
-                if (matchesMethod(nextNode, "net/minecraft/entity/ai/attributes/IAttributeInstance", obfuscated ? "func_111126_e" : "getValue", "()D")) {
+            if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.FLOAD) && nextNode.var.equals(4)) {
+                nextNode = nextNode.getNext();
+                if (nextNode instanceof InsnNode && nextNode.getOpcode().equals(Opcodes.FMUL)) {
                     return node;
                 }
             }
@@ -426,29 +529,6 @@ var patchPlayerEntityAttackTargetEntityWithCurrentItem1 = {
         insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
         insnList.add(new VarInsnNode(Opcodes.ALOAD, 1));
         insnList.add(generateHook("addEnchantmentDamage", "(FLnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/entity/Entity;)F"));
-        instructions.insert(node, insnList);
-    }
-};
-
-var patchPlayerEntityAttackTargetEntityWithCurrentItem2 = {
-    filter: function(node, obfuscated) {
-        if (node instanceof VarInsnNode && node.getOpcode().equals(Opcodes.ILOAD) && node.var.equals(10)) {
-            var nextNode = node.getNext();
-            if (nextNode instanceof JumpInsnNode && nextNode.getOpcode().equals(Opcodes.IFEQ)) {
-                return  node;
-            }
-        }
-    },
-    action: function(node, instructions, obfuscated) {
-        var insnList = new InsnList();
-        insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
-        insnList.add(new VarInsnNode(Opcodes.ALOAD, 1));
-        insnList.add(new VarInsnNode(Opcodes.FLOAD, 2));
-        insnList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/fuzs/swordblockingcombat/asm/Hooks", "doSweeping", "(ZLnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/entity/Entity;F)V", false));
-        insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
-        insnList.add(new VarInsnNode(Opcodes.ILOAD, 7));
-        insnList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/fuzs/swordblockingcombat/asm/Hooks", "restoreSprinting", "(Lnet/minecraft/entity/player/PlayerEntity;I)V", false));
-        insnList.add(new InsnNode(Opcodes.ICONST_0));
         instructions.insert(node, insnList);
     }
 };

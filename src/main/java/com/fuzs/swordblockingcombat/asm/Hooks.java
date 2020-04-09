@@ -9,10 +9,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FishingBobberEntity;
+import net.minecraft.entity.projectile.TridentEntity;
 import net.minecraft.item.AxeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ToolItem;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -35,41 +35,40 @@ public class Hooks {
     }
 
     /**
-     * disable sweeping attack in by default in {@link net.minecraft.entity.player.PlayerEntity#attackTargetEntityWithCurrentItem}
-     * might be executed if sweeping edge enchantment is present; sweeping particles are removed though
-     */
-    public static void doSweeping(boolean flag, PlayerEntity player, Entity targetEntity, float damage) {
-
-        ClassicCombatHandler.doSweeping(flag, player, targetEntity, damage);
-    }
-
-    /**
-     * set the player to be sprinting again if it has been disabled before in {@link net.minecraft.entity.player.PlayerEntity#attackTargetEntityWithCurrentItem}
-     */
-    public static void restoreSprinting(PlayerEntity player, int knockback) {
-
-        if (ConfigBuildHandler.SPRINT_WHILE_ATTACKING.get()) {
-
-            ClassicCombatHandler.restoreSprinting(player, knockback);
-        }
-    }
-
-    /**
      * modify damage dealt to an entity in {@link net.minecraft.entity.player.PlayerEntity#attackTargetEntityWithCurrentItem}
      */
-    public static float addEnchantmentDamage(float damage, PlayerEntity player, Entity targetEntity) {
+    public static float addEnchantmentDamage(float enchantmentAmount, PlayerEntity player, Entity targetEntity) {
 
-        if (ConfigBuildHandler.BOOST_SHARPNESS.get()) {
+        if (enchantmentAmount > 0.0F) {
 
-            damage += ClassicCombatHandler.addEnchantmentDamage(player);
+            if (ConfigBuildHandler.BOOST_SHARPNESS.get()) {
+
+                enchantmentAmount += ClassicCombatHandler.addEnchantmentDamage(player);
+            }
+
+            if (ConfigBuildHandler.BOOST_IMPALING.get()) {
+
+                enchantmentAmount += CombatTestHandler.addEnchantmentDamage(player, targetEntity);
+            }
         }
 
-        if (ConfigBuildHandler.BOOST_IMPALING.get()) {
+        return enchantmentAmount;
+    }
 
-            damage += CombatTestHandler.addEnchantmentDamage(player, targetEntity);
-        }
+    /**
+     * allow critical strikes when the player is sprinting in {@link net.minecraft.entity.player.PlayerEntity#attackTargetEntityWithCurrentItem}
+     */
+    public static boolean allowCriticalSprinting(boolean isSprinting) {
 
-        return damage;
+        return !ConfigBuildHandler.MORE_SPRINTING.get() && !isSprinting;
+    }
+
+    /**
+     * make attacks don't interrupt sprinting in {@link net.minecraft.entity.player.PlayerEntity#attackTargetEntityWithCurrentItem}
+     */
+    public static boolean restoreSprintAttack(PlayerEntity player) {
+
+        return ConfigBuildHandler.MORE_SPRINTING.get() && player.isSprinting();
     }
 
     /**
@@ -86,10 +85,9 @@ public class Hooks {
      * overwrite minimum food level required for sprinting to start in {@link net.minecraft.client.entity.player.ClientPlayerEntity#livingTick}
      */
     @OnlyIn(Dist.CLIENT)
-    public static float getSprintingLevel(float level) {
+    public static float getSprintingLevel() {
 
-        float f = ConfigBuildHandler.SPRINTING_LEVEL.get();
-        return f != 6.0F ? f : level;
+        return ConfigBuildHandler.SPRINTING_LEVEL.get();
     }
 
     /**
@@ -139,9 +137,9 @@ public class Hooks {
      */
     public static void onFishingBobberCollision(FishingBobberEntity bobber, PlayerEntity angler, Entity caughtEntity) {
 
-        if (ConfigBuildHandler.OLD_FISHING_ROD.get() && caughtEntity instanceof LivingEntity) {
+        if (ConfigBuildHandler.OLD_FISHING_ROD.get()) {
 
-            caughtEntity.attackEntityFrom(DamageSource.causeThrownDamage(bobber, angler), 0.0F);
+            ClassicCombatHandler.onFishingBobberCollision(bobber, angler, caughtEntity);
         }
     }
 
@@ -150,12 +148,29 @@ public class Hooks {
      */
     public static Vec3d getCaughtEntityMotion(Vec3d vec3d) {
 
-        if (ConfigBuildHandler.OLD_FISHING_ROD.get()) {
+        return ConfigBuildHandler.OLD_FISHING_ROD.get() ? ClassicCombatHandler.getCaughtEntityMotion(vec3d) : vec3d;
 
-            double x = vec3d.getX() * 10.0,  y = vec3d.getY() * 10.0, z = vec3d.getZ() * 10.0;
-            vec3d = vec3d.add(0.0, Math.pow(x * x + y * y + z * z, 0.25) * 0.08, 0.0);
+    }
+
+    /**
+     * teleport loyal trident back to player instead of being killed in the void in {@link net.minecraft.entity.projectile.TridentEntity#tick}
+     */
+    public static void onTridentEnterVoid(TridentEntity trident, int loyaltyLevel, boolean shouldReturnToThrower) {
+
+        if (ConfigBuildHandler.RETURN_TRIDENT.get()) {
+
+            CombatTestHandler.onTridentEnterVoid(trident, loyaltyLevel, shouldReturnToThrower);
         }
-        return vec3d;
+    }
+
+    /**
+     * return trident to slot it was thrown from in {@link net.minecraft.entity.projectile.TridentEntity#onCollideWithPlayer}
+     * slot number is previously saved as capability
+     */
+    public static void onCollideWithPlayer(TridentEntity trident, PlayerEntity player, boolean inGround) {
+
+        // never disable based on a config value as this replaces vanilla behaviour
+        CombatTestHandler.onCollideWithPlayer(trident, player, inGround);
     }
 
 }

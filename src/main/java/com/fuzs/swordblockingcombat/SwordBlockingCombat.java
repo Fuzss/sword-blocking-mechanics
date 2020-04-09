@@ -1,13 +1,14 @@
 package com.fuzs.swordblockingcombat;
 
 import com.fuzs.materialmaster.api.PropertyProviderUtils;
+import com.fuzs.swordblockingcombat.capability.CapabilityController;
 import com.fuzs.swordblockingcombat.client.handler.GrassSwingHandler;
 import com.fuzs.swordblockingcombat.client.handler.NoCooldownHandler;
 import com.fuzs.swordblockingcombat.client.handler.RenderBlockingHandler;
 import com.fuzs.swordblockingcombat.common.handler.ClassicCombatHandler;
+import com.fuzs.swordblockingcombat.common.handler.CombatTestHandler;
 import com.fuzs.swordblockingcombat.common.handler.FoodRegenHandler;
 import com.fuzs.swordblockingcombat.common.handler.InitiateBlockHandler;
-import com.fuzs.swordblockingcombat.common.handler.CombatTestHandler;
 import com.fuzs.swordblockingcombat.config.ConfigBuildHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -40,6 +41,7 @@ public class SwordBlockingCombat {
 
     private void onCommonSetup(final FMLCommonSetupEvent evt) {
 
+        CapabilityController.register();
         // sword blocking
         MinecraftForge.EVENT_BUS.register(new InitiateBlockHandler());
         // food buffs
