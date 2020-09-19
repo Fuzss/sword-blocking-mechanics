@@ -24,7 +24,13 @@ public class CombatPropertyProvider extends AbstractPropertyProvider {
     @Override
     public String getName() {
 
-        return SwordBlockingCombat.MODID;
+        return "Dual Wielding Combat";
+    }
+
+    @Override
+    public int getPriority() {
+
+        return 5;
     }
 
     @Override

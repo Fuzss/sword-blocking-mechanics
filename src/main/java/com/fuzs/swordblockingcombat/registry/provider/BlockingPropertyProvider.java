@@ -26,7 +26,13 @@ public class BlockingPropertyProvider extends AbstractPropertyProvider {
     @Override
     public String getName() {
 
-        return SwordBlockingCombat.MODID;
+        return "Golden Age Combat";
+    }
+
+    @Override
+    public int getPriority() {
+
+        return 10;
     }
 
     @Override

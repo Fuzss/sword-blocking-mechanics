@@ -54,11 +54,16 @@ minecraft {
 
 }
 
+repositories {
+
+    mavenLocal()
+}
+
 dependencies {
 
     minecraft "net.minecraftforge:forge:${project.ext.mc}-${loader_version}"
 
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile "com.fuzs.materialmaster:MaterialMaster:v1.3-1.15.2"
 
 }
 
