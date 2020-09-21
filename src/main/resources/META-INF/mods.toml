@@ -9,21 +9,21 @@ loaderVersion="[${loader_version},)"
     displayURL="${mod_url}"
     authors="${mod_author}"
 
-[[dependencies.swordblockingcombat]]
+[[dependencies.${mod_id}]]
     modId="materialmaster"
     mandatory=true
-    versionRange="[1.1.1,)"
+    versionRange="[1.3,)"
     ordering="NONE"
     side="BOTH"
 
-[[dependencies.swordblockingcombat]]
+[[dependencies.${mod_id}]]
     modId="forge"
     mandatory=true
     versionRange="[${forge_version},)"
     ordering="NONE"
     side="BOTH"
 
-[[dependencies.swordblockingcombat]]
+[[dependencies.${mod_id}]]
     modId="minecraft"
     mandatory=true
     versionRange="[${mc_version},)"
