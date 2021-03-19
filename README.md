@@ -1,4 +1,4 @@
-# Sword Blocking Combat
+# Sword Blocking Mechanics
 
 A Minecraft mod. Downloads can be found on CurseForge.
 
