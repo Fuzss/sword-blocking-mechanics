@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_8",
+  "package": "com.fuzs.swordblockingmechanics.mixin",
+  "refmap": "swordblockingmechanics.refmap.json",
+  "mixins": [
+    "ItemStackMixin",
+    "accessor.IItemAccessor",
+    "accessor.IPlayerEntityAccessor"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
