@@ -51,20 +51,29 @@ public class PuzzlesLib {
 
     protected void onCommonSetup(final FMLCommonSetupEvent evt) {
 
-        ElementRegistry.load(evt);
-        ConfigManager.get().syncAll(ModConfig.Type.COMMON);
+        evt.enqueueWork(() -> {
+
+            ElementRegistry.load(evt);
+            ConfigManager.get().syncAll(ModConfig.Type.COMMON);
+        });
     }
 
     protected void onClientSetup(final FMLClientSetupEvent evt) {
 
-        ElementRegistry.load(evt);
-        ConfigManager.get().syncAll(ModConfig.Type.CLIENT);
+        evt.enqueueWork(() -> {
+
+            ElementRegistry.load(evt);
+            ConfigManager.get().syncAll(ModConfig.Type.CLIENT);
+        });
     }
 
     protected void onServerSetup(final FMLDedicatedServerSetupEvent evt) {
 
-        ElementRegistry.load(evt);
-        ConfigManager.get().syncAll(ModConfig.Type.SERVER);
+        evt.enqueueWork(() -> {
+
+            ElementRegistry.load(evt);
+            ConfigManager.get().syncAll(ModConfig.Type.SERVER);
+        });
     }
 
     /**

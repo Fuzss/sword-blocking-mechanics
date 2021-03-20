@@ -2,6 +2,7 @@ package com.fuzs.puzzleslib_sbm.config;
 
 import com.fuzs.puzzleslib_sbm.PuzzlesLib;
 import com.fuzs.puzzleslib_sbm.element.AbstractElement;
+import com.fuzs.puzzleslib_sbm.element.ElementRegistry;
 import com.fuzs.puzzleslib_sbm.util.INamespaceLocator;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
@@ -12,13 +13,11 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.IForgeRegistryEntry;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -111,13 +110,10 @@ public class ConfigManager implements INamespaceLocator {
      */
     private boolean syncAll(@Nullable String modid, ModConfig.Type type) {
 
-        List<ConfigValueData<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> typeData = this.getConfigData(modid)
-                .filter(configValue -> configValue.type == type)
-                .collect(Collectors.toList());
+        Collection<ConfigValueData<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> data = this.getAllConfigData(modid, type);
+        if (!data.isEmpty()) {
 
-        if (!typeData.isEmpty()) {
-
-            typeData.forEach(ConfigValueData::sync);
+            data.forEach(ConfigValueData::sync);
             this.configListeners.get(type).forEach(Runnable::run);
 
             return true;
@@ -128,55 +124,56 @@ public class ConfigManager implements INamespaceLocator {
 
     /**
      * @param modid mod to get entries for
-     * @return stream of entries only for this mod
+     * @param type config type for this listener
+     * @return collection of enabled entries only for this mod and type
      */
-    private Stream<ConfigValueData<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> getConfigData(@Nullable String modid) {
+    private Collection<ConfigValueData<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> getAllConfigData(@Nullable String modid, ModConfig.Type type) {
 
-        return this.configData.values().stream().filter(entry -> modid == null || entry.getModId().equals(modid));
+        return this.configData.entries().stream()
+                .filter(entry -> modid == null || entry.getKey().getRegistryName().getNamespace().equals(modid))
+                .filter(entry -> entry.getKey().isEnabled())
+                .map(Map.Entry::getValue)
+                .filter(value -> value.type == type)
+                .collect(Collectors.toSet());
     }
 
     /**
-     * @param paths individual parts of path for config value
+     * @param element element this data belongs to
+     * @param path individual parts of path for config value
      * @return the config value
      */
-    public Object getValue(String... paths) {
+    @Nullable
+    public Object getConfigValue(AbstractElement element, String... path) {
 
-        return this.getValue(String.join(".", paths));
-    }
+        assert path.length != 0 : "Unable to get config value: " + "Invalid config path";
 
-    /**
-     * @param path path for config value
-     * @return the config value
-     */
-    public Object getValue(String path) {
+        if (element.isEnabled()) {
 
-        return this.getConfigDataAtPath(path).<Object>map(ConfigValueData::getValue).orElse(null);
-
-    }
-
-    /**
-     * @param paths individual parts of path for config value
-     * @return config data
-     */
-    public Optional<ConfigValueData<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> getConfigDataAtPath(String... paths) {
-
-        return this.getConfigDataAtPath(String.join(".", paths));
-    }
-
-    /**
-     * @param path path for config data entry
-     * @return config data
-     */
-    public Optional<ConfigValueData<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> getConfigDataAtPath(String path) {
-
-        Optional<ConfigValueData<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> optional;
-        optional = Optional.ofNullable(this.configData.get(path));
-        if (optional.isPresent()) {
-
-            return optional;
+            String singlePath = Stream.concat(Stream.of(element.getRegistryName().getPath()), Stream.of(path)).collect(Collectors.joining("."));
+            return this.getConfigData(element, singlePath).
+                    <Object>map(ConfigValueData::getValue)
+                    .orElse(null);
         }
 
-        PuzzlesLib.LOGGER.error("Unable to get config value for path \"" + path + "\": " + "No config value found for path");
+        return null;
+    }
+
+    /**
+     * @param element element this data belongs to
+     * @param path individual parts of path for config value
+     * @return config data
+     */
+    private Optional<ConfigValueData<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> getConfigData(AbstractElement element, String path) {
+
+        for (ConfigValueData<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?> data : this.configData.get(element)) {
+
+            if (data.path.equals(path)) {
+
+                return Optional.of(data);
+            }
+        }
+
+        PuzzlesLib.LOGGER.error("Unable to get config value at path \"" + path + "\": " + "No config value found");
         return Optional.empty();
     }
 
@@ -189,7 +186,7 @@ public class ConfigManager implements INamespaceLocator {
      */
     public <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerCommonEntry(S entry, Consumer<T> action) {
 
-        this.registerEntry(ModConfig.Type.COMMON, entry, action, Function.identity());
+        this.registerEntry(entry, ModConfig.Type.COMMON, action, Function.identity());
     }
 
     /**
@@ -201,7 +198,7 @@ public class ConfigManager implements INamespaceLocator {
      */
     public <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerClientEntry(S entry, Consumer<T> action) {
 
-        this.registerEntry(ModConfig.Type.CLIENT, entry, action, Function.identity());
+        this.registerEntry(entry, ModConfig.Type.CLIENT, action, Function.identity());
     }
 
     /**
@@ -213,7 +210,22 @@ public class ConfigManager implements INamespaceLocator {
      */
     public <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerServerEntry(S entry, Consumer<T> action) {
 
-        this.registerEntry(ModConfig.Type.SERVER, entry, action, Function.identity());
+        this.registerEntry(entry, ModConfig.Type.SERVER, action, Function.identity());
+    }
+
+    /**
+     * register config entry for given type
+     * @param entry source config value object
+     * @param type type of config to register for
+     * @param action action to perform when value changes (is reloaded)
+     * @param transformer transformation to apply when returning value
+     * @param <S> config value of a certain type
+     * @param <T> type for value
+     * @param <R> final return type of config entry
+     */
+    private <S extends ForgeConfigSpec.ConfigValue<T>, T, R> void registerEntry(S entry, ModConfig.Type type, Consumer<R> action, Function<T, R> transformer) {
+
+        this.configData.put(ElementRegistry.EMPTY, new ConfigValueData<>(entry, type, action, transformer));
     }
 
     /**
@@ -239,32 +251,17 @@ public class ConfigManager implements INamespaceLocator {
      */
     public <S extends ForgeConfigSpec.ConfigValue<T>, T, R> void registerEntry(S entry, Consumer<R> action, Function<T, R> transformer) {
 
-        ModConfig.Type activeType = this.getBuilder().getActiveType();
-        if (activeType == null) {
+        Pair<AbstractElement, ModConfig.Type> activeTuple = this.getBuilder().getActiveTuple();
+        if (activeTuple == null) {
 
             PuzzlesLib.LOGGER.error("Unable to register config entry: " + "Active builder is null");
-        } else if (this.getBuilder().isSpecNotBuilt(activeType)) {
+        } else if (this.getBuilder().isSpecNotBuilt(activeTuple.getRight())) {
 
-            this.registerEntry(activeType, entry, action, transformer);
+            this.configData.put(activeTuple.getLeft(), new ConfigValueData<>(entry, activeTuple.getRight(), action, transformer));
         } else {
 
             PuzzlesLib.LOGGER.error("Unable to register config entry: " + "Config spec already built");
         }
-    }
-
-    /**
-     * register config entry for given type
-     * @param type type of config to register for
-     * @param entry source config value object
-     * @param action action to perform when value changes (is reloaded)
-     * @param transformer transformation to apply when returning value
-     * @param <S> config value of a certain type
-     * @param <T> type for value
-     * @param <R> final return type of config entry
-     */
-    private <S extends ForgeConfigSpec.ConfigValue<T>, T, R> void registerEntry(ModConfig.Type type, S entry, Consumer<R> action, Function<T, R> transformer) {
-
-        this.configData.put(String.join(".", entry.getPath()), new ConfigValueData<>(type, entry, action, transformer, this.getActiveNamespace()));
     }
 
     /**

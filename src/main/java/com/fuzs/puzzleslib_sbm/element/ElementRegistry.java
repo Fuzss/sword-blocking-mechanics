@@ -9,6 +9,7 @@ import com.fuzs.puzzleslib_sbm.element.side.ISidedElement;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.config.ModConfig;
@@ -20,7 +21,6 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * registry for elements
@@ -28,6 +28,10 @@ import java.util.stream.Stream;
 @SuppressWarnings("unused")
 public class ElementRegistry {
 
+    /**
+     * empty element needed when adding config entries to {@link com.fuzs.puzzleslib_sbm.config.ConfigManager} manually
+     */
+    public static final AbstractElement EMPTY = AbstractElement.createEmpty(new ResourceLocation(PuzzlesLib.MODID, "empty"));
     /**
      * general storage for elements of all mods for performing actions on all of them
      */
@@ -147,7 +151,7 @@ public class ElementRegistry {
             return getConfigValue(element.get(), path);
         }
 
-        PuzzlesLib.LOGGER.error("Unable to get config value: " + "Invalid element location");
+        PuzzlesLib.LOGGER.error("Unable to get config value: " + "Invalid element name");
         return Optional.empty();
     }
 
@@ -160,15 +164,7 @@ public class ElementRegistry {
     @SuppressWarnings("unchecked")
     public static <T> Optional<T> getConfigValue(AbstractElement element, String... path) {
 
-        if (element.isEnabled()) {
-
-            assert path.length != 0 : "Unable to get config value: " + "Invalid config path";
-
-            String fullPath = Stream.concat(Stream.of(getRegistryName(element).getPath()), Stream.of(path)).collect(Collectors.joining("."));
-            return Optional.of((T) ConfigManager.get().getValue(fullPath));
-        }
-
-        return Optional.empty();
+        return Optional.ofNullable((T) ConfigManager.get().getConfigValue(element, path));
     }
 
     /**
@@ -180,33 +176,57 @@ public class ElementRegistry {
         assert !MOD_ELEMENTS.isEmpty() : "Unable to setup elements for " + namespace + ": " + "No elements registered";
 
         // add to main elements storage
-        MOD_ELEMENTS.forEach((key, value) -> ELEMENTS.put(new ResourceLocation(namespace, key), value));
+        for (Map.Entry<String, AbstractElement> entry : MOD_ELEMENTS.entrySet()) {
 
-        setupGeneralSide(MOD_ELEMENTS.values(), element -> element instanceof ICommonElement, ModConfig.Type.COMMON, FMLEnvironment.dist);
-        setupGeneralSide(MOD_ELEMENTS.values(), element -> element instanceof IClientElement && !(element instanceof ICommonElement), ModConfig.Type.CLIENT, Dist.CLIENT);
-        setupGeneralSide(MOD_ELEMENTS.values(), element -> element instanceof IServerElement && !(element instanceof ICommonElement), ModConfig.Type.SERVER, Dist.DEDICATED_SERVER);
+            ResourceLocation elementName = new ResourceLocation(namespace, entry.getKey());
+            ELEMENTS.put(elementName, entry.getValue().setRegistryName(elementName));
+        }
 
-        MOD_ELEMENTS.values().forEach(AbstractElement::setup);
+        setupGeneralSide(namespace, getElementsAtSide(MOD_ELEMENTS.values(), element -> element instanceof ICommonElement), ModConfig.Type.COMMON, FMLEnvironment.dist);
+        setupGeneralSide(namespace, getElementsAtSide(MOD_ELEMENTS.values(), element -> element instanceof IClientElement), ModConfig.Type.CLIENT, Dist.CLIENT);
+        setupGeneralSide(namespace, getElementsAtSide(MOD_ELEMENTS.values(), element -> element instanceof IServerElement), ModConfig.Type.SERVER, Dist.DEDICATED_SERVER);
 
-        // prepare for next mod
-        MOD_ELEMENTS.clear();
+        getAllElements(namespace).forEach(AbstractElement::setup);
+    }
+
+    /**
+     * also clears elements from <code>elements</code>
+     * @param elements all elements for this mod
+     * @param isCurrentSide instanceof check for {@link com.fuzs.puzzleslib_sbm.element.side.ISidedElement}
+     * @return all elements for this mod for active side
+     */
+    private static Collection<AbstractElement> getElementsAtSide(Collection<AbstractElement> elements, Predicate<AbstractElement> isCurrentSide) {
+
+        Set<AbstractElement> elementsAtSide = Sets.newHashSet();
+        for (Iterator<AbstractElement> iterator = elements.iterator(); iterator.hasNext();) {
+
+            AbstractElement element = iterator.next();
+            if (isCurrentSide.test(element)) {
+
+                elementsAtSide.add(element);
+                iterator.remove();
+            }
+        }
+
+        return elementsAtSide;
     }
 
     /**
      * setup general section with control over individual elements for all config types
+     * @param namespace namespace of active mod
      * @param elements all elements for this mod
-     * @param isCurrentSide instanceof check for {@link ISidedElement}
      * @param type config type to create general category for
      * @param dist physical side this element can only be registered on
      */
-    private static void setupGeneralSide(Collection<AbstractElement> elements, Predicate<AbstractElement> isCurrentSide, ModConfig.Type type, Dist dist) {
+    private static void setupGeneralSide(String namespace, Collection<AbstractElement> elements, ModConfig.Type type, Dist dist) {
 
-        Set<AbstractElement> sideElements = elements.stream().filter(isCurrentSide).collect(Collectors.toSet());
-        if (!sideElements.isEmpty()) {
+        if (!elements.isEmpty()) {
 
-            assert dist == FMLEnvironment.dist : "Unable to setup element: " + "Sided element registered on common side";
+            assert dist == FMLEnvironment.dist : "Unable to setup element: " + "Sided element registered on wrong side";
 
-            ConfigManager.builder().create("general", builder -> sideElements.forEach(element -> element.setupGeneralConfig(builder)), type);
+            // create dummy element
+            AbstractElement general = AbstractElement.createEmpty(new ResourceLocation(namespace, "general"));
+            ConfigManager.builder().create(general, type, builder -> elements.forEach(element -> element.setupGeneralConfig(builder)));
         }
     }
 

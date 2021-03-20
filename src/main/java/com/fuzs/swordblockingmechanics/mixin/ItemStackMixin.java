@@ -1,5 +1,7 @@
 package com.fuzs.swordblockingmechanics.mixin;
 
+import com.fuzs.swordblockingmechanics.SwordBlockingMechanics;
+import com.fuzs.swordblockingmechanics.element.CombatTestElement;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.UseAction;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,7 +17,8 @@ public abstract class ItemStackMixin {
     @Inject(method = "getUseDuration", at = @At("HEAD"), cancellable = true)
     public void getUseDuration(CallbackInfoReturnable<Integer> callbackInfo) {
 
-        if (this.getUseAction() == UseAction.DRINK) {
+        CombatTestElement element = (CombatTestElement) SwordBlockingMechanics.COMBAT_TEST;
+        if (element.isEnabled() && element.fastDrinking && this.getUseAction() == UseAction.DRINK) {
 
             callbackInfo.setReturnValue(20);
         }

@@ -38,7 +38,7 @@ public class CombatTestElement extends ClientExtensibleElement<CombatTestExtensi
     private boolean passThroughThrowables;
     private boolean fastSwitching;
     private AttackIndicatorStatus shieldIndicator;
-    private boolean fastDrinking;
+    public boolean fastDrinking;
 
     public CombatTestElement() {
 
@@ -52,7 +52,7 @@ public class CombatTestElement extends ClientExtensibleElement<CombatTestExtensi
     }
 
     @Override
-    public void initCommon() {
+    public void setupCommon() {
 
         this.addListener(this::onProjectileImpact);
         this.addListener(this::onPlayerTick);

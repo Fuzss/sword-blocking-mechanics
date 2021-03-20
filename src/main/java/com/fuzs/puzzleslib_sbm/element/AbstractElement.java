@@ -19,6 +19,7 @@ import net.minecraftforge.fml.event.lifecycle.ParallelDispatchEvent;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -28,38 +29,52 @@ import java.util.stream.Stream;
  * all features a mod adds are structured into elements which are then registered, this is an abstract version
  */
 @SuppressWarnings("unused")
-public abstract class AbstractElement extends EventListener implements IConfigurableElement {
+public abstract class AbstractElement extends EventListener implements IConfigurableElement, IRegistryElement<AbstractElement> {
 
     /**
-     * all events registered by this element
+     * registry name of this element
      */
-    private final List<EventStorage<? extends Event>> eventListeners = Lists.newArrayList();
+    private ResourceLocation name;
     /**
      * is this element enabled (are events registered)
      * 1 and 0 for enable / disable, -1 for force disable where reloading the config doesn't have any effect
      */
     private int enabled = this.getDefaultState() ? 1 : 0;
-
     /**
-     * @return name of this set in elements registry
+     * all events registered by this element
      */
+    private final List<EventStorage<? extends Event>> eventListeners = Lists.newArrayList();
+
+    @Nonnull
+    @Override
     public ResourceLocation getRegistryName() {
 
-        return ElementRegistry.getRegistryName(this);
+        if (this.name == null) {
+
+            throw new UnsupportedOperationException("Cannot get name for element: " + "Name not set");
+        }
+
+        return this.name;
     }
 
-    /**
-     * @return just the name without modid
-     */
-    protected String getSimpleName() {
+    @Nonnull
+    @Override
+    public AbstractElement setRegistryName(@Nonnull ResourceLocation name) {
 
-        return this.getRegistryName().getPath();
+        if (this.name != null) {
+
+            throw new UnsupportedOperationException("Cannot set name for element: " + "Name already set");
+        }
+
+        this.name = name;
+
+        return this;
     }
 
     @Override
     public final String getDisplayName() {
 
-        return Stream.of(this.getSimpleName().split("_")).map(StringUtils::capitalize).collect(Collectors.joining(" "));
+        return Stream.of(this.getRegistryName().getPath().split("_")).map(StringUtils::capitalize).collect(Collectors.joining(" "));
     }
 
     @Override
@@ -93,26 +108,25 @@ public abstract class AbstractElement extends EventListener implements IConfigur
      */
     public final void setup() {
 
-        this.setupConfig(this.getSimpleName());
-        this.setupEvents();
+        this.setupConfig();
+        this.setupRegistriesAndEvents();
     }
 
     /**
      * setup config for all sides
-     * @param elementId id of this element for config section
      */
-    private void setupConfig(String elementId) {
+    private void setupConfig() {
 
-        Consumer<ICommonElement> commonConfig = element -> ConfigManager.builder().create(elementId, element::setupCommonConfig, ModConfig.Type.COMMON, element.getCommonDescription());
-        Consumer<IClientElement> clientConfig = element -> ConfigManager.builder().create(elementId, element::setupClientConfig, ModConfig.Type.CLIENT, element.getClientDescription());
-        Consumer<IServerElement> serverConfig = element -> ConfigManager.builder().create(elementId, element::setupServerConfig, ModConfig.Type.SERVER, element.getServerDescription());
+        Consumer<ICommonElement> commonConfig = element -> ConfigManager.builder().create(this, ModConfig.Type.COMMON, element::setupCommonConfig, element.getCommonDescription());
+        Consumer<IClientElement> clientConfig = element -> ConfigManager.builder().create(this, ModConfig.Type.CLIENT, element::setupClientConfig, element.getClientDescription());
+        Consumer<IServerElement> serverConfig = element -> ConfigManager.builder().create(this, ModConfig.Type.SERVER, element::setupServerConfig, element.getServerDescription());
         this.setupAllSides(commonConfig, clientConfig, serverConfig);
     }
 
     /**
      * setup events for all sides
      */
-    private void setupEvents() {
+    private void setupRegistriesAndEvents() {
 
         this.setupAllSides(ICommonElement::setupCommon, IClientElement::setupClient, IServerElement::setupServer);
     }
@@ -298,6 +312,22 @@ public abstract class AbstractElement extends EventListener implements IConfigur
     public final List<EventStorage<? extends Event>> getEventListeners() {
 
         return this.eventListeners;
+    }
+
+    /**
+     * empty element needed for some aspects of {@link com.fuzs.puzzleslib_sbm.config.ConfigManager}
+     */
+    public static AbstractElement createEmpty(ResourceLocation name) {
+
+        return new AbstractElement() {
+
+            @Override
+            public String[] getDescription() {
+
+                return new String[0];
+            }
+
+        }.setRegistryName(name);
     }
 
 }

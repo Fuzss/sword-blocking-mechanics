@@ -17,13 +17,17 @@ import java.util.function.UnaryOperator;
 public class ConfigValueData<S extends ForgeConfigSpec.ConfigValue<T>, T, R> {
 
     /**
-     * config type of this entry
-     */
-    final ModConfig.Type type;
-    /**
      * config value entry
      */
     private final S value;
+    /**
+     * config path for value
+     */
+    final String path;
+    /**
+     * config type of this entry
+     */
+    final ModConfig.Type type;
     /**
      * action to perform when the entry is updated
      */
@@ -36,10 +40,11 @@ public class ConfigValueData<S extends ForgeConfigSpec.ConfigValue<T>, T, R> {
     /**
      * new entry storage
      */
-    ConfigValueData(ModConfig.Type type, S value, Consumer<R> sync, Function<T, R> transformer) {
+    ConfigValueData(S value, ModConfig.Type type, Consumer<R> sync, Function<T, R> transformer) {
 
-        this.type = type;
         this.value = value;
+        this.path = String.join(".", value.getPath());
+        this.type = type;
         this.sync = sync;
         this.transformer = transformer;
     }

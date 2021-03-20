@@ -2,9 +2,11 @@ package com.fuzs.puzzleslib_sbm.config;
 
 import com.fuzs.puzzleslib_sbm.PuzzlesLib;
 import com.fuzs.puzzleslib_sbm.config.json.JsonConfigFileUtil;
+import com.fuzs.puzzleslib_sbm.element.AbstractElement;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -26,7 +28,7 @@ public class ConfigBuilder {
     /**
      * config type of category currently being built
      */
-    private ModConfig.Type activeType;
+    private Pair<AbstractElement, ModConfig.Type> activeTuple;
 
     /**
      * add a spec when building config manually
@@ -73,14 +75,14 @@ public class ConfigBuilder {
 
     /**
      * wrap creation of a new category
-     * @param category name of new category
-     * @param options builder for category
+     * @param element element for this new category
      * @param type config type this category is for
+     * @param options builder for category
      * @param comments comments to add to category
      */
-    public void create(String category, Consumer<ForgeConfigSpec.Builder> options, ModConfig.Type type, String... comments) {
+    public void create(AbstractElement element, ModConfig.Type type, Consumer<ForgeConfigSpec.Builder> options, String... comments) {
 
-        this.activeType = type;
+        this.activeTuple = Pair.of(element, type);
 
         ForgeConfigSpec.Builder builder = this.configTypeEntries.get(type).getBuilder();
         if (comments.length != 0) {
@@ -88,11 +90,11 @@ public class ConfigBuilder {
             builder.comment(comments);
         }
 
-        builder.push(category);
+        builder.push(element.getRegistryName().getPath());
         options.accept(builder);
         builder.pop();
 
-        this.activeType = null;
+        this.activeTuple = null;
     }
 
     /**
@@ -129,11 +131,11 @@ public class ConfigBuilder {
     }
 
     /**
-     * @return type of category currently being built
+     * @return active element and type of category currently being built
      */
-    public ModConfig.Type getActiveType() {
+    public Pair<AbstractElement, ModConfig.Type> getActiveTuple() {
 
-        return this.activeType;
+        return this.activeTuple;
     }
 
 }
