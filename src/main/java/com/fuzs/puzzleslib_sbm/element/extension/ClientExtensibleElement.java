@@ -24,12 +24,6 @@ public abstract class ClientExtensibleElement<T extends ElementExtension<?> & IC
     }
 
     @Override
-    public final void initClient() {
-
-        this.extension.initClient();
-    }
-
-    @Override
     public final void loadClient() {
 
         this.extension.loadClient();

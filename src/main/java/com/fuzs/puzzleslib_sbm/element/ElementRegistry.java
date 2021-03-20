@@ -81,42 +81,6 @@ public class ElementRegistry {
     }
 
     /**
-     * register an element, overload this to set mod namespace
-     * every element must be sided, meaning must somehow implement {@link ISidedElement}
-     * @param namespace namespace of registering mod
-     * @param key identifier for this element
-     * @param supplier supplier for element to be registered
-     * @param dist physical side to register on
-     * @return <code>element</code>
-     * @param <T> make sure element also extends ISidedElement
-     */
-    @Nullable
-    protected static <T extends AbstractElement & ISidedElement> AbstractElement register(String namespace, String key, Supplier<T> supplier, Dist dist) {
-
-        if (dist == FMLEnvironment.dist) {
-
-            AbstractElement element = supplier.get();
-
-            assert element instanceof ICommonElement || FMLEnvironment.dist.isClient() || element instanceof IServerElement : "Unable to register element: " + "Trying to register client element for server side";
-            assert element instanceof ICommonElement || FMLEnvironment.dist.isDedicatedServer() || element instanceof IClientElement : "Unable to register element: " + "Trying to register server element for client side";
-
-            ELEMENTS.put(new ResourceLocation(namespace, key), element);
-            return element;
-        }
-
-        return null;
-    }
-
-    /**
-     * @param element element to get name for
-     * @return name set in elements registry
-     */
-    public static ResourceLocation getRegistryName(AbstractElement element) {
-
-        return ELEMENTS.inverse().get(element);
-    }
-
-    /**
      * get an element from another mod which uses this registry
      * @param namespace namespace of owning mod
      * @param key key for element to get
@@ -135,6 +99,30 @@ public class ElementRegistry {
     public static Optional<AbstractElement> get(ResourceLocation name) {
 
         return Optional.ofNullable(ELEMENTS.get(name));
+    }
+
+    /**
+     * @param namespace modid to get elements for
+     * @return elements for <code>namespace</code> as set
+     */
+    public static Set<AbstractElement> getAllElements(String namespace) {
+
+        return ELEMENTS.entrySet().stream()
+                .filter(entry -> entry.getKey().getNamespace().equals(namespace))
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * to be used by other mods using this library
+     * @param namespace namespace of owning mod
+     * @param key key for element to get
+     * @param path path for config value
+     * @return the config value
+     */
+    public static <T> Optional<T> getConfigValue(String namespace, String key, String... path) {
+
+        return getConfigValue(new ResourceLocation(namespace, key));
     }
 
     /**
@@ -224,22 +212,10 @@ public class ElementRegistry {
 
             assert dist == FMLEnvironment.dist : "Unable to setup element: " + "Sided element registered on wrong side";
 
-            // create dummy element
+            // create dummy element for config
             AbstractElement general = AbstractElement.createEmpty(new ResourceLocation(namespace, "general"));
             ConfigManager.builder().create(general, type, builder -> elements.forEach(element -> element.setupGeneralConfig(builder)));
         }
-    }
-
-    /**
-     * @param namespace modid to get elements for
-     * @return elements for <code>namespace</code> as set
-     */
-    public static Set<AbstractElement> getAllElements(String namespace) {
-
-        return ELEMENTS.entrySet().stream()
-                .filter(entry -> entry.getKey().getNamespace().equals(namespace))
-                .map(Map.Entry::getValue)
-                .collect(Collectors.toSet());
     }
 
     /**

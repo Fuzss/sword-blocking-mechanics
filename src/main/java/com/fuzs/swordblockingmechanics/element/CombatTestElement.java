@@ -3,10 +3,9 @@ package com.fuzs.swordblockingmechanics.element;
 import com.fuzs.puzzleslib_sbm.element.extension.ClientExtensibleElement;
 import com.fuzs.swordblockingmechanics.SwordBlockingMechanics;
 import com.fuzs.swordblockingmechanics.client.element.CombatTestExtension;
-import com.fuzs.swordblockingmechanics.config.ConfigBuildHandler;
 import com.fuzs.swordblockingmechanics.mixin.accessor.IItemAccessor;
 import com.fuzs.swordblockingmechanics.mixin.accessor.IPlayerEntityAccessor;
-import net.minecraft.client.settings.AttackIndicatorStatus;
+import com.fuzs.swordblockingmechanics.util.BlockingHelper;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileItemEntity;
@@ -25,7 +24,6 @@ import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingKnockBackEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class CombatTestElement extends ClientExtensibleElement<CombatTestExtension> {
 
@@ -37,7 +35,6 @@ public class CombatTestElement extends ClientExtensibleElement<CombatTestExtensi
     private boolean noShieldDelay;
     private boolean passThroughThrowables;
     private boolean fastSwitching;
-    private AttackIndicatorStatus shieldIndicator;
     public boolean fastDrinking;
 
     public CombatTestElement() {
@@ -71,15 +68,14 @@ public class CombatTestElement extends ClientExtensibleElement<CombatTestExtensi
     @Override
     public void setupCommonConfig(ForgeConfigSpec.Builder builder) {
 
-        addToConfig(builder.comment("Increase snowball and egg stack size from 16 to 64.").define("Increase Stack Size", true), this::setMaxStackSize);
+        addToConfig(builder.comment("Increase snowball and egg stack size from 16 to 64, and potion stack size from 1 to 16.").define("Increase Stack Size", true), this::setMaxStackSize);
         addToConfig(builder.comment("Add a delay of 4 ticks between throwing snowballs or eggs, just like with ender pearls.").define("Throwables Delay", true), v -> this.throwablesDelay = v);
         addToConfig(builder.comment("Eating and drinking both are interrupted if the player receives damage.").define("Eating Interruption", true), v -> this.eatingInterruption = v);
-        addToConfig(builder.comment("Fix a vanilla bug (MC-147694) which prevents attackers from receiving knockback when their attack is blocked.").define("Shield Knockback", true), v -> this.shieldKnockback = v);
-        addToConfig(builder.comment("Skip the 5 tick warm-up delay when activating a shield.").define("Remove Shield Delay", true), v -> this.noShieldDelay = v);
+        addToConfig(builder.comment("Fix a vanilla bug which prevents attackers from receiving knockback when their attack is blocked (MC-147694).").define("Shield Knockback", true), v -> this.shieldKnockback = v);
+        addToConfig(builder.comment("Skip 5 tick warm-up delay when activating a shield.").define("Remove Shield Delay", true), v -> this.noShieldDelay = v);
         addToConfig(builder.comment("Throwables such as snowballs, eggs and ender pearls pass through blocks without a collision shape like grass and flowers.").define("Pass-Through Throwables", true), v -> this.passThroughThrowables = v);
-        addToConfig(builder.comment("The attack timer is unaffected by switching items.").define("Fast Tool Switching", true), v -> this.fastSwitching = v);
-        addToConfig(builder.comment("Show a shield indicator similar to the attack indicator when actively blocking.").defineEnum("Shield Indicator", AttackIndicatorStatus.CROSSHAIR), v -> this.shieldIndicator = v);
-        addToConfig(builder.comment("It only takes 20 ticks to drink liquid items instead of 32 or 40.").define("Fast Drinking", true), v -> this.fastDrinking = v);
+        addToConfig(builder.comment("Attack cooldown is unaffected by switching items.").define("Fast Tool Switching", true), v -> this.fastSwitching = v);
+        addToConfig(builder.comment("It only takes 20 ticks to drink liquid foods instead of 32 or 40.").define("Fast Drinking", true), v -> this.fastDrinking = v);
     }
 
     private void onProjectileImpact(final ProjectileImpactEvent evt) {
@@ -131,6 +127,11 @@ public class CombatTestElement extends ClientExtensibleElement<CombatTestExtensi
             // remove shield activation delay
             evt.setDuration(evt.getItem().getUseDuration() - 5);
         }
+
+        if (this.fastDrinking && evt.getItem().getUseAction() == UseAction.DRINK) {
+
+            evt.setDuration(20);
+        }
     }
 
     private void onRightClickItem(final PlayerInteractEvent.RightClickItem evt) {
@@ -162,9 +163,11 @@ public class CombatTestElement extends ClientExtensibleElement<CombatTestExtensi
 
     private void setMaxStackSize(boolean increase) {
 
-        int amount = increase ? 64 : 16;
-        ((IItemAccessor) Items.SNOWBALL).setMaxStackSize(amount);
-        ((IItemAccessor) Items.EGG).setMaxStackSize(amount);
+        int throwablesAmount = increase ? 64 : 16;
+        int potionAmount = increase ? 16 : 1;
+        ((IItemAccessor) Items.SNOWBALL).setMaxStackSize(throwablesAmount);
+        ((IItemAccessor) Items.EGG).setMaxStackSize(throwablesAmount);
+        ((IItemAccessor) Items.POTION).setMaxStackSize(potionAmount);
     }
 
 }

@@ -80,7 +80,7 @@ public class PuzzlesLib {
      * set mod to only be required on one side, server or client
      * works like <code>clientSideOnly</code> back in 1.12
      */
-    protected final void setSideSideOnly() {
+    protected static void setSideSideOnly() {
 
         ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST, () -> Pair.of(() -> FMLNetworkConstants.IGNORESERVERONLY, (remote, isServer) -> true));
     }
@@ -88,7 +88,7 @@ public class PuzzlesLib {
     /**
      * load {@link com.fuzs.puzzleslib_sbm.recipe.ElementConfigCondition} in case this element is adding any recipes
      */
-    protected void loadConfigCondition() {
+    protected static void loadConfigCondition() {
 
         if (!isConditionLoaded) {
 

@@ -1,7 +1,7 @@
 package com.fuzs.swordblockingmechanics.util;
 
-import com.fuzs.swordblockingmechanics.config.ConfigBuildHandler;
 import com.fuzs.swordblockingmechanics.element.SwordBlockingElement;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
@@ -73,9 +73,9 @@ public class BlockingHelper {
         return false;
     }
 
-    public static void dealDamageToSword(PlayerEntity player, float damage) {
+    public static void dealDamageToSword(PlayerEntity player, float damage, boolean dealDamage) {
 
-        if (ConfigBuildHandler.DAMAGE_SWORD.get() && damage >= 3.0F) {
+        if (dealDamage && damage >= 3.0F) {
 
             ItemStack swordStack = player.getActiveItemStack();
             Hand activeHand = player.getActiveHand();
@@ -94,6 +94,29 @@ public class BlockingHelper {
                 player.playSound(SoundEvents.ENTITY_ITEM_BREAK, 0.8F, 0.8F + player.world.rand.nextFloat() * 0.4F);
             }
         }
+    }
+
+    public static boolean canActivateBlocking(ItemStack stack, PlayerEntity player) {
+
+        switch (stack.getUseAction()) {
+
+            case BLOCK:
+
+                return false;
+            case EAT:
+            case DRINK:
+
+                return stack.getItem().getFood() == null || !player.canEat(stack.getItem().getFood().canEatWhenFull());
+            case BOW:
+            case CROSSBOW:
+
+                return player.findAmmo(stack).isEmpty();
+            case SPEAR:
+
+                return stack.getDamage() >= stack.getMaxDamage() - 1 || EnchantmentHelper.getRiptideModifier(stack) > 0 && !player.isWet();
+        }
+
+        return true;
     }
 
 }

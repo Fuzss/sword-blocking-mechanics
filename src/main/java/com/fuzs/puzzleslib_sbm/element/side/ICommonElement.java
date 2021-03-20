@@ -18,21 +18,12 @@ public interface ICommonElement extends ISidedElement {
      * setup for {@link net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent}
      * is always loaded no matter the element's state
      */
-    default void initCommon() {
-
-    }
-
-    /**
-     * load whenever the element's state changes to enabled
-     * is not loaded when the element is disabled, changes are undone by {@link #unloadCommon()}
-     */
     default void loadCommon() {
 
     }
 
     /**
-     * reverse load whenever the element's state changes to disabled
-     * should basically clean up changes made in {@link #loadCommon()}
+     * should basically clean up changes made by this element
      */
     default void unloadCommon() {
 

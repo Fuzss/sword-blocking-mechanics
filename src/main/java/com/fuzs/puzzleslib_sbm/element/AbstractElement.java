@@ -5,7 +5,6 @@ import com.fuzs.puzzleslib_sbm.config.ConfigManager;
 import com.fuzs.puzzleslib_sbm.element.side.IClientElement;
 import com.fuzs.puzzleslib_sbm.element.side.ICommonElement;
 import com.fuzs.puzzleslib_sbm.element.side.IServerElement;
-import com.fuzs.puzzleslib_sbm.element.side.ISidedElement;
 import com.google.common.collect.Lists;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -47,7 +46,7 @@ public abstract class AbstractElement extends EventListener implements IConfigur
 
     @Nonnull
     @Override
-    public ResourceLocation getRegistryName() {
+    public final ResourceLocation getRegistryName() {
 
         if (this.name == null) {
 
@@ -59,7 +58,7 @@ public abstract class AbstractElement extends EventListener implements IConfigur
 
     @Nonnull
     @Override
-    public AbstractElement setRegistryName(@Nonnull ResourceLocation name) {
+    public final AbstractElement setRegistryName(@Nonnull ResourceLocation name) {
 
         if (this.name != null) {
 
@@ -109,7 +108,7 @@ public abstract class AbstractElement extends EventListener implements IConfigur
     public final void setup() {
 
         this.setupConfig();
-        this.setupRegistriesAndEvents();
+        this.loadAllSides(ICommonElement::setupCommon, IClientElement::setupClient, IServerElement::setupServer);
     }
 
     /**
@@ -120,37 +119,29 @@ public abstract class AbstractElement extends EventListener implements IConfigur
         Consumer<ICommonElement> commonConfig = element -> ConfigManager.builder().create(this, ModConfig.Type.COMMON, element::setupCommonConfig, element.getCommonDescription());
         Consumer<IClientElement> clientConfig = element -> ConfigManager.builder().create(this, ModConfig.Type.CLIENT, element::setupClientConfig, element.getClientDescription());
         Consumer<IServerElement> serverConfig = element -> ConfigManager.builder().create(this, ModConfig.Type.SERVER, element::setupServerConfig, element.getServerDescription());
-        this.setupAllSides(commonConfig, clientConfig, serverConfig);
+        this.loadAllSides(commonConfig, clientConfig, serverConfig);
     }
 
     /**
-     * setup events for all sides
+     * @param common consumer if implements {@link ICommonElement}
+     * @param client consumer if implements {@link IClientElement}
+     * @param server consumer if implements {@link IServerElement}
      */
-    private void setupRegistriesAndEvents() {
-
-        this.setupAllSides(ICommonElement::setupCommon, IClientElement::setupClient, IServerElement::setupServer);
-    }
-
-    /**
-     * @param commonSetup consumer if implements {@link ICommonElement}
-     * @param clientSetup consumer if implements {@link IClientElement}
-     * @param serverSetup consumer if implements {@link IServerElement}
-     */
-    private void setupAllSides(Consumer<ICommonElement> commonSetup, Consumer<IClientElement> clientSetup, Consumer<IServerElement> serverSetup) {
+    private void loadAllSides(Consumer<ICommonElement> common, Consumer<IClientElement> client, Consumer<IServerElement> server) {
 
         if (this instanceof ICommonElement) {
 
-            commonSetup.accept(((ICommonElement) this));
+            common.accept(((ICommonElement) this));
         }
 
         if (FMLEnvironment.dist.isClient() && this instanceof IClientElement) {
 
-            clientSetup.accept(((IClientElement) this));
+            client.accept(((IClientElement) this));
         }
 
         if (FMLEnvironment.dist.isDedicatedServer() && this instanceof IServerElement) {
 
-            serverSetup.accept(((IServerElement) this));
+            server.accept(((IServerElement) this));
         }
     }
 
@@ -168,7 +159,7 @@ public abstract class AbstractElement extends EventListener implements IConfigur
             return;
         }
 
-        this.initSide(evt);
+        this.loadSide(evt);
         if (this instanceof ICommonElement) {
 
             if (evt instanceof FMLCommonSetupEvent) {
@@ -185,17 +176,17 @@ public abstract class AbstractElement extends EventListener implements IConfigur
      * initialize sided content, this will always happen, even when the element is not loaded
      * @param evt setup event this is called from
      */
-    private void initSide(ParallelDispatchEvent evt) {
+    private void loadSide(ParallelDispatchEvent evt) {
 
         if (evt instanceof FMLCommonSetupEvent && this instanceof ICommonElement) {
 
-            ((ICommonElement) this).initCommon();
+            ((ICommonElement) this).loadCommon();
         } else if (evt instanceof FMLClientSetupEvent && this instanceof IClientElement) {
 
-            ((IClientElement) this).initClient();
+            ((IClientElement) this).loadClient();
         } else if (evt instanceof FMLDedicatedServerSetupEvent && this instanceof IServerElement) {
 
-            ((IServerElement) this).initServer();
+            ((IServerElement) this).loadServer();
         }
     }
 
@@ -208,11 +199,10 @@ public abstract class AbstractElement extends EventListener implements IConfigur
         if (enabled || this.isAlwaysEnabled()) {
 
             this.reloadEventListeners(true);
-            this.reloadSides(true);
         } else if (!firstLoad) {
 
             this.reloadEventListeners(false);
-            this.reloadSides(false);
+            this.loadAllSides(ICommonElement::unloadCommon, IClientElement::unloadClient, IServerElement::unloadServer);
         }
     }
 
@@ -228,37 +218,6 @@ public abstract class AbstractElement extends EventListener implements IConfigur
         } else {
 
             this.getEventListeners().forEach(EventStorage::unregister);
-        }
-    }
-
-    /**
-     * call proper load or unload methods depending on sided element type
-     * @param enable should element contents be loaded, otherwise they're unloaded
-     */
-    private void reloadSides(boolean enable) {
-
-        Consumer<ICommonElement> reloadCommon = element -> this.reloadSpecificSide(element, enable, ICommonElement::loadCommon, ICommonElement::unloadCommon);
-        Consumer<IClientElement> reloadClient = element -> this.reloadSpecificSide(element, enable, IClientElement::loadClient, IClientElement::unloadClient);
-        Consumer<IServerElement> reloadServer = element -> this.reloadSpecificSide(element, enable, IServerElement::loadServer, IServerElement::unloadServer);
-        this.setupAllSides(reloadCommon, reloadClient, reloadServer);
-    }
-
-    /**
-     * call proper load or unload method for given element type
-     * @param element casted element for calling methods on
-     * @param enable should element contents be loaded, otherwise they're unloaded
-     * @param load element consumer for load
-     * @param unload element consumer for unload
-     * @param <T> type of this element
-     */
-    private <T extends ISidedElement> void reloadSpecificSide(T element, boolean enable, Consumer<T> load, Consumer<T> unload) {
-
-        if (enable) {
-
-            load.accept(element);
-        } else {
-
-            unload.accept(element);
         }
     }
 
@@ -302,7 +261,7 @@ public abstract class AbstractElement extends EventListener implements IConfigur
     /**
      * something went wrong using this element, disable until game is restarted
      */
-    protected void setDisabled() {
+    protected final void setDisabled() {
 
         this.setEnabled(-1);
         PuzzlesLib.LOGGER.warn("Detected issue in {} element: {}", this.getDisplayName(), "Disabling until game restart");

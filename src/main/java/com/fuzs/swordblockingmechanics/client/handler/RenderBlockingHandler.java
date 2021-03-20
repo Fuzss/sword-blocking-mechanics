@@ -22,7 +22,6 @@ import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.world.GameType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.InputUpdateEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
@@ -38,86 +37,16 @@ public class RenderBlockingHandler {
 
     @SuppressWarnings("unused")
     @SubscribeEvent
-    public void onRenderLiving(final RenderLivingEvent.Pre<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>> evt) {
-
-        if (evt.getEntity() instanceof AbstractClientPlayerEntity) {
-
-            AbstractClientPlayerEntity player = (AbstractClientPlayerEntity) evt.getEntity();
-            if (BlockingHelper.isActiveItemStackBlocking(player)) {
-
-                PlayerModel<AbstractClientPlayerEntity> model = evt.getRenderer().getEntityModel();
-                boolean left1 = player.getActiveHand() == Hand.OFF_HAND && player.getPrimaryHand() == HandSide.RIGHT;
-                boolean left2 = player.getActiveHand() == Hand.MAIN_HAND && player.getPrimaryHand() == HandSide.LEFT;
-                BipedModel.ArmPose pose = ConfigBuildHandler.REQUIRE_BOTH_HANDS.get() ? BipedModel.ArmPose.CROSSBOW_CHARGE : BipedModel.ArmPose.BLOCK;
-                if (left1 || left2) {
-
-                    if (model.leftArmPose == BipedModel.ArmPose.ITEM) {
-
-                        model.leftArmPose = pose;
-                    }
-                } else {
-
-                    if (model.rightArmPose == BipedModel.ArmPose.ITEM) {
-
-                        model.rightArmPose = pose;
-                    }
-                }
-            }
-        }
-    }
-
-    @SubscribeEvent
-    public void onRenderHand(final RenderHandEvent evt) {
-
-        ClientPlayerEntity player = this.mc.player;
-        ItemStack stack = evt.getItemStack();
-        if (player != null && player.getActiveHand() == evt.getHand() && BlockingHelper.isActiveItemStackBlocking(player)) {
-
-            MatrixStack matrixStack = evt.getMatrixStack();
-            matrixStack.push();
-
-            boolean rightHanded = (evt.getHand() == Hand.MAIN_HAND ? player.getPrimaryHand() : player.getPrimaryHand().opposite()) == HandSide.RIGHT;
-            this.transformSideFirstPerson(matrixStack, rightHanded ? 1.0F : -1.0F, evt.getEquipProgress());
-            this.mc.getFirstPersonRenderer().renderItemSide(player, stack, rightHanded ? net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND :
-                    net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND, !rightHanded, matrixStack, evt.getBuffers(), evt.getLight());
-
-            matrixStack.pop();
-            evt.setCanceled(true);
-        }
-    }
-
-    /**
-     * values taken from Minecraft snapshot 15w33b
-     */
-    private void transformSideFirstPerson(MatrixStack matrixStack, float side, float equippedProg) {
-
-        matrixStack.translate(side * 0.56F, -0.52F + equippedProg * -0.6F, -0.72F);
-        matrixStack.translate(side * -0.14142136F, 0.08F, 0.14142136F);
-        matrixStack.rotate(Vector3f.XP.rotationDegrees(-102.25F));
-        matrixStack.rotate(Vector3f.YP.rotationDegrees(side * 13.365F));
-        matrixStack.rotate(Vector3f.ZP.rotationDegrees(side * 78.05F));
-    }
-
-    @SuppressWarnings("unused")
-    @SubscribeEvent
     public void onRenderGameOverlay(final RenderGameOverlayEvent evt) {
-
-        // use shield indicator, but don't turn off if it's not enabled as it's a separate setting after all
-        AttackIndicatorStatus attackIndicator = ConfigBuildHandler.SHIELD_INDICATOR.get();
-        if (attackIndicator == AttackIndicatorStatus.OFF) {
-
-            attackIndicator = AttackIndicatorStatus.CROSSHAIR;
-        }
 
         boolean crosshair = evt.getType() == RenderGameOverlayEvent.ElementType.CROSSHAIRS && attackIndicator == AttackIndicatorStatus.CROSSHAIR;
         boolean hotbar = evt.getType() == RenderGameOverlayEvent.ElementType.HOTBAR && attackIndicator == AttackIndicatorStatus.HOTBAR;
-        if (!crosshair && !hotbar || this.mc.player == null || this.mc.playerController == null
-                || this.mc.playerController.getCurrentGameType() == GameType.SPECTATOR && !this.mc.ingameGUI.isTargetNamedMenuProvider(this.mc.objectMouseOver)) {
+        if (!crosshair && !hotbar || this.mc.playerController.getCurrentGameType() == GameType.SPECTATOR && !this.mc.ingameGUI.isTargetNamedMenuProvider(this.mc.objectMouseOver)) {
 
             return;
         }
 
-        float f = (float) BlockingHelper.getBlockUseDuration(this.mc.player) / (float) ConfigBuildHandler.PARRY_WINDOW.get();
+        float f = (float) BlockingHelper.getBlockUseDuration(this.mc.player) / ConfigBuildHandler.PARRY_WINDOW.get();
         if (f >= 1.0F || !BlockingHelper.isActiveItemStackBlocking(this.mc.player)) {
 
             return;
@@ -175,18 +104,6 @@ public class RenderBlockingHandler {
                 RenderSystem.disableRescaleNormal();
                 RenderSystem.disableBlend();
             }
-        }
-    }
-
-    @SuppressWarnings("unused")
-    @SubscribeEvent
-    public void onInputUpdate(final InputUpdateEvent evt) {
-
-        double movementModifier = ConfigBuildHandler.WALKING_MODIFIER.get();
-        if (movementModifier != 0.2F && !evt.getPlayer().isPassenger() && BlockingHelper.isActiveItemStackBlocking(evt.getPlayer())) {
-
-            evt.getMovementInput().moveStrafe *= 5.0F * movementModifier;
-            evt.getMovementInput().moveForward *= 5.0F * movementModifier;
         }
     }
 

@@ -18,21 +18,12 @@ public interface IServerElement extends ISidedElement {
      * setup for {@link net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent}
      * is always loaded no matter the element's state
      */
-    default void initServer() {
-
-    }
-
-    /**
-     * load whenever the element's state changes to enabled
-     * is not loaded when the element is disabled, changes are undone by {@link #unloadServer()}
-     */
     default void loadServer() {
 
     }
 
     /**
-     * reverse load whenever the element's state changes to disabled
-     * should basically clean up changes made in {@link #loadServer()}
+     * should basically clean up changes made by this element
      */
     default void unloadServer() {
 
