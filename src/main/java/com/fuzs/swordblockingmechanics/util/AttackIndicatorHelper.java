@@ -36,17 +36,7 @@ public class AttackIndicatorHelper {
         return AttackIndicatorStatus.OFF;
     }
 
-    public static void renderCrosshairIndicator(boolean isPreRendering, BiConsumer<Integer, Integer> drawIcon) {
-
-        renderShieldIndicator(isPreRendering, () -> renderCrosshairIcon(drawIcon));
-    }
-
-    public static void renderHotbarIndicator(boolean isPreRendering, BiConsumer<Integer, Integer> drawIcon) {
-
-        renderShieldIndicator(isPreRendering, () -> renderHotbarIcon(drawIcon));
-    }
-
-    private static void renderShieldIndicator(boolean isPreRendering, Runnable renderIcon) {
+    public static void disableAttackIndicator(boolean isPreRendering) {
 
         if (isPreRendering) {
 
@@ -54,11 +44,31 @@ public class AttackIndicatorHelper {
         } else {
 
             resetAttackIndicator();
-            renderIcon.run();
         }
     }
 
-    private static void renderCrosshairIcon(BiConsumer<Integer, Integer> drawIcon) {
+    private static void disableAttackIndicator() {
+
+        INDICATOR_VISITORS.increment();
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.gameSettings.attackIndicator != AttackIndicatorStatus.OFF) {
+
+            attackIndicator = mc.gameSettings.attackIndicator;
+            mc.gameSettings.attackIndicator = AttackIndicatorStatus.OFF;
+        }
+    }
+
+    private static void resetAttackIndicator() {
+
+        INDICATOR_VISITORS.decrement();
+        if (INDICATOR_VISITORS.getValue() == 0 && attackIndicator != AttackIndicatorStatus.OFF) {
+
+            Minecraft.getInstance().gameSettings.attackIndicator = attackIndicator;
+            attackIndicator = AttackIndicatorStatus.OFF;
+        }
+    }
+
+    public static void renderCrosshairIcon(BiConsumer<Integer, Integer> drawIcon) {
 
         Minecraft mc = Minecraft.getInstance();
         RenderSystem.enableBlend();
@@ -74,7 +84,7 @@ public class AttackIndicatorHelper {
     }
 
     @SuppressWarnings("ConstantConditions")
-    private static void renderHotbarIcon(BiConsumer<Integer, Integer> drawIcon) {
+    public static void renderHotbarIcon(BiConsumer<Integer, Integer> drawIcon) {
 
         Minecraft mc = Minecraft.getInstance();
         RenderSystem.enableRescaleNormal();
@@ -90,25 +100,4 @@ public class AttackIndicatorHelper {
         RenderSystem.disableBlend();
     }
 
-    public static void disableAttackIndicator() {
-
-        INDICATOR_VISITORS.increment();
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.gameSettings.attackIndicator != AttackIndicatorStatus.OFF) {
-
-            attackIndicator = mc.gameSettings.attackIndicator;
-            mc.gameSettings.attackIndicator = AttackIndicatorStatus.OFF;
-        }
-    }
-
-    public static void resetAttackIndicator() {
-
-        INDICATOR_VISITORS.decrement();
-        if (INDICATOR_VISITORS.getValue() == 0 && attackIndicator != AttackIndicatorStatus.OFF) {
-
-            Minecraft.getInstance().gameSettings.attackIndicator = attackIndicator;
-            attackIndicator = AttackIndicatorStatus.OFF;
-        }
-    }
-    
 }

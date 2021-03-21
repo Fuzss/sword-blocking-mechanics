@@ -27,6 +27,7 @@ import net.minecraftforge.client.event.InputUpdateEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.eventbus.api.EventPriority;
 
 import java.util.Map;
 
@@ -48,7 +49,8 @@ public class SwordBlockingExtension extends ElementExtension<SwordBlockingElemen
 
         this.addListener(this::onRenderHand);
         this.addListener(this::onInputUpdate);
-        this.addListener(this::onRenderGameOverlay);
+        // don't want to mess up AttackIndicatorHelper when the event is cancelled by another mod
+        this.addListener(this::onRenderGameOverlay, EventPriority.LOW);
     }
 
     @Override
@@ -110,25 +112,29 @@ public class SwordBlockingExtension extends ElementExtension<SwordBlockingElemen
             if (blockDuration < 1.0F && BlockingHelper.isActiveItemStackBlocking(this.mc.player)) {
 
                 boolean isPreRendering = evt instanceof RenderGameOverlayEvent.Pre;
-                MatrixStack matrixStack = evt.getMatrixStack();
-                switch (AttackIndicatorHelper.getActiveIndicator(evt.getType())) {
+                AttackIndicatorHelper.disableAttackIndicator(isPreRendering);
+                if (!isPreRendering) {
 
-                    case CROSSHAIR:
+                    MatrixStack matrixStack = evt.getMatrixStack();
+                    switch (AttackIndicatorHelper.getActiveIndicator(evt.getType())) {
 
-                        if (this.mc.playerController.getCurrentGameType() != GameType.SPECTATOR || ((IIngameGuiAccessor) this.mc.ingameGUI).callIsTargetNamedMenuProvider(this.mc.objectMouseOver)) {
+                        case CROSSHAIR:
 
-                            GameSettings gamesettings = this.mc.gameSettings;
-                            if (gamesettings.getPointOfView().func_243192_a() && (!gamesettings.showDebugInfo || this.mc.player.hasReducedDebug() || gamesettings.reducedDebugInfo)) {
+                            if (this.mc.playerController.getCurrentGameType() != GameType.SPECTATOR || ((IIngameGuiAccessor) this.mc.ingameGUI).callIsTargetNamedMenuProvider(this.mc.objectMouseOver)) {
 
-                                AttackIndicatorHelper.renderCrosshairIndicator(isPreRendering, (width, height) -> this.drawCrosshairIcon(matrixStack, width, height, blockDuration));
+                                GameSettings gamesettings = this.mc.gameSettings;
+                                if (gamesettings.getPointOfView().func_243192_a() && (!gamesettings.showDebugInfo || this.mc.player.hasReducedDebug() || gamesettings.reducedDebugInfo)) {
+
+                                    AttackIndicatorHelper.renderCrosshairIcon((width, height) -> this.drawCrosshairIcon(matrixStack, width, height, blockDuration));
+                                }
                             }
-                        }
 
-                        break;
-                    case HOTBAR:
+                            break;
+                        case HOTBAR:
 
-                        AttackIndicatorHelper.renderHotbarIndicator(isPreRendering, (width, height) -> this.drawHotbarIcon(matrixStack, width, height, blockDuration));
-                        break;
+                            AttackIndicatorHelper.renderHotbarIcon((width, height) -> this.drawHotbarIcon(matrixStack, width, height, blockDuration));
+                            break;
+                    }
                 }
             }
         }
