@@ -10,9 +10,6 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface IFirstPersonRendererAccessor {
 
     @Invoker
-    void callTransformFirstPerson(MatrixStack matrixStackIn, HandSide handIn, float swingProgress);
-
-    @Invoker
-    void callTransformSideFirstPerson(MatrixStack matrixStackIn, HandSide handIn, float equippedProg);
+    void invokeTransformSideFirstPerson(MatrixStack matrixStackIn, HandSide handIn, float equippedProg);
 
 }

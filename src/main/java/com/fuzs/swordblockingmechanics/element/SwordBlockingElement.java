@@ -34,6 +34,7 @@ public class SwordBlockingElement extends ClientExtensibleElement<SwordBlockingE
     private boolean damageSword;
     private boolean deflectProjectiles;
     public int parryWindow;
+    private boolean damageSwordParry;
     public boolean requireBothHands;
 
     public SwordBlockingElement() {
@@ -65,6 +66,7 @@ public class SwordBlockingElement extends ClientExtensibleElement<SwordBlockingE
         addToConfig(builder.comment("Damage sword when blocking an attack depending on the amount of damage blocked. Sword is only damaged when at least three damage points have been blocked, just like a shield.").define("Damage Sword", false), v -> this.damageSword = v);
         addToConfig(builder.comment("Incoming projectiles such as arrows or tridents will ricochet while blocking.").define("Deflect Projectiles", false), v -> this.deflectProjectiles = v);
         addToConfig(builder.comment("Amount of ticks after starting to block in which an attack will be completely nullified like when blocking with a shield.").defineInRange("Parry Window", 10, 0, 72000), v -> this.parryWindow = v);
+        addToConfig(builder.comment("Damage sword when successfully parrying depending on the amount of damage blocked. Sword is only damaged when at least three damage points have been parried, just like a shield.").define("Damage Sword On Parry", false), v -> this.damageSwordParry = v);
         addToConfig(builder.comment("Blocking requires both hands, meaning the hand not holding the sword must be empty.").define("Require Both Hands", false), v -> this.requireBothHands = v);
     }
 
@@ -123,7 +125,7 @@ public class SwordBlockingElement extends ClientExtensibleElement<SwordBlockingE
                 if (damageAmount > 0.0F && BlockingHelper.canBlockDamageSource(player, damageSource)) {
 
                     evt.setCanceled(true);
-                    BlockingHelper.dealDamageToSword(player, damageAmount, this.damageSword);
+                    BlockingHelper.dealDamageToSword(player, damageAmount, this.damageSwordParry);
                     if (!damageSource.isProjectile()) {
 
                         if (damageSource.getImmediateSource() instanceof LivingEntity) {

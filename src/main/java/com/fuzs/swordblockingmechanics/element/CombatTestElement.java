@@ -5,7 +5,6 @@ import com.fuzs.swordblockingmechanics.SwordBlockingMechanics;
 import com.fuzs.swordblockingmechanics.client.element.CombatTestExtension;
 import com.fuzs.swordblockingmechanics.mixin.accessor.IItemAccessor;
 import com.fuzs.swordblockingmechanics.mixin.accessor.IPlayerEntityAccessor;
-import com.fuzs.swordblockingmechanics.util.BlockingHelper;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileItemEntity;
@@ -22,7 +21,6 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
-import net.minecraftforge.event.entity.living.LivingKnockBackEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 public class CombatTestElement extends ClientExtensibleElement<CombatTestExtension> {
@@ -31,7 +29,6 @@ public class CombatTestElement extends ClientExtensibleElement<CombatTestExtensi
 
     private boolean throwablesDelay;
     private boolean eatingInterruption;
-    private boolean shieldKnockback;
     private boolean noShieldDelay;
     private boolean passThroughThrowables;
     private boolean fastSwitching;
@@ -45,7 +42,7 @@ public class CombatTestElement extends ClientExtensibleElement<CombatTestExtensi
     @Override
     public String[] getDescription() {
 
-        return new String[]{"Introduces various tweaks from Combat Test Snapshots and other popular combat suggestions."};
+        return new String[]{"Introduces various tweaks from Combat Test Snapshots and some popular community suggestions."};
     }
 
     @Override
@@ -53,7 +50,6 @@ public class CombatTestElement extends ClientExtensibleElement<CombatTestExtensi
 
         this.addListener(this::onProjectileImpact);
         this.addListener(this::onPlayerTick);
-        this.addListener(this::onLivingKnockBack);
         this.addListener(this::onItemUseStart);
         this.addListener(this::onRightClickItem);
         this.addListener(this::onLivingDamage);
@@ -71,7 +67,6 @@ public class CombatTestElement extends ClientExtensibleElement<CombatTestExtensi
         addToConfig(builder.comment("Increase snowball and egg stack size from 16 to 64, and potion stack size from 1 to 16.").define("Increase Stack Size", true), this::setMaxStackSize);
         addToConfig(builder.comment("Add a delay of 4 ticks between throwing snowballs or eggs, just like with ender pearls.").define("Throwables Delay", true), v -> this.throwablesDelay = v);
         addToConfig(builder.comment("Eating and drinking both are interrupted if the player receives damage.").define("Eating Interruption", true), v -> this.eatingInterruption = v);
-        addToConfig(builder.comment("Fix a vanilla bug which prevents attackers from receiving knockback when their attack is blocked (MC-147694).").define("Shield Knockback", true), v -> this.shieldKnockback = v);
         addToConfig(builder.comment("Skip 5 tick warm-up delay when activating a shield.").define("Remove Shield Delay", true), v -> this.noShieldDelay = v);
         addToConfig(builder.comment("Throwables such as snowballs, eggs and ender pearls pass through blocks without a collision shape like grass and flowers.").define("Pass-Through Throwables", true), v -> this.passThroughThrowables = v);
         addToConfig(builder.comment("Attack cooldown is unaffected by switching items.").define("Fast Tool Switching", true), v -> this.fastSwitching = v);
@@ -107,16 +102,6 @@ public class CombatTestElement extends ClientExtensibleElement<CombatTestExtensi
 
                 ((IPlayerEntityAccessor) player).setItemStackMainHand(itemstack.copy());
             }
-        }
-    }
-
-    private void onLivingKnockBack(final LivingKnockBackEvent evt) {
-
-        if (this.shieldKnockback && evt.getOriginalStrength() == 0.5F && evt.getEntityLiving().isActiveItemStackBlocking()) {
-
-            // fix for https://bugs.mojang.com/browse/MC-147694 (Mobs don't do knockback when blocking with shield)
-            evt.setRatioX(evt.getRatioX() * -1);
-            evt.setRatioZ(evt.getRatioZ() * -1);
         }
     }
 

@@ -8,6 +8,7 @@ import net.minecraft.client.settings.AttackIndicatorStatus;
 import net.minecraft.util.HandSide;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import org.apache.commons.lang3.mutable.MutableInt;
 
 import java.util.function.BiConsumer;
 
@@ -15,17 +16,19 @@ import java.util.function.BiConsumer;
 public class AttackIndicatorHelper {
 
     private static final ResourceLocation GUI_ICONS_LOCATION = new ResourceLocation(SwordBlockingMechanics.MODID, "textures/gui/icons.png");
-    
-    private static AttackIndicatorStatus attackIndicator;
+    private static final MutableInt INDICATOR_VISITORS = new MutableInt();
 
-    public static AttackIndicatorStatus getActiveIndicator(RenderGameOverlayEvent.ElementType elementType, AttackIndicatorStatus indicatorSetting) {
+    private static AttackIndicatorStatus attackIndicator = AttackIndicatorStatus.OFF;
 
-        if (elementType == RenderGameOverlayEvent.ElementType.CROSSHAIRS && indicatorSetting == AttackIndicatorStatus.CROSSHAIR) {
+    public static AttackIndicatorStatus getActiveIndicator(RenderGameOverlayEvent.ElementType elementType) {
+
+        Minecraft mc = Minecraft.getInstance();
+        if (elementType == RenderGameOverlayEvent.ElementType.CROSSHAIRS && (mc.gameSettings.attackIndicator == AttackIndicatorStatus.CROSSHAIR || attackIndicator == AttackIndicatorStatus.CROSSHAIR)) {
 
             return AttackIndicatorStatus.CROSSHAIR;
         }
 
-        if (elementType == RenderGameOverlayEvent.ElementType.HOTBAR && indicatorSetting == AttackIndicatorStatus.HOTBAR) {
+        if (elementType == RenderGameOverlayEvent.ElementType.HOTBAR && (mc.gameSettings.attackIndicator == AttackIndicatorStatus.HOTBAR || attackIndicator == AttackIndicatorStatus.HOTBAR)) {
 
             return AttackIndicatorStatus.HOTBAR;
         }
@@ -89,8 +92,9 @@ public class AttackIndicatorHelper {
 
     public static void disableAttackIndicator() {
 
+        INDICATOR_VISITORS.increment();
         Minecraft mc = Minecraft.getInstance();
-        if (mc.gameSettings.attackIndicator != AttackIndicatorStatus.OFF && attackIndicator == null) {
+        if (mc.gameSettings.attackIndicator != AttackIndicatorStatus.OFF) {
 
             attackIndicator = mc.gameSettings.attackIndicator;
             mc.gameSettings.attackIndicator = AttackIndicatorStatus.OFF;
@@ -99,10 +103,11 @@ public class AttackIndicatorHelper {
 
     public static void resetAttackIndicator() {
 
-        if (attackIndicator != null) {
+        INDICATOR_VISITORS.decrement();
+        if (INDICATOR_VISITORS.getValue() == 0 && attackIndicator != AttackIndicatorStatus.OFF) {
 
             Minecraft.getInstance().gameSettings.attackIndicator = attackIndicator;
-            attackIndicator = null;
+            attackIndicator = AttackIndicatorStatus.OFF;
         }
     }
     

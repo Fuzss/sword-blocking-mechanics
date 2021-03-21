@@ -18,7 +18,6 @@ import net.minecraft.client.renderer.FirstPersonRenderer;
 import net.minecraft.client.renderer.entity.PlayerRenderer;
 import net.minecraft.client.renderer.entity.layers.HeldItemLayer;
 import net.minecraft.client.renderer.model.ItemCameraTransforms;
-import net.minecraft.client.settings.AttackIndicatorStatus;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.HandSide;
@@ -36,9 +35,7 @@ public class SwordBlockingExtension extends ElementExtension<SwordBlockingElemen
 
     private final Minecraft mc = Minecraft.getInstance();
 
-    public boolean blockHitting;
     public boolean oldBlockingPose;
-    private AttackIndicatorStatus blockingIndicator;
     private float blockingSlowdown;
 
     public SwordBlockingExtension(SwordBlockingElement parent) {
@@ -68,10 +65,8 @@ public class SwordBlockingExtension extends ElementExtension<SwordBlockingElemen
     @Override
     public void setupClientConfig(ForgeConfigSpec.Builder builder) {
 
-        addToConfig(builder.comment("Hit and block with your sword at the same time.").define("Allow Block Hitting", true), v -> this.blockHitting = v);
         addToConfig(builder.comment("Use old third-person pose when blocking with a sword.").define("Old Blocking Pose", false), v -> this.oldBlockingPose = v);
-        addToConfig(builder.comment("Show a shield indicator similar to the attack indicator during the parrying phase of a sword block.").defineEnum("Blocking Indicator", AttackIndicatorStatus.CROSSHAIR), v -> this.blockingIndicator = v);
-        addToConfig(builder.comment("Percentage to slow down movement to while blocking.").defineInRange("Blocking Slowdown", 0.2, 0.0, 2.0), v -> this.blockingSlowdown = v, Double::floatValue);
+        addToConfig(builder.comment("Percentage to slow down movement to while blocking.").defineInRange("Blocking Slowdown", 0.2, 0.0, 1.0), v -> this.blockingSlowdown = v, Double::floatValue);
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -90,12 +85,7 @@ public class SwordBlockingExtension extends ElementExtension<SwordBlockingElemen
             HandSide handSide = isMainHand ? player.getPrimaryHand() : player.getPrimaryHand().opposite();
             boolean isHandSideRight = handSide == HandSide.RIGHT;
 
-            ((IFirstPersonRendererAccessor) itemRenderer).callTransformSideFirstPerson(matrixStack, handSide, evt.getEquipProgress());
-            if (this.blockHitting) {
-
-                ((IFirstPersonRendererAccessor) itemRenderer).callTransformFirstPerson(matrixStack, handSide, evt.getSwingProgress());
-            }
-
+            ((IFirstPersonRendererAccessor) itemRenderer).invokeTransformSideFirstPerson(matrixStack, handSide, evt.getEquipProgress());
             this.transformBlockFirstPerson(matrixStack, handSide);
             ItemCameraTransforms.TransformType transformTypeIn = isHandSideRight ? ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND : ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND;
             itemRenderer.renderItemSide(player, stack, transformTypeIn, !isHandSideRight, matrixStack, evt.getBuffers(), evt.getLight());
@@ -121,7 +111,7 @@ public class SwordBlockingExtension extends ElementExtension<SwordBlockingElemen
 
                 boolean isPreRendering = evt instanceof RenderGameOverlayEvent.Pre;
                 MatrixStack matrixStack = evt.getMatrixStack();
-                switch (AttackIndicatorHelper.getActiveIndicator(evt.getType(), this.blockingIndicator)) {
+                switch (AttackIndicatorHelper.getActiveIndicator(evt.getType())) {
 
                     case CROSSHAIR:
 
@@ -144,6 +134,16 @@ public class SwordBlockingExtension extends ElementExtension<SwordBlockingElemen
         }
     }
 
+    private void transformBlockFirstPerson(MatrixStack matrixStack, HandSide hand) {
+
+        int sideSignum = hand == HandSide.RIGHT ? 1 : -1;
+        // values taken from Minecraft snapshot 15w33b
+        matrixStack.translate(sideSignum * -0.14142136F, 0.08F, 0.14142136F);
+        matrixStack.rotate(Vector3f.XP.rotationDegrees(-102.25F));
+        matrixStack.rotate(Vector3f.YP.rotationDegrees(sideSignum * 13.365F));
+        matrixStack.rotate(Vector3f.ZP.rotationDegrees(sideSignum * 78.05F));
+    }
+
     private void drawCrosshairIcon(MatrixStack matrixStack, int width, int height, float blockDuration) {
 
         // rendering on top of each other for transparency reasons
@@ -157,16 +157,6 @@ public class SwordBlockingExtension extends ElementExtension<SwordBlockingElemen
         int renderHeight = (int) (19.0F * blockDuration);
         AbstractGui.blit(matrixStack, width, height, 0, 0, 18, 18, 256, 256);
         AbstractGui.blit(matrixStack, width, height + renderHeight, 18, renderHeight, 18, 18 - renderHeight, 256, 256);
-    }
-
-    private void transformBlockFirstPerson(MatrixStack matrixStack, HandSide hand) {
-
-        int sideSignum = hand == HandSide.RIGHT ? 1 : -1;
-        // values taken from Minecraft snapshot 15w33b
-        matrixStack.translate(sideSignum * -0.14142136F, 0.08F, 0.14142136F);
-        matrixStack.rotate(Vector3f.XP.rotationDegrees(-102.25F));
-        matrixStack.rotate(Vector3f.YP.rotationDegrees(sideSignum * 13.365F));
-        matrixStack.rotate(Vector3f.ZP.rotationDegrees(sideSignum * 78.05F));
     }
 
 }
