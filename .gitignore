@@ -32,7 +32,9 @@ classes
 *.ipr
 *.iws
 *.iml
-.idea
+**/.idea/*
+!**/.idea/scopes
+!.idea/gradle.xml
 
 ### NetBeans ###
 nbproject/private/
