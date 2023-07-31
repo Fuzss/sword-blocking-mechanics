@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_17",
+  "package": "fuzs.swordblockingmechanics.mixin",
+  "refmap": "swordblockingmechanics.refmap.json",
+  "plugin": "fuzs.swordblockingmechanics.mixin.ModMixinConfigPlugin",
+  "mixins": [
+  ],
+  "client": [
+    "client.HumanoidModelMixin",
+    "client.PlayerItemInHandLayerMixin",
+    "client.accessor.ItemInHandRendererAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
