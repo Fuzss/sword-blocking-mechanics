@@ -8,4 +8,6 @@ public class ClientConfig implements ConfigCore {
     public boolean simpleBlockingPose = false;
     @Config(name = "full_interact_animations", description = "Allows block hitting to render properly (meaning attacking and then using the item directly afterwards). The hitting animation is no longer consumed as in vanilla.")
     public boolean interactAnimations = true;
+    @Config(description = "Render an indicator similar to the attack indicator while parrying is active.")
+    public boolean renderParryIndicator = true;
 }

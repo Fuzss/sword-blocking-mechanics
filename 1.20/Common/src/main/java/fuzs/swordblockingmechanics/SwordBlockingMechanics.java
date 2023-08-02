@@ -6,7 +6,9 @@ import fuzs.puzzleslib.api.event.v1.entity.living.LivingAttackCallback;
 import fuzs.puzzleslib.api.event.v1.entity.living.LivingHurtCallback;
 import fuzs.puzzleslib.api.event.v1.entity.living.LivingKnockBackCallback;
 import fuzs.puzzleslib.api.event.v1.entity.living.UseItemEvents;
+import fuzs.puzzleslib.api.event.v1.entity.player.PlayerEvents;
 import fuzs.puzzleslib.api.event.v1.entity.player.PlayerInteractEvents;
+import fuzs.puzzleslib.api.event.v1.entity.player.PlayerTickEvents;
 import fuzs.swordblockingmechanics.config.ClientConfig;
 import fuzs.swordblockingmechanics.config.ServerConfig;
 import fuzs.swordblockingmechanics.handler.SwordBlockingHandler;
@@ -30,10 +32,12 @@ public class SwordBlockingMechanics implements ModConstructor {
 
     private static void registerHandlers() {
         UseItemEvents.START.register(SwordBlockingHandler::onUseItemStart);
+        UseItemEvents.STOP.register(SwordBlockingHandler::onUseItemStop);
         PlayerInteractEvents.USE_ITEM.register(SwordBlockingHandler::onUseItem);
         LivingAttackCallback.EVENT.register(SwordBlockingHandler::onLivingAttack);
         LivingHurtCallback.EVENT.register(SwordBlockingHandler::onLivingHurt);
         LivingKnockBackCallback.EVENT.register(SwordBlockingHandler::onLivingKnockBack);
+        PlayerTickEvents.END.register(SwordBlockingHandler::onEndPlayerTick);
     }
 
     public static ResourceLocation id(String path) {

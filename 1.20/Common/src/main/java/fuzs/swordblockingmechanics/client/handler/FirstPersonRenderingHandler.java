@@ -26,9 +26,9 @@ public class FirstPersonRenderingHandler {
             boolean mainHand = hand == InteractionHand.MAIN_HAND;
             HumanoidArm handSide = mainHand ? player.getMainArm() : player.getMainArm().getOpposite();
             boolean isHandSideRight = handSide == HumanoidArm.RIGHT;
-            ((ItemInHandRendererAccessor) itemRenderer).goldenagecombat$callApplyItemArmTransform(poseStack, handSide, equipProgress);
+            ((ItemInHandRendererAccessor) itemRenderer).swordblockingmechanics$callApplyItemArmTransform(poseStack, handSide, equipProgress);
             if (SwordBlockingMechanics.CONFIG.get(ClientConfig.class).interactAnimations) {
-                ((ItemInHandRendererAccessor) itemRenderer).goldenagecombat$callApplyItemArmAttackTransform(poseStack, handSide, swingProgress);
+                ((ItemInHandRendererAccessor) itemRenderer).swordblockingmechanics$callApplyItemArmAttackTransform(poseStack, handSide, swingProgress);
             }
             transformBlockFirstPerson(poseStack, handSide);
             itemRenderer.renderItem(player, stack, isHandSideRight ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !isHandSideRight, poseStack, multiBufferSource, packedLight);

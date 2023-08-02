@@ -21,10 +21,16 @@ public class ServerConfig implements ConfigCore {
     @Config(description = "Amount of ticks after starting to block in which an attack will be completely nullified like when blocking with a shield.")
     @Config.IntRange(min = 0, max = 72_000)
     public int parryWindow = 10;
+    @Config(description = "The strength a parried attacker will be knocked back by.")
+    @Config.DoubleRange(min = 0.1, max = 5.0)
+    public double parryKnockbackStrength = 0.5;
     @Config(description = "Damage sword when successfully parrying depending on the amount of damage blocked. Sword is only damaged when at least three damage points have been parried, just like a shield.")
     public boolean damageSwordOnParry = false;
     @Config(description = "Blocking requires both hands, meaning the hand not holding the sword must be empty.")
     public boolean requireBothHands = false;
     @Config(description = "Incoming projectiles such as arrows or tridents will ricochet while blocking.")
     public boolean deflectProjectiles = false;
+    @Config(description = "Percentage to slow down movement to while blocking.")
+    @Config.DoubleRange(min = 0.0, max = 1.0)
+    public double blockingSlowdown = 0.2;
 }

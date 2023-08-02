@@ -23,10 +23,10 @@ abstract class HumanoidModelMixin<T extends LivingEntity> extends AgeableListMod
     public ModelPart leftArm;
 
     @Inject(method = "setupAnim", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/HumanoidModel;setupAttackAnimation(Lnet/minecraft/world/entity/LivingEntity;F)V"))
-    public void setupAnim(T entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo callback) {
-        if (entityIn instanceof Player player) {
+    public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo callback) {
+        if (entity instanceof Player player) {
             if (SwordBlockingHandler.isActiveItemStackBlocking(player)) {
-                if (entityIn.getUsedItemHand() == InteractionHand.OFF_HAND) {
+                if (entity.getUsedItemHand() == InteractionHand.OFF_HAND) {
                     this.leftArm.xRot = this.leftArm.xRot - ((float) Math.PI * 2.0F) / 10.0F;
                     if (SwordBlockingMechanics.CONFIG.get(ClientConfig.class).simpleBlockingPose) {
                         this.leftArm.yRot = ((float) Math.PI / 6.0F);

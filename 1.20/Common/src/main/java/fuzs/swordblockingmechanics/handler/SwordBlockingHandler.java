@@ -6,6 +6,7 @@ import fuzs.puzzleslib.api.event.v1.data.DefaultedDouble;
 import fuzs.puzzleslib.api.event.v1.data.MutableFloat;
 import fuzs.puzzleslib.api.event.v1.data.MutableInt;
 import fuzs.swordblockingmechanics.SwordBlockingMechanics;
+import fuzs.swordblockingmechanics.capability.ParryCooldownCapability;
 import fuzs.swordblockingmechanics.config.ServerConfig;
 import fuzs.swordblockingmechanics.core.CommonAbstractions;
 import fuzs.swordblockingmechanics.init.ModRegistry;
@@ -27,8 +28,10 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Optional;
+
 public class SwordBlockingHandler {
-    private static final int DEFAULT_ITEM_USE_DURATION = 72_000;
+    public static final int DEFAULT_ITEM_USE_DURATION = 72_000;
 
     public static EventResultHolder<InteractionResultHolder<ItemStack>> onUseItem(Player player, Level level, InteractionHand hand) {
         if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).allowBlocking) return EventResultHolder.pass();
@@ -53,6 +56,18 @@ public class SwordBlockingHandler {
         return EventResult.PASS;
     }
 
+    public static EventResult onUseItemStop(LivingEntity entity, ItemStack stack, int remainingUseDuration) {
+        if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).allowBlocking) return EventResult.PASS;
+        if (entity instanceof Player && stack.is(ModRegistry.CAN_PERFORM_SWORD_BLOCKING_ITEM_TAG)) {
+            ModRegistry.PARRY_COOLDOWN_CAPABILITY.maybeGet(entity).ifPresent(ParryCooldownCapability::setCooldownTicks);
+        }
+        return EventResult.PASS;
+    }
+
+    public static void onEndPlayerTick(Player player) {
+        ModRegistry.PARRY_COOLDOWN_CAPABILITY.maybeGet(player).ifPresent(t -> t.tick(player));
+    }
+
     public static EventResult onLivingAttack(LivingEntity entity, DamageSource damageSource, float damageAmount) {
 
         EventResult result = EventResult.PASS;
@@ -60,7 +75,7 @@ public class SwordBlockingHandler {
 
             if (isActiveItemStackBlocking(player)) {
 
-                if (DEFAULT_ITEM_USE_DURATION - player.getUseItemRemainingTicks() < SwordBlockingMechanics.CONFIG.get(ServerConfig.class).parryWindow) {
+                if (getParryStrengthScale(player) > 0.0) {
 
                     if (damageAmount > 0.0F && canBlockDamageSource(player, damageSource)) {
 
@@ -74,7 +89,7 @@ public class SwordBlockingHandler {
 
                             if (damageSource.getDirectEntity() instanceof LivingEntity directEntity) {
 
-                                directEntity.knockback(0.5F, player.getX() - directEntity.getX(), player.getZ() - directEntity.getZ());
+                                directEntity.knockback(SwordBlockingMechanics.CONFIG.get(ServerConfig.class).parryKnockbackStrength, player.getX() - directEntity.getX(), player.getZ() - directEntity.getZ());
                             }
                         }
 
@@ -155,6 +170,17 @@ public class SwordBlockingHandler {
     public static boolean isActiveItemStackBlocking(Player player) {
         if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).allowBlocking) return false;
         return player.isUsingItem() && player.getUseItem().is(ModRegistry.CAN_PERFORM_SWORD_BLOCKING_ITEM_TAG);
+    }
+
+    public static double getParryStrengthScale(Player player) {
+        Optional<ParryCooldownCapability> optional = ModRegistry.PARRY_COOLDOWN_CAPABILITY.maybeGet(player).filter(ParryCooldownCapability::isCooldownActive);
+        if (optional.isPresent()) return -optional.orElseThrow().getCooldownProgress();
+        if (isActiveItemStackBlocking(player)) {
+            double currentUseDuration = DEFAULT_ITEM_USE_DURATION - player.getUseItemRemainingTicks();
+            double parryStrengthScale = 1.0 - currentUseDuration / SwordBlockingMechanics.CONFIG.get(ServerConfig.class).parryWindow;
+            return Mth.clamp(parryStrengthScale, 0.0, 1.0);
+        }
+        return 0.0;
     }
 
     private static void hurtSwordInUse(Player player, float damageAmount) {

@@ -9,6 +9,7 @@
   ],
   "client": [
     "client.HumanoidModelMixin",
+    "client.ItemInHandRendererMixin",
     "client.PlayerItemInHandLayerMixin",
     "client.accessor.ItemInHandRendererAccessor"
   ],

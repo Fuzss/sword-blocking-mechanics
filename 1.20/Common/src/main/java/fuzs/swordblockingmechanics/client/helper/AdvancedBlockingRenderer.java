@@ -15,7 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import org.joml.Quaternionf;
 
 public class AdvancedBlockingRenderer {
-    
+
     public static void renderBlockingWithSword(ItemInHandRenderer itemInHandRenderer, ArmedModel model, LivingEntity entity, ItemStack stack, ItemDisplayContext transform, HumanoidArm arm, PoseStack poseStack, MultiBufferSource multiBufferSource, int combinedLight) {
         // those transformations are directly ported from Minecraft 1.7, resulting in a pixel-perfect recreation of third-person sword blocking
         // a lot has changed since then (the whole model system has been rewritten twice in 1.8 and 1.9, and had major changes in 1.14 and 1.15),

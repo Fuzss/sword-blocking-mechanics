@@ -10,8 +10,8 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface ItemInHandRendererAccessor {
 
     @Invoker("applyItemArmAttackTransform")
-    void goldenagecombat$callApplyItemArmAttackTransform(PoseStack matrixStackIn, HumanoidArm handIn, float swingProgress);
+    void swordblockingmechanics$callApplyItemArmAttackTransform(PoseStack matrixStackIn, HumanoidArm handIn, float swingProgress);
 
     @Invoker("applyItemArmTransform")
-    void goldenagecombat$callApplyItemArmTransform(PoseStack matrixStackIn, HumanoidArm handIn, float equippedProg);
+    void swordblockingmechanics$callApplyItemArmTransform(PoseStack matrixStackIn, HumanoidArm handIn, float equippedProg);
 }
