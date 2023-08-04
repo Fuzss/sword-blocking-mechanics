@@ -21,8 +21,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
-import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
@@ -70,57 +68,30 @@ public class SwordBlockingHandler {
 
     public static EventResult onLivingAttack(LivingEntity entity, DamageSource damageSource, float damageAmount) {
 
-        EventResult result = EventResult.PASS;
-        if (!entity.level().isClientSide && entity instanceof Player player) {
+        if (entity.level().isClientSide || !(entity instanceof Player player) || !isActiveItemStackBlocking(player)) return EventResult.PASS;
 
-            if (isActiveItemStackBlocking(player)) {
+        if (damageAmount > 0.0F && canBlockDamageSource(player, damageSource)) {
 
-                if (getParryStrengthScale(player) > 0.0) {
+            boolean parryIsActive = getParryStrengthScale(player) > 0.0;
+            if (parryIsActive || SwordBlockingMechanics.CONFIG.get(ServerConfig.class).deflectProjectiles && damageSource.is(DamageTypeTags.IS_PROJECTILE)) {
 
-                    if (damageAmount > 0.0F && canBlockDamageSource(player, damageSource)) {
+                if (parryIsActive && SwordBlockingMechanics.CONFIG.get(ServerConfig.class).damageSwordOnParry || !parryIsActive && SwordBlockingMechanics.CONFIG.get(ServerConfig.class).damageSword) {
 
-                        result = EventResult.INTERRUPT;
-                        if (SwordBlockingMechanics.CONFIG.get(ServerConfig.class).damageSwordOnParry) {
-
-                            hurtSwordInUse(player, damageAmount);
-                        }
-
-                        if (!damageSource.is(DamageTypeTags.IS_PROJECTILE)) {
-
-                            if (damageSource.getDirectEntity() instanceof LivingEntity directEntity) {
-
-                                directEntity.knockback(SwordBlockingMechanics.CONFIG.get(ServerConfig.class).parryKnockbackStrength, player.getX() - directEntity.getX(), player.getZ() - directEntity.getZ());
-                            }
-                        }
-
-                        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), ModRegistry.ITEM_SWORD_BLOCK_SOUND_EVENT.get(), player.getSoundSource(), 1.0F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
-                    }
+                    hurtSwordInUse(player, damageAmount);
                 }
 
-                if (SwordBlockingMechanics.CONFIG.get(ServerConfig.class).deflectProjectiles) {
+                if (parryIsActive && !damageSource.is(DamageTypeTags.IS_PROJECTILE) && damageSource.getDirectEntity() instanceof LivingEntity directEntity) {
 
-                    if (damageSource.is(DamageTypeTags.IS_PROJECTILE) && damageSource.getDirectEntity() instanceof Projectile projectile) {
-
-                        if (!(projectile instanceof AbstractArrow abstractArrow) || abstractArrow.getPierceLevel() == 0) {
-
-                            projectile.hurt(player.damageSources().playerAttack(player), 0.0F);
-                            projectile.setOwner(entity);
-                            Vec3 lookAngle = entity.getLookAngle();
-                            projectile.setDeltaMovement(lookAngle);
-                            if (projectile instanceof AbstractHurtingProjectile hurtingProjectile) {
-                                hurtingProjectile.xPower = lookAngle.x * 0.1;
-                                hurtingProjectile.yPower = lookAngle.y * 0.1;
-                                hurtingProjectile.zPower = lookAngle.z * 0.1;
-                            }
-
-                            result = EventResult.INTERRUPT;
-                        }
-                    }
+                    directEntity.knockback(SwordBlockingMechanics.CONFIG.get(ServerConfig.class).parryKnockbackStrength, player.getX() - directEntity.getX(), player.getZ() - directEntity.getZ());
                 }
+
+                player.level().playSound(null, player.getX(), player.getY(), player.getZ(), ModRegistry.ITEM_SWORD_BLOCK_SOUND_EVENT.get(), player.getSoundSource(), 1.0F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
+
+                return EventResult.INTERRUPT;
             }
         }
 
-        return result;
+        return EventResult.PASS;
     }
 
     public static EventResult onLivingHurt(LivingEntity entity, DamageSource source, MutableFloat amount) {
