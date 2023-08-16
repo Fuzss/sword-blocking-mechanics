@@ -21,7 +21,7 @@ public class ParryCooldownCapabilityImpl implements ParryCooldownCapability {
 
     @Override
     public void setCooldownTicks() {
-        if (this.cooldownTicks == 0) {
+        if (this.cooldownTicks <= 0) {
             int currentUseDuration = SwordBlockingHandler.DEFAULT_ITEM_USE_DURATION - this.player.getUseItemRemainingTicks();
             this.cooldownTicks = Math.min(currentUseDuration, SwordBlockingMechanics.CONFIG.get(ServerConfig.class).parryWindow);
         }
