@@ -2,7 +2,7 @@ package fuzs.swordblockingmechanics.client.handler;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import fuzs.puzzleslib.api.client.event.v1.RenderGuiElementEvents;
+import fuzs.puzzleslib.api.client.event.v1.renderer.RenderGuiElementEvents;
 import fuzs.puzzleslib.api.event.v1.core.EventResult;
 import fuzs.swordblockingmechanics.SwordBlockingMechanics;
 import fuzs.swordblockingmechanics.config.ClientConfig;

@@ -14,7 +14,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -26,12 +26,10 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Optional;
-
 public class SwordBlockingHandler {
     public static final int DEFAULT_ITEM_USE_DURATION = 72_000;
 
-    public static EventResultHolder<InteractionResultHolder<ItemStack>> onUseItem(Player player, Level level, InteractionHand hand) {
+    public static EventResultHolder<InteractionResult> onUseItem(Player player, Level level, InteractionHand hand) {
         if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).allowBlocking) return EventResultHolder.pass();
         if (player.getItemInHand(hand).is(ModRegistry.CAN_PERFORM_SWORD_BLOCKING_ITEM_TAG)) {
             if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).prioritizeOffHand || hand != InteractionHand.MAIN_HAND || canActivateBlocking(player, player.getOffhandItem())) {
@@ -40,7 +38,7 @@ public class SwordBlockingHandler {
                     if (player.getAttackStrengthScale(0.0F) >= SwordBlockingMechanics.CONFIG.get(ServerConfig.class).requiredAttackStrength) {
                         player.startUsingItem(hand);
                         // cause reequip animation, but don't swing hand, not to be confused with InteractionResult#SUCCESS; this is also what shields do
-                        return EventResultHolder.interrupt(InteractionResultHolder.consume(player.getItemInHand(hand)));
+                        return EventResultHolder.interrupt(InteractionResult.CONSUME);
                     }
                 }
             }
@@ -58,14 +56,14 @@ public class SwordBlockingHandler {
 
     public static EventResult onUseItemStop(LivingEntity entity, ItemStack stack, int remainingUseDuration) {
         if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).allowBlocking) return EventResult.PASS;
-        if (entity instanceof Player && stack.is(ModRegistry.CAN_PERFORM_SWORD_BLOCKING_ITEM_TAG)) {
-            ModRegistry.PARRY_COOLDOWN_CAPABILITY.maybeGet(entity).ifPresent(ParryCooldownCapability::setCooldownTicks);
+        if (entity instanceof Player player && stack.is(ModRegistry.CAN_PERFORM_SWORD_BLOCKING_ITEM_TAG)) {
+            ModRegistry.PARRY_COOLDOWN_CAPABILITY.get(player).resetCooldownTicks();
         }
         return EventResult.PASS;
     }
 
     public static void onEndPlayerTick(Player player) {
-        ModRegistry.PARRY_COOLDOWN_CAPABILITY.maybeGet(player).ifPresent(t -> t.tick(player));
+        ModRegistry.PARRY_COOLDOWN_CAPABILITY.get(player).tick();
     }
 
     public static EventResult onLivingAttack(LivingEntity entity, DamageSource damageSource, float damageAmount) {
@@ -87,7 +85,7 @@ public class SwordBlockingHandler {
                     directEntity.knockback(SwordBlockingMechanics.CONFIG.get(ServerConfig.class).parryKnockbackStrength, player.getX() - directEntity.getX(), player.getZ() - directEntity.getZ());
                 }
 
-                player.level().playSound(null, player.getX(), player.getY(), player.getZ(), ModRegistry.ITEM_SWORD_BLOCK_SOUND_EVENT.get(), player.getSoundSource(), 1.0F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
+                player.level().playSound(null, player.getX(), player.getY(), player.getZ(), ModRegistry.ITEM_SWORD_BLOCK_SOUND_EVENT.value(), player.getSoundSource(), 1.0F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
 
                 return EventResult.INTERRUPT;
             }
@@ -146,14 +144,16 @@ public class SwordBlockingHandler {
     }
 
     public static double getParryStrengthScale(Player player) {
-        Optional<ParryCooldownCapability> optional = ModRegistry.PARRY_COOLDOWN_CAPABILITY.maybeGet(player).filter(ParryCooldownCapability::isCooldownActive);
-        if (optional.isPresent()) return -optional.orElseThrow().getCooldownProgress();
-        if (isActiveItemStackBlocking(player)) {
+        ParryCooldownCapability capability = ModRegistry.PARRY_COOLDOWN_CAPABILITY.get(player);
+        if (capability.isCooldownActive()) {
+            return -capability.getCooldownProgress();
+        } else if (isActiveItemStackBlocking(player)) {
             double currentUseDuration = DEFAULT_ITEM_USE_DURATION - player.getUseItemRemainingTicks();
             double parryStrengthScale = 1.0 - currentUseDuration / SwordBlockingMechanics.CONFIG.get(ServerConfig.class).parryWindow;
             return Mth.clamp(parryStrengthScale, 0.0, 1.0);
+        } else {
+            return 0.0;
         }
-        return 0.0;
     }
 
     private static void hurtSwordInUse(Player player, float damageAmount) {

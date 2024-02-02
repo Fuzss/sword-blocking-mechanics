@@ -6,7 +6,6 @@ import fuzs.puzzleslib.api.event.v1.entity.living.LivingAttackCallback;
 import fuzs.puzzleslib.api.event.v1.entity.living.LivingHurtCallback;
 import fuzs.puzzleslib.api.event.v1.entity.living.LivingKnockBackCallback;
 import fuzs.puzzleslib.api.event.v1.entity.living.UseItemEvents;
-import fuzs.puzzleslib.api.event.v1.entity.player.PlayerEvents;
 import fuzs.puzzleslib.api.event.v1.entity.player.PlayerInteractEvents;
 import fuzs.puzzleslib.api.event.v1.entity.player.PlayerTickEvents;
 import fuzs.swordblockingmechanics.config.ClientConfig;
