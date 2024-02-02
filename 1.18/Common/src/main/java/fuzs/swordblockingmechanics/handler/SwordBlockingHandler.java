@@ -37,9 +37,11 @@ public class SwordBlockingHandler {
             if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).prioritizeOffHand || hand != InteractionHand.MAIN_HAND || canActivateBlocking(player, player.getOffhandItem())) {
                 InteractionHand otherHand = hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
                 if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).requireBothHands || player.getItemInHand(otherHand).isEmpty()) {
-                    player.startUsingItem(hand);
-                    // cause reequip animation, but don't swing hand, not to be confused with InteractionResult#SUCCESS; this is also what shields do
-                    return EventResultHolder.interrupt(InteractionResultHolder.consume(player.getItemInHand(hand)));
+                    if (player.getAttackStrengthScale(0.0F) >= SwordBlockingMechanics.CONFIG.get(ServerConfig.class).requiredAttackStrength) {
+                        player.startUsingItem(hand);
+                        // cause reequip animation, but don't swing hand, not to be confused with InteractionResult#SUCCESS; this is also what shields do
+                        return EventResultHolder.interrupt(InteractionResultHolder.consume(player.getItemInHand(hand)));
+                    }
                 }
             }
         }
@@ -100,8 +102,8 @@ public class SwordBlockingHandler {
                 if (SwordBlockingMechanics.CONFIG.get(ServerConfig.class).damageSword) {
                     hurtSwordInUse(player, amount.getAsFloat());
                 }
-                float damageAfterBlock = 1.0F + amount.getAsFloat() * (1.0F - (float) SwordBlockingMechanics.CONFIG.get(ServerConfig.class).blockedDamage);
-                amount.mapFloat(v -> Math.min(v, damageAfterBlock <= 1.0F ? 0.0F : 1.0F));
+                double damageAfterBlock = 1.0 + amount.getAsFloat() * (1.0 - SwordBlockingMechanics.CONFIG.get(ServerConfig.class).blockedDamage);
+                amount.mapFloat(v -> Math.min(v, (float) Math.floor(damageAfterBlock)));
             }
         }
         return EventResult.PASS;

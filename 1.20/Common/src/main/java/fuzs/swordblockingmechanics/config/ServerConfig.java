@@ -9,6 +9,7 @@ public class ServerConfig implements ConfigCore {
     @Config(description = "Prioritize usable off-hand items over sword blocking from the main hand. Items not recognized by default can be included in a dedicated item tag.")
     public boolean prioritizeOffHand = true;
     @Config(description = "Percentage an incoming attack will be reduced by when blocking.")
+    @Config.DoubleRange(min = 0.0, max = 1.0)
     public double blockedDamage = 0.5;
     @Config(description = "Damage sword when blocking an attack depending on the amount of damage blocked. Sword is only damaged when at least three damage points have been blocked, just like a shield.")
     public boolean damageSword = false;
@@ -33,4 +34,7 @@ public class ServerConfig implements ConfigCore {
     @Config(description = "Percentage to slow down movement to while blocking.")
     @Config.DoubleRange(min = 0.0, max = 1.0)
     public double blockingSlowdown = 0.2;
+    @Config(description = "The minimum attack strength required to be able to start blocking.")
+    @Config.DoubleRange(min = 0.0, max = 1.0)
+    public double requiredAttackStrength = 0.0;
 }
