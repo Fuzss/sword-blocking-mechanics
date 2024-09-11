@@ -12,10 +12,10 @@ public class MovementSlowdownHandler {
         double blockingSlowdown = SwordBlockingMechanics.CONFIG.get(ServerConfig.class).blockingSlowdown;
         if (blockingSlowdown == 0.2) return;
         if (SwordBlockingHandler.isActiveItemStackBlocking(player) && !player.isPassenger()) {
-            input.forwardImpulse /= 0.2;
-            input.leftImpulse /= 0.2;
-            input.forwardImpulse *= blockingSlowdown;
-            input.leftImpulse *= blockingSlowdown;
+            input.forwardImpulse /= 0.2F;
+            input.leftImpulse /= 0.2F;
+            input.forwardImpulse *= (float) blockingSlowdown;
+            input.leftImpulse *= (float) blockingSlowdown;
         }
     }
 }

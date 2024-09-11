@@ -1,18 +1,21 @@
 package fuzs.swordblockingmechanics.neoforge.client;
 
-import fuzs.swordblockingmechanics.SwordBlockingMechanics;
 import fuzs.puzzleslib.api.client.core.v1.ClientModConstructor;
+import fuzs.puzzleslib.neoforge.api.data.v2.core.DataProviderHelper;
+import fuzs.swordblockingmechanics.SwordBlockingMechanics;
 import fuzs.swordblockingmechanics.client.SwordBlockingMechanicsClient;
+import fuzs.swordblockingmechanics.data.client.ModLanguageProvider;
+import fuzs.swordblockingmechanics.neoforge.data.ModSoundDefinitionProvider;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLConstructModEvent;
 
-@Mod.EventBusSubscriber(modid = SwordBlockingMechanics.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@Mod(value = SwordBlockingMechanics.MOD_ID, dist = Dist.CLIENT)
 public class SwordBlockingMechanicsNeoForgeClient {
 
-    @SubscribeEvent
-    public static void onConstructMod(final FMLConstructModEvent evt) {
+    public SwordBlockingMechanicsNeoForgeClient() {
         ClientModConstructor.construct(SwordBlockingMechanics.MOD_ID, SwordBlockingMechanicsClient::new);
+        DataProviderHelper.registerDataProviders(SwordBlockingMechanics.MOD_ID, ModLanguageProvider::new,
+                ModSoundDefinitionProvider::new
+        );
     }
 }

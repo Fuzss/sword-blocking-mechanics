@@ -2,6 +2,7 @@ package fuzs.swordblockingmechanics;
 
 import fuzs.puzzleslib.api.config.v3.ConfigHolder;
 import fuzs.puzzleslib.api.core.v1.ModConstructor;
+import fuzs.puzzleslib.api.core.v1.utility.ResourceLocationHelper;
 import fuzs.puzzleslib.api.event.v1.entity.living.LivingAttackCallback;
 import fuzs.puzzleslib.api.event.v1.entity.living.LivingHurtCallback;
 import fuzs.puzzleslib.api.event.v1.entity.living.LivingKnockBackCallback;
@@ -26,10 +27,10 @@ public class SwordBlockingMechanics implements ModConstructor {
     @Override
     public void onConstructMod() {
         ModRegistry.touch();
-        registerHandlers();
+        registerEventHandlers();
     }
 
-    private static void registerHandlers() {
+    private static void registerEventHandlers() {
         UseItemEvents.START.register(SwordBlockingHandler::onUseItemStart);
         UseItemEvents.STOP.register(SwordBlockingHandler::onUseItemStop);
         PlayerInteractEvents.USE_ITEM.register(SwordBlockingHandler::onUseItem);
@@ -40,6 +41,6 @@ public class SwordBlockingMechanics implements ModConstructor {
     }
 
     public static ResourceLocation id(String path) {
-        return new ResourceLocation(MOD_ID, path);
+        return ResourceLocationHelper.fromNamespaceAndPath(MOD_ID, path);
     }
 }

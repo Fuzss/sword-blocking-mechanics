@@ -5,11 +5,12 @@ import fuzs.puzzleslib.api.event.v1.core.EventResultHolder;
 import fuzs.puzzleslib.api.event.v1.data.DefaultedDouble;
 import fuzs.puzzleslib.api.event.v1.data.MutableFloat;
 import fuzs.puzzleslib.api.event.v1.data.MutableInt;
+import fuzs.puzzleslib.api.item.v2.ItemHelper;
 import fuzs.swordblockingmechanics.SwordBlockingMechanics;
 import fuzs.swordblockingmechanics.capability.ParryCooldownCapability;
 import fuzs.swordblockingmechanics.config.ServerConfig;
-import fuzs.swordblockingmechanics.core.CommonAbstractions;
 import fuzs.swordblockingmechanics.init.ModRegistry;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
@@ -30,7 +31,7 @@ public class SwordBlockingHandler {
     public static final int DEFAULT_ITEM_USE_DURATION = 72_000;
 
     public static EventResultHolder<InteractionResult> onUseItem(Player player, Level level, InteractionHand hand) {
-        if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).allowBlocking) return EventResultHolder.pass();
+        if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).allowBlockingAndParrying) return EventResultHolder.pass();
         if (player.getItemInHand(hand).is(ModRegistry.CAN_PERFORM_SWORD_BLOCKING_ITEM_TAG)) {
             if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).prioritizeOffHand || hand != InteractionHand.MAIN_HAND || canActivateBlocking(player, player.getOffhandItem())) {
                 InteractionHand otherHand = hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
@@ -47,7 +48,7 @@ public class SwordBlockingHandler {
     }
 
     public static EventResult onUseItemStart(LivingEntity entity, ItemStack stack, MutableInt remainingUseDuration) {
-        if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).allowBlocking) return EventResult.PASS;
+        if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).allowBlockingAndParrying) return EventResult.PASS;
         if (entity instanceof Player && stack.is(ModRegistry.CAN_PERFORM_SWORD_BLOCKING_ITEM_TAG)) {
             remainingUseDuration.accept(DEFAULT_ITEM_USE_DURATION);
         }
@@ -55,7 +56,7 @@ public class SwordBlockingHandler {
     }
 
     public static EventResult onUseItemStop(LivingEntity entity, ItemStack stack, int remainingUseDuration) {
-        if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).allowBlocking) return EventResult.PASS;
+        if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).allowBlockingAndParrying) return EventResult.PASS;
         if (entity instanceof Player player && stack.is(ModRegistry.CAN_PERFORM_SWORD_BLOCKING_ITEM_TAG)) {
             ModRegistry.PARRY_COOLDOWN_CAPABILITY.get(player).resetCooldownTicks();
         }
@@ -75,7 +76,7 @@ public class SwordBlockingHandler {
             boolean parryIsActive = getParryStrengthScale(player) > 0.0;
             if (parryIsActive || SwordBlockingMechanics.CONFIG.get(ServerConfig.class).deflectProjectiles && damageSource.is(DamageTypeTags.IS_PROJECTILE)) {
 
-                if (parryIsActive && SwordBlockingMechanics.CONFIG.get(ServerConfig.class).damageSwordOnParry || !parryIsActive && SwordBlockingMechanics.CONFIG.get(ServerConfig.class).damageSword) {
+                if (parryIsActive && SwordBlockingMechanics.CONFIG.get(ServerConfig.class).damageSwordOnParry || !parryIsActive && SwordBlockingMechanics.CONFIG.get(ServerConfig.class).damageSwordOnBlock) {
 
                     hurtSwordInUse(player, damageAmount);
                 }
@@ -97,7 +98,7 @@ public class SwordBlockingHandler {
     public static EventResult onLivingHurt(LivingEntity entity, DamageSource source, MutableFloat amount) {
         if (entity instanceof Player player && isActiveItemStackBlocking(player)) {
             if (canBlockDamageSource(player, source) && amount.getAsFloat() > 0.0F) {
-                if (SwordBlockingMechanics.CONFIG.get(ServerConfig.class).damageSword) {
+                if (SwordBlockingMechanics.CONFIG.get(ServerConfig.class).damageSwordOnBlock) {
                     hurtSwordInUse(player, amount.getAsFloat());
                 }
                 double damageAfterBlock = 1.0 + amount.getAsFloat() * (1.0 - SwordBlockingMechanics.CONFIG.get(ServerConfig.class).blockedDamage);
@@ -139,7 +140,7 @@ public class SwordBlockingHandler {
     }
 
     public static boolean isActiveItemStackBlocking(Player player) {
-        if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).allowBlocking) return false;
+        if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).allowBlockingAndParrying) return false;
         return player.isUsingItem() && player.getUseItem().is(ModRegistry.CAN_PERFORM_SWORD_BLOCKING_ITEM_TAG);
     }
 
@@ -158,14 +159,11 @@ public class SwordBlockingHandler {
 
     private static void hurtSwordInUse(Player player, float damageAmount) {
         if (damageAmount >= 3.0F) {
-            int i = 1 + Mth.floor(damageAmount);
-            InteractionHand interactionhand = player.getUsedItemHand();
-            player.getUseItem().hurtAndBreak(i, player, t -> {
-                t.broadcastBreakEvent(interactionhand);
-                CommonAbstractions.INSTANCE.onPlayerDestroyItem(t, t.getUseItem(), interactionhand);
-            });
+            int lostDurability = 1 + Mth.floor(damageAmount);
+            InteractionHand interactionHand = player.getUsedItemHand();
+            ItemHelper.hurtAndBreak(player.getUseItem(), lostDurability, player, interactionHand);
             if (player.getUseItem().isEmpty()) {
-                if (interactionhand == InteractionHand.MAIN_HAND) {
+                if (interactionHand == InteractionHand.MAIN_HAND) {
                     player.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
                 } else {
                     player.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
@@ -177,16 +175,16 @@ public class SwordBlockingHandler {
         }
     }
 
-    public static boolean canActivateBlocking(Player player, ItemStack stack) {
-        if (stack.is(ModRegistry.OVERRIDES_SWORD_IN_OFFHAND_BLOCKING_ITEM_TAG)) return false;
-        return switch (stack.getUseAnimation()) {
+    public static boolean canActivateBlocking(Player player, ItemStack itemStack) {
+        if (itemStack.is(ModRegistry.OVERRIDES_SWORD_IN_OFFHAND_BLOCKING_ITEM_TAG)) return false;
+        return switch (itemStack.getUseAnimation()) {
             case BLOCK, SPYGLASS, BRUSH -> false;
             case EAT, DRINK ->
-                    stack.getItem().getFoodProperties() == null || !player.canEat(stack.getItem().getFoodProperties().canAlwaysEat());
-            case BOW, CROSSBOW -> player.getProjectile(stack).isEmpty();
+                    !itemStack.has(DataComponents.FOOD) || !player.canEat(itemStack.get(DataComponents.FOOD).canAlwaysEat());
+            case BOW, CROSSBOW -> player.getProjectile(itemStack).isEmpty();
             case SPEAR ->
-                    stack.getDamageValue() >= stack.getMaxDamage() - 1 || EnchantmentHelper.getRiptide(stack) > 0 && !player.isInWaterOrRain();
-            case TOOT_HORN -> player.getCooldowns().isOnCooldown(stack.getItem());
+                    itemStack.getDamageValue() >= itemStack.getMaxDamage() - 1 || EnchantmentHelper.getTridentSpinAttackStrength(itemStack, player) > 0.0F && !player.isInWaterOrRain();
+            case TOOT_HORN -> player.getCooldowns().isOnCooldown(itemStack.getItem());
             default -> true;
         };
     }

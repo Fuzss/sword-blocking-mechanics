@@ -2,12 +2,14 @@ package fuzs.swordblockingmechanics.client.handler;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import fuzs.puzzleslib.api.client.event.v1.renderer.RenderHandEvents;
 import fuzs.puzzleslib.api.event.v1.core.EventResult;
 import fuzs.swordblockingmechanics.SwordBlockingMechanics;
 import fuzs.swordblockingmechanics.config.ClientConfig;
 import fuzs.swordblockingmechanics.handler.SwordBlockingHandler;
 import fuzs.swordblockingmechanics.mixin.client.accessor.ItemInHandRendererAccessor;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.InteractionHand;
@@ -18,12 +20,18 @@ import net.minecraft.world.item.ItemStack;
 
 public class FirstPersonRenderingHandler {
 
-    public static EventResult onRenderHand(Player player, InteractionHand hand, ItemStack stack, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, float partialTick, float interpolatedPitch, float swingProgress, float equipProgress) {
-        if (player.getUsedItemHand() == hand && SwordBlockingHandler.isActiveItemStackBlocking(player)) {
+    public static RenderHandEvents.MainHand onRenderHand(InteractionHand interactionHand) {
+        return (itemInHandRenderer, player, humanoidArm, itemStack, poseStack, multiBufferSource, combinedLight, partialTick, interpolatedPitch, swingProgress, equipProgress) -> {
+            return onRenderHand(player, interactionHand, itemStack, poseStack, multiBufferSource, combinedLight, partialTick, interpolatedPitch, swingProgress,equipProgress);
+        };
+    }
+
+    public static EventResult onRenderHand(Player player, InteractionHand interactionHand, ItemStack itemStack, PoseStack poseStack, MultiBufferSource multiBufferSource, int combinedLight, float partialTick, float interpolatedPitch, float swingProgress, float equipProgress) {
+        if (player.getUsedItemHand() == interactionHand && SwordBlockingHandler.isActiveItemStackBlocking(player)) {
             Minecraft minecraft = Minecraft.getInstance();
             ItemInHandRenderer itemRenderer = minecraft.getEntityRenderDispatcher().getItemInHandRenderer();
             poseStack.pushPose();
-            boolean mainHand = hand == InteractionHand.MAIN_HAND;
+            boolean mainHand = interactionHand == InteractionHand.MAIN_HAND;
             HumanoidArm handSide = mainHand ? player.getMainArm() : player.getMainArm().getOpposite();
             boolean isHandSideRight = handSide == HumanoidArm.RIGHT;
             ((ItemInHandRendererAccessor) itemRenderer).swordblockingmechanics$callApplyItemArmTransform(poseStack, handSide, equipProgress);
@@ -31,11 +39,12 @@ public class FirstPersonRenderingHandler {
                 ((ItemInHandRendererAccessor) itemRenderer).swordblockingmechanics$callApplyItemArmAttackTransform(poseStack, handSide, swingProgress);
             }
             transformBlockFirstPerson(poseStack, handSide);
-            itemRenderer.renderItem(player, stack, isHandSideRight ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !isHandSideRight, poseStack, multiBufferSource, packedLight);
+            itemRenderer.renderItem(player, itemStack, isHandSideRight ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !isHandSideRight, poseStack, multiBufferSource, combinedLight);
             poseStack.popPose();
             return EventResult.INTERRUPT;
+        } else {
+            return EventResult.PASS;
         }
-        return EventResult.PASS;
     }
 
     private static void transformBlockFirstPerson(PoseStack matrixStack, HumanoidArm hand) {

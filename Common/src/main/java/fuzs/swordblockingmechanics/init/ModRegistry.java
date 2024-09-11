@@ -25,13 +25,9 @@ public class ModRegistry {
 
     static final CapabilityController CAPABILITIES = CapabilityController.from(SwordBlockingMechanics.MOD_ID);
     public static final EntityCapabilityKey<Player, ParryCooldownCapability> PARRY_COOLDOWN_CAPABILITY = CAPABILITIES.registerEntityCapability(
-            "parry_cooldown",
-            ParryCooldownCapability.class,
-            ParryCooldownCapability::new,
-            Player.class
-    );
+            "parry_cooldown", ParryCooldownCapability.class, ParryCooldownCapability::new, Player.class);
 
     public static void touch() {
-
+        // NO-OP
     }
 }
