@@ -45,6 +45,7 @@ public class AttackIndicatorInGuiHandler {
             int screenHeight = guiGraphics.guiHeight();
             double parryStrengthScale = Math.abs(SwordBlockingHandler.getParryStrengthScale(minecraft.player));
             if (resourceLocation.equals(RenderGuiLayerEvents.CROSSHAIR) && minecraft.options.attackIndicator().get() == AttackIndicatorStatus.CROSSHAIR) {
+                RenderSystem.enableBlend();
                 RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
                 int posX = screenWidth / 2 - 8;
                 int posY = screenHeight / 2 - 7 + 16;
@@ -52,6 +53,7 @@ public class AttackIndicatorInGuiHandler {
                 guiGraphics.blit(GUI_ICONS_LOCATION, posX, posY, 54, 0, 16, 14);
                 guiGraphics.blit(GUI_ICONS_LOCATION, posX, posY + 14 - textureHeight, 70, 14 - textureHeight, 16, textureHeight);
                 RenderSystem.defaultBlendFunc();
+                RenderSystem.disableBlend();
             } else if (resourceLocation.equals(RenderGuiLayerEvents.HOTBAR) && minecraft.options.attackIndicator().get() == AttackIndicatorStatus.HOTBAR) {
                 RenderSystem.enableBlend();
                 int posX;

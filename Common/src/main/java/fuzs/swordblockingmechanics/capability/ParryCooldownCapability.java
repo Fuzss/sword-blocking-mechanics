@@ -11,13 +11,18 @@ public class ParryCooldownCapability extends CapabilityComponent<Player> {
     private int cooldownTicks;
 
     public double getCooldownProgress() {
-        return Mth.clamp(1.0 - this.cooldownTicks / (double) SwordBlockingMechanics.CONFIG.get(ServerConfig.class).parryWindow, 0.0, 1.0);
+        return Mth.clamp(
+                1.0 - this.cooldownTicks / (double) SwordBlockingMechanics.CONFIG.get(ServerConfig.class).parryWindow,
+                0.0,
+                1.0);
     }
 
     public void resetCooldownTicks() {
-        if (this.cooldownTicks == 0) {
-            int currentUseDuration = SwordBlockingHandler.DEFAULT_ITEM_USE_DURATION - this.getHolder().getUseItemRemainingTicks();
-            this.setCooldownTicks(Math.min(currentUseDuration, SwordBlockingMechanics.CONFIG.get(ServerConfig.class).parryWindow));
+        if (this.cooldownTicks <= 0) {
+            int currentUseDuration =
+                    SwordBlockingHandler.DEFAULT_ITEM_USE_DURATION - this.getHolder().getUseItemRemainingTicks();
+            this.setCooldownTicks(Math.min(currentUseDuration,
+                    SwordBlockingMechanics.CONFIG.get(ServerConfig.class).parryWindow));
         }
     }
 
