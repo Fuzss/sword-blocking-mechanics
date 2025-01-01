@@ -1,7 +1,5 @@
 package fuzs.swordblockingmechanics.client.handler;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import fuzs.puzzleslib.api.client.event.v1.gui.RenderGuiLayerEvents;
 import fuzs.puzzleslib.api.event.v1.core.EventResult;
 import fuzs.swordblockingmechanics.SwordBlockingMechanics;
@@ -9,8 +7,9 @@ import fuzs.swordblockingmechanics.config.ClientConfig;
 import fuzs.swordblockingmechanics.handler.SwordBlockingHandler;
 import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.HumanoidArm;
 import org.jetbrains.annotations.Nullable;
@@ -21,50 +20,48 @@ public class AttackIndicatorInGuiHandler {
     @Nullable
     private static AttackIndicatorStatus attackIndicator = null;
 
-    public static EventResult onBeforeRenderGuiLayer(Minecraft minecraft, GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+    public static EventResult onBeforeRenderGuiLayer(Gui gui, GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
         if (!SwordBlockingMechanics.CONFIG.get(ClientConfig.class).renderParryIndicator) return EventResult.PASS;
-        if (attackIndicator == null && SwordBlockingHandler.getParryStrengthScale(minecraft.player) != 0.0) {
-            attackIndicator = minecraft.options.attackIndicator().get();
-            minecraft.options.attackIndicator().set(AttackIndicatorStatus.OFF);
+        if (attackIndicator == null && SwordBlockingHandler.getParryStrengthScale(gui.minecraft.player) != 0.0) {
+            attackIndicator = gui.minecraft.options.attackIndicator().get();
+            gui.minecraft.options.attackIndicator().set(AttackIndicatorStatus.OFF);
         }
         return EventResult.PASS;
     }
 
     public static RenderGuiLayerEvents.After onAfterRenderGuiLayer(ResourceLocation resourceLocation) {
-        return (Minecraft minecraft, GuiGraphics guiGraphics, DeltaTracker deltaTracker) -> {
-            onAfterRenderGuiLayer(resourceLocation, minecraft, guiGraphics, deltaTracker);
+        return (Gui gui, GuiGraphics guiGraphics, DeltaTracker deltaTracker) -> {
+            onAfterRenderGuiLayer(resourceLocation, gui, guiGraphics, deltaTracker);
         };
     }
 
-    public static void onAfterRenderGuiLayer(ResourceLocation resourceLocation, Minecraft minecraft, GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+    public static void onAfterRenderGuiLayer(ResourceLocation resourceLocation, Gui gui, GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
         // reset to old value; don't just leave this disabled as it'll change the vanilla setting permanently in options.txt, which no mod should do imo
         if (attackIndicator != null) {
-            minecraft.options.attackIndicator().set(attackIndicator);
+            gui.minecraft.options.attackIndicator().set(attackIndicator);
             attackIndicator = null;
             int screenWidth = guiGraphics.guiWidth();
             int screenHeight = guiGraphics.guiHeight();
-            double parryStrengthScale = Math.abs(SwordBlockingHandler.getParryStrengthScale(minecraft.player));
-            if (resourceLocation.equals(RenderGuiLayerEvents.CROSSHAIR) && minecraft.options.attackIndicator().get() == AttackIndicatorStatus.CROSSHAIR) {
-                RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-                int posX = screenWidth / 2 - 8;
-                int posY = screenHeight / 2 - 7 + 16;
-                int textureHeight = (int) (parryStrengthScale * 15.0);
-                guiGraphics.blit(GUI_ICONS_LOCATION, posX, posY, 54, 0, 16, 14);
-                guiGraphics.blit(GUI_ICONS_LOCATION, posX, posY + 14 - textureHeight, 70, 14 - textureHeight, 16, textureHeight);
-                RenderSystem.defaultBlendFunc();
-            } else if (resourceLocation.equals(RenderGuiLayerEvents.HOTBAR) && minecraft.options.attackIndicator().get() == AttackIndicatorStatus.HOTBAR) {
-                RenderSystem.enableBlend();
+            double parryStrengthScale = Math.abs(SwordBlockingHandler.getParryStrengthScale(gui.minecraft.player));
+            if (resourceLocation.equals(RenderGuiLayerEvents.CROSSHAIR) && gui.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.CROSSHAIR) {
+                if (gui.minecraft.options.getCameraType().isFirstPerson()) {
+                    int posX = screenWidth / 2 - 8;
+                    int posY = screenHeight / 2 - 7 + 16;
+                    int textureHeight = (int) (parryStrengthScale * 15.0);
+                    guiGraphics.blit(RenderType::crosshair, GUI_ICONS_LOCATION, posX, posY, 54, 0, 16, 14, 256, 256);
+                    guiGraphics.blit(RenderType::crosshair, GUI_ICONS_LOCATION, posX, posY + 14 - textureHeight, 70, 14 - textureHeight, 16, textureHeight, 256, 256);
+                }
+            } else if (resourceLocation.equals(RenderGuiLayerEvents.HOTBAR) && gui.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.HOTBAR) {
                 int posX;
-                if (minecraft.player.getMainArm() == HumanoidArm.LEFT) {
+                if (gui.minecraft.player.getMainArm() == HumanoidArm.LEFT) {
                     posX = screenWidth / 2 - 91 - 22;
                 } else {
                     posX = screenWidth / 2 + 91 + 6;
                 }
                 int posY = screenHeight - 20;
                 int textureHeight = (int) (parryStrengthScale * 19.0F);
-                guiGraphics.blit(GUI_ICONS_LOCATION, posX, posY, 0, 0, 18, 18);
-                guiGraphics.blit(GUI_ICONS_LOCATION, posX, posY + 18 - textureHeight, 18, 18 - textureHeight, 18, textureHeight);
-                RenderSystem.disableBlend();
+                guiGraphics.blit(RenderType::guiTextured, GUI_ICONS_LOCATION, posX, posY, 0, 0, 18, 18, 256, 256);
+                guiGraphics.blit(RenderType::guiTextured, GUI_ICONS_LOCATION, posX, posY + 18 - textureHeight, 18, 18 - textureHeight, 18, textureHeight, 256, 256);
             }
         }
     }

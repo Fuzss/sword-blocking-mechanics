@@ -7,7 +7,7 @@ import fuzs.puzzleslib.api.event.v1.data.MutableFloat;
 import fuzs.puzzleslib.api.event.v1.data.MutableInt;
 import fuzs.puzzleslib.api.item.v2.ItemHelper;
 import fuzs.swordblockingmechanics.SwordBlockingMechanics;
-import fuzs.swordblockingmechanics.capability.ParryCooldownCapability;
+import fuzs.swordblockingmechanics.attachment.ParryCooldown;
 import fuzs.swordblockingmechanics.config.ServerConfig;
 import fuzs.swordblockingmechanics.init.ModRegistry;
 import net.minecraft.core.component.DataComponents;
@@ -58,13 +58,9 @@ public class SwordBlockingHandler {
     public static EventResult onUseItemStop(LivingEntity entity, ItemStack stack, int remainingUseDuration) {
         if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).allowBlockingAndParrying) return EventResult.PASS;
         if (entity instanceof Player player && stack.is(ModRegistry.CAN_PERFORM_SWORD_BLOCKING_ITEM_TAG)) {
-            ModRegistry.PARRY_COOLDOWN_CAPABILITY.get(player).resetCooldownTicks();
+            ParryCooldown.resetCooldownTicks(player);
         }
         return EventResult.PASS;
-    }
-
-    public static void onEndPlayerTick(Player player) {
-        ModRegistry.PARRY_COOLDOWN_CAPABILITY.get(player).tick();
     }
 
     public static EventResult onLivingAttack(LivingEntity entity, DamageSource damageSource, float damageAmount) {
@@ -145,9 +141,9 @@ public class SwordBlockingHandler {
     }
 
     public static double getParryStrengthScale(Player player) {
-        ParryCooldownCapability capability = ModRegistry.PARRY_COOLDOWN_CAPABILITY.get(player);
-        if (capability.isCooldownActive()) {
-            return -capability.getCooldownProgress();
+        ParryCooldown parryCooldown = ModRegistry.PARRY_COOLDOWN_ATTACHMENT_TYPE.getOrDefault(player, ParryCooldown.ZERO);
+        if (parryCooldown.isCooldownActive()) {
+            return -parryCooldown.getCooldownProgress();
         } else if (isActiveItemStackBlocking(player)) {
             double currentUseDuration = DEFAULT_ITEM_USE_DURATION - player.getUseItemRemainingTicks();
             double parryStrengthScale = 1.0 - currentUseDuration / SwordBlockingMechanics.CONFIG.get(ServerConfig.class).parryWindow;
@@ -184,7 +180,7 @@ public class SwordBlockingHandler {
             case BOW, CROSSBOW -> player.getProjectile(itemStack).isEmpty();
             case SPEAR ->
                     itemStack.getDamageValue() >= itemStack.getMaxDamage() - 1 || EnchantmentHelper.getTridentSpinAttackStrength(itemStack, player) > 0.0F && !player.isInWaterOrRain();
-            case TOOT_HORN -> player.getCooldowns().isOnCooldown(itemStack.getItem());
+            case TOOT_HORN -> player.getCooldowns().isOnCooldown(itemStack);
             default -> true;
         };
     }

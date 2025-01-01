@@ -9,6 +9,7 @@ import fuzs.puzzleslib.api.event.v1.entity.living.LivingKnockBackCallback;
 import fuzs.puzzleslib.api.event.v1.entity.living.UseItemEvents;
 import fuzs.puzzleslib.api.event.v1.entity.player.PlayerInteractEvents;
 import fuzs.puzzleslib.api.event.v1.entity.player.PlayerTickEvents;
+import fuzs.swordblockingmechanics.attachment.ParryCooldown;
 import fuzs.swordblockingmechanics.config.ClientConfig;
 import fuzs.swordblockingmechanics.config.ServerConfig;
 import fuzs.swordblockingmechanics.handler.SwordBlockingHandler;
@@ -26,7 +27,7 @@ public class SwordBlockingMechanics implements ModConstructor {
 
     @Override
     public void onConstructMod() {
-        ModRegistry.touch();
+        ModRegistry.bootstrap();
         registerEventHandlers();
     }
 
@@ -37,7 +38,7 @@ public class SwordBlockingMechanics implements ModConstructor {
         LivingAttackCallback.EVENT.register(SwordBlockingHandler::onLivingAttack);
         LivingHurtCallback.EVENT.register(SwordBlockingHandler::onLivingHurt);
         LivingKnockBackCallback.EVENT.register(SwordBlockingHandler::onLivingKnockBack);
-        PlayerTickEvents.END.register(SwordBlockingHandler::onEndPlayerTick);
+        PlayerTickEvents.END.register(ParryCooldown::onEndPlayerTick);
     }
 
     public static ResourceLocation id(String path) {
