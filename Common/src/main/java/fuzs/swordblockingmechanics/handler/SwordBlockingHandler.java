@@ -59,13 +59,13 @@ public class SwordBlockingHandler {
     public static EventResult onUseItemStop(LivingEntity entity, ItemStack stack, int remainingUseDuration) {
         if (!SwordBlockingMechanics.CONFIG.get(ServerConfig.class).allowBlocking) return EventResult.PASS;
         if (entity instanceof Player && stack.is(ModRegistry.CAN_PERFORM_SWORD_BLOCKING_ITEM_TAG)) {
-            ModRegistry.PARRY_COOLDOWN_CAPABILITY.maybeGet(entity).ifPresent(ParryCooldownCapability::setCooldownTicks);
+            ModRegistry.PARRY_COOLDOWN_CAPABILITY.maybeGet(entity).ifPresent(ParryCooldownCapability::resetCooldownTicks);
         }
         return EventResult.PASS;
     }
 
     public static void onEndPlayerTick(Player player) {
-        ModRegistry.PARRY_COOLDOWN_CAPABILITY.maybeGet(player).ifPresent(t -> t.tick(player));
+        ModRegistry.PARRY_COOLDOWN_CAPABILITY.maybeGet(player).ifPresent(ParryCooldownCapability::tick);
     }
 
     public static EventResult onLivingAttack(LivingEntity entity, DamageSource damageSource, float damageAmount) {

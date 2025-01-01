@@ -7,6 +7,7 @@ import net.minecraft.client.model.AgeableListModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,19 +23,27 @@ abstract class HumanoidModelMixin<T extends LivingEntity> extends AgeableListMod
     @Shadow
     public ModelPart leftArm;
 
-    @Inject(method = "setupAnim", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/HumanoidModel;setupAttackAnimation(Lnet/minecraft/world/entity/LivingEntity;F)V"))
+    @Inject(
+            method = "setupAnim",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/model/HumanoidModel;setupAttackAnimation(Lnet/minecraft/world/entity/LivingEntity;F)V"
+            )
+    )
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo callback) {
         if (entity instanceof Player player) {
             if (SwordBlockingHandler.isActiveItemStackBlocking(player)) {
-                if (entity.getUsedItemHand() == InteractionHand.OFF_HAND) {
-                    this.leftArm.xRot = this.leftArm.xRot - ((float) Math.PI * 2.0F) / 10.0F;
-                    if (SwordBlockingMechanics.CONFIG.get(ClientConfig.class).simpleBlockingPose) {
-                        this.leftArm.yRot = ((float) Math.PI / 6.0F);
-                    }
-                } else {
+                InteractionHand interactionHand =
+                        player.getMainArm() == HumanoidArm.RIGHT ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+                if (player.getUsedItemHand() == interactionHand) {
                     this.rightArm.xRot = this.rightArm.xRot - ((float) Math.PI * 2.0F) / 10.0F;
                     if (SwordBlockingMechanics.CONFIG.get(ClientConfig.class).simpleBlockingPose) {
                         this.rightArm.yRot = ((float) -Math.PI / 6.0F);
+                    }
+                } else {
+                    this.leftArm.xRot = this.leftArm.xRot - ((float) Math.PI * 2.0F) / 10.0F;
+                    if (SwordBlockingMechanics.CONFIG.get(ClientConfig.class).simpleBlockingPose) {
+                        this.leftArm.yRot = ((float) Math.PI / 6.0F);
                     }
                 }
             }

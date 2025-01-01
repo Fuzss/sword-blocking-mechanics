@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v8.0.2-1.20.1] - 2025-01-01
+### Fixed
+- Fix parry cooldown freezing when reaching negative values
+- Fix incorrect left-handed blocking animation
+
 ## [v8.0.1-1.20.1] - 2024-02-02
 ### Added
 - Allow for defining a required attack strength to start sword blocking
