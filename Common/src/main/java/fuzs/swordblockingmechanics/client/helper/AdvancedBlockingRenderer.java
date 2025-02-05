@@ -5,17 +5,14 @@ import com.mojang.math.Axis;
 import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransform;
-import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
 import org.joml.Quaternionf;
 
 public class AdvancedBlockingRenderer {
 
-    public static void renderBlockingWithSword(ItemRenderer itemRenderer, ArmedModel model, ItemStack itemStack, ItemDisplayContext itemDisplayContext, HumanoidArm humanoidArm, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, BakedModel bakedModel) {
+    public static void renderBlockingWithSword(ArmedModel model, ItemStackRenderState itemStackRenderState, HumanoidArm humanoidArm, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
         // those transformations are directly ported from Minecraft 1.7, resulting in a pixel-perfect recreation of third-person sword blocking
         // a lot has changed since then (the whole model system has been rewritten twice in 1.8 and 1.9, and had major changes in 1.14 and 1.15),
         // so we reset everything vanilla does now, and apply every single step that was done in 1.7
@@ -26,8 +23,8 @@ public class AdvancedBlockingRenderer {
         boolean leftHand = humanoidArm == HumanoidArm.LEFT;
         applyItemBlockingTransform(poseStack, leftHand);
         // revert 1.8+ model changes, so we can work on a blank slate
-        applyTransformInverse(bakedModel.getTransforms().getTransform(itemDisplayContext), leftHand, poseStack);
-        itemRenderer.render(itemStack, itemDisplayContext, leftHand, poseStack, bufferSource, packedLight, OverlayTexture.NO_OVERLAY, bakedModel);
+        applyTransformInverse(itemStackRenderState.transform(), leftHand, poseStack);
+        itemStackRenderState.render(poseStack, bufferSource, packedLight, OverlayTexture.NO_OVERLAY);
         poseStack.popPose();
     }
 
@@ -63,11 +60,17 @@ public class AdvancedBlockingRenderer {
             float angleX = itemTransform.rotation.x();
             float angleY = leftHand ? -itemTransform.rotation.y() : itemTransform.rotation.y();
             float angleZ = leftHand ? -itemTransform.rotation.z() : itemTransform.rotation.z();
-            Quaternionf quaternion = new Quaternionf().rotationXYZ(angleX * 0.017453292F, angleY * 0.017453292F, angleZ * 0.017453292F);
+            Quaternionf quaternion = new Quaternionf().rotationXYZ(angleX * 0.017453292F,
+                    angleY * 0.017453292F,
+                    angleZ * 0.017453292F);
             quaternion.conjugate();
-            poseStack.scale(1.0F / itemTransform.scale.x(), 1.0F / itemTransform.scale.y(), 1.0F / itemTransform.scale.z());
+            poseStack.scale(1.0F / itemTransform.scale.x(),
+                    1.0F / itemTransform.scale.y(),
+                    1.0F / itemTransform.scale.z());
             poseStack.mulPose(quaternion);
-            poseStack.translate((leftHand ? -1.0F : 1.0F) * -itemTransform.translation.x(), -itemTransform.translation.y(), -itemTransform.translation.z());
+            poseStack.translate((leftHand ? -1.0F : 1.0F) * -itemTransform.translation.x(),
+                    -itemTransform.translation.y(),
+                    -itemTransform.translation.z());
         }
     }
 }

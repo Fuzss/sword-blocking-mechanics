@@ -1,6 +1,6 @@
 package fuzs.swordblockingmechanics.mixin.client;
 
-import fuzs.puzzleslib.api.client.util.v1.RenderPropertyKey;
+import fuzs.puzzleslib.api.client.renderer.v1.RenderPropertyKey;
 import fuzs.swordblockingmechanics.SwordBlockingMechanics;
 import fuzs.swordblockingmechanics.client.handler.FirstPersonRenderingHandler;
 import fuzs.swordblockingmechanics.config.ClientConfig;
