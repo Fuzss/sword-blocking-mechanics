@@ -1,0 +1,3 @@
+// 1.21.4	2025-02-05T14:40:33.932774	Tags for minecraft:item mod id vanilla
+e6756cdd6fb03cf772eba210ae3f93335e83dcd6 data/swordblockingmechanics/tags/item/can_perform_sword_blocking.json
+35133e95f1c8fdd7a1c21afcc231fc0bffefb9a8 data/swordblockingmechanics/tags/item/overrides_sword_blocking_in_offhand.json
