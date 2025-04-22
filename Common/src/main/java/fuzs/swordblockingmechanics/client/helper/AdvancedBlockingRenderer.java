@@ -23,7 +23,7 @@ public class AdvancedBlockingRenderer {
         boolean leftHand = humanoidArm == HumanoidArm.LEFT;
         applyItemBlockingTransform(poseStack, leftHand);
         // revert 1.8+ model changes, so we can work on a blank slate
-        applyTransformInverse(itemStackRenderState.transform(), leftHand, poseStack);
+        applyTransformInverse(itemStackRenderState.firstLayer().transform, leftHand, poseStack);
         itemStackRenderState.render(poseStack, bufferSource, packedLight, OverlayTexture.NO_OVERLAY);
         poseStack.popPose();
     }
@@ -57,20 +57,20 @@ public class AdvancedBlockingRenderer {
     private static void applyTransformInverse(ItemTransform itemTransform, boolean leftHand, PoseStack poseStack) {
         // this does the exact inverse of ItemTransform::apply which should be applied right after, so that in the end nothing has changed
         if (itemTransform != ItemTransform.NO_TRANSFORM) {
-            float angleX = itemTransform.rotation.x();
-            float angleY = leftHand ? -itemTransform.rotation.y() : itemTransform.rotation.y();
-            float angleZ = leftHand ? -itemTransform.rotation.z() : itemTransform.rotation.z();
+            float angleX = itemTransform.rotation().x();
+            float angleY = leftHand ? -itemTransform.rotation().y() : itemTransform.rotation().y();
+            float angleZ = leftHand ? -itemTransform.rotation().z() : itemTransform.rotation().z();
             Quaternionf quaternion = new Quaternionf().rotationXYZ(angleX * 0.017453292F,
                     angleY * 0.017453292F,
                     angleZ * 0.017453292F);
             quaternion.conjugate();
-            poseStack.scale(1.0F / itemTransform.scale.x(),
-                    1.0F / itemTransform.scale.y(),
-                    1.0F / itemTransform.scale.z());
+            poseStack.scale(1.0F / itemTransform.scale().x(),
+                    1.0F / itemTransform.scale().y(),
+                    1.0F / itemTransform.scale().z());
             poseStack.mulPose(quaternion);
-            poseStack.translate((leftHand ? -1.0F : 1.0F) * -itemTransform.translation.x(),
-                    -itemTransform.translation.y(),
-                    -itemTransform.translation.z());
+            poseStack.translate((leftHand ? -1.0F : 1.0F) * -itemTransform.translation().x(),
+                    -itemTransform.translation().y(),
+                    -itemTransform.translation().z());
         }
     }
 }

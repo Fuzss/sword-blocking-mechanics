@@ -26,7 +26,7 @@ public class FirstPersonRenderingHandler {
 
     public static void onExtractRenderState(Entity entity, EntityRenderState entityRenderState, float partialTick) {
         if (entity instanceof Player player && entityRenderState instanceof PlayerRenderState) {
-            RenderPropertyKey.setRenderProperty(entityRenderState,
+            RenderPropertyKey.set(entityRenderState,
                     IS_BLOCKING_RENDER_PROPERTY_KEY,
                     SwordBlockingHandler.isActiveItemStackBlocking(player));
         }
@@ -52,7 +52,6 @@ public class FirstPersonRenderingHandler {
                     itemStack,
                     isHandSideRight ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND :
                             ItemDisplayContext.FIRST_PERSON_LEFT_HAND,
-                    !isHandSideRight,
                     poseStack,
                     bufferSource,
                     combinedLight);

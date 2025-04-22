@@ -37,8 +37,9 @@ abstract class HumanoidModelMixin<T extends HumanoidRenderState> extends EntityM
     )
     public void setupAnim(T renderState, CallbackInfo callback) {
         if (renderState instanceof PlayerRenderState playerRenderState && renderState.isUsingItem) {
-            if (RenderPropertyKey.getRenderProperty(renderState,
-                    FirstPersonRenderingHandler.IS_BLOCKING_RENDER_PROPERTY_KEY)) {
+            if (RenderPropertyKey.getOrDefault(renderState,
+                    FirstPersonRenderingHandler.IS_BLOCKING_RENDER_PROPERTY_KEY,
+                    false)) {
                 InteractionHand interactionHand =
                         renderState.mainArm == HumanoidArm.RIGHT ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
                 if (renderState.useItemHand == interactionHand) {

@@ -35,8 +35,9 @@ abstract class PlayerItemInHandLayerMixin<S extends PlayerRenderState, M extends
         if (!itemStackRenderState.isEmpty() && renderState.isUsingItem) {
             InteractionHand interactionHand =
                     humanoidArm == renderState.mainArm ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
-            if (renderState.useItemHand == interactionHand && RenderPropertyKey.getRenderProperty(renderState,
-                    FirstPersonRenderingHandler.IS_BLOCKING_RENDER_PROPERTY_KEY)) {
+            if (renderState.useItemHand == interactionHand && RenderPropertyKey.getOrDefault(renderState,
+                    FirstPersonRenderingHandler.IS_BLOCKING_RENDER_PROPERTY_KEY,
+                    false)) {
                 AdvancedBlockingRenderer.renderBlockingWithSword(this.getParentModel(),
                         itemStackRenderState,
                         humanoidArm,

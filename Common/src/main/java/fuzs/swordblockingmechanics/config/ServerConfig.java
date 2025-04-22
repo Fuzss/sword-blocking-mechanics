@@ -35,9 +35,6 @@ public class ServerConfig implements ConfigCore {
     public boolean requireBothHands = false;
     @Config(category = BLOCKING_CATEGORY, description = "Incoming projectiles such as arrows or tridents will ricochet while blocking.")
     public boolean deflectProjectiles = false;
-    @Config(description = "Percentage to slow down movement to while blocking.")
-    @Config.DoubleRange(min = 0.0, max = 1.0)
-    public double blockingSlowdown = 0.2;
     @Config(description = "The minimum attack strength required to be able to start blocking.")
     @Config.DoubleRange(min = 0.0, max = 1.0)
     public double requiredAttackStrength = 0.0;
