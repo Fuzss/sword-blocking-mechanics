@@ -6,7 +6,7 @@ import fuzs.swordblockingmechanics.handler.SwordBlockingHandler;
 import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
+import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
@@ -20,17 +20,19 @@ public class AttackIndicatorInGuiHandler {
     @Nullable
     private static AttackIndicatorStatus attackIndicator = null;
 
-    public static void onBeforeRenderGui(Gui gui, GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+    public static void onBeforeRenderGui(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
         if (!SwordBlockingMechanics.CONFIG.get(ClientConfig.class).renderParryIndicator) return;
-        if (attackIndicator == null && SwordBlockingHandler.getParryStrengthScale(gui.minecraft.player) != 0.0) {
-            attackIndicator = gui.minecraft.options.attackIndicator().get();
-            gui.minecraft.options.attackIndicator().set(AttackIndicatorStatus.OFF);
+        if (attackIndicator == null
+                && SwordBlockingHandler.getParryStrengthScale(Minecraft.getInstance().player) != 0.0) {
+            Options options = Minecraft.getInstance().options;
+            attackIndicator = options.attackIndicator().get();
+            options.attackIndicator().set(AttackIndicatorStatus.OFF);
         }
     }
 
-    public static void onAfterRenderGui(Gui gui, GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+    public static void onAfterRenderGui(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
         if (attackIndicator != null) {
-            gui.minecraft.options.attackIndicator().set(attackIndicator);
+            Minecraft.getInstance().options.attackIndicator().set(attackIndicator);
             attackIndicator = null;
         }
     }
