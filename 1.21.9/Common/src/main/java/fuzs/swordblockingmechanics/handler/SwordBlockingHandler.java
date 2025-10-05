@@ -71,7 +71,7 @@ public class SwordBlockingHandler {
 
     public static EventResult onLivingAttack(LivingEntity entity, DamageSource damageSource, float damageAmount) {
 
-        if (entity.level().isClientSide || !(entity instanceof Player player) || !isActiveItemStackBlocking(player)) {
+        if (entity.level().isClientSide() || !(entity instanceof Player player) || !isActiveItemStackBlocking(player)) {
             return EventResult.PASS;
         }
 

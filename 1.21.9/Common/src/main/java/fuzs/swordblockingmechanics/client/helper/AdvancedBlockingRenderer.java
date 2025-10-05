@@ -3,8 +3,9 @@ package fuzs.swordblockingmechanics.client.helper;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.ArmedModel;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.model.ItemTransform;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.HumanoidArm;
@@ -12,19 +13,19 @@ import org.joml.Quaternionf;
 
 public class AdvancedBlockingRenderer {
 
-    public static void renderBlockingWithSword(ArmedModel model, ItemStackRenderState itemStackRenderState, HumanoidArm humanoidArm, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
+    public static <S extends EntityRenderState> void submitBlockingWithSword(S renderState, ArmedModel<S> model, ItemStackRenderState itemStackRenderState, HumanoidArm humanoidArm, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int packedLight) {
         // those transformations are directly ported from Minecraft 1.7, resulting in a pixel-perfect recreation of third-person sword blocking
         // a lot has changed since then (the whole model system has been rewritten twice in 1.8 and 1.9, and had major changes in 1.14 and 1.15),
         // so we reset everything vanilla does now, and apply every single step that was done in 1.7
         // (there were multiple classes and layers involved in 1.7, it is noted down below which class every transformation came from)
         // all this is done in code and not using some custom json model predicate so that every item is supported by default
         poseStack.pushPose();
-        model.translateToHand(humanoidArm, poseStack);
+        model.translateToHand(renderState, humanoidArm, poseStack);
         boolean leftHand = humanoidArm == HumanoidArm.LEFT;
         applyItemBlockingTransform(poseStack, leftHand);
         // revert 1.8+ model changes, so we can work on a blank slate
         applyTransformInverse(itemStackRenderState.firstLayer().transform, leftHand, poseStack);
-        itemStackRenderState.render(poseStack, bufferSource, packedLight, OverlayTexture.NO_OVERLAY);
+        itemStackRenderState.submit(poseStack, submitNodeCollector, packedLight, OverlayTexture.NO_OVERLAY, 0);
         poseStack.popPose();
     }
 

@@ -1,14 +1,14 @@
 package fuzs.swordblockingmechanics.mixin.client;
 
-import fuzs.puzzleslib.api.client.renderer.v1.RenderPropertyKey;
+import fuzs.puzzleslib.api.client.renderer.v1.RenderStateExtraData;
 import fuzs.swordblockingmechanics.SwordBlockingMechanics;
 import fuzs.swordblockingmechanics.client.handler.FirstPersonRenderingHandler;
 import fuzs.swordblockingmechanics.config.ClientConfig;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
-import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
@@ -29,15 +29,12 @@ abstract class HumanoidModelMixin<T extends HumanoidRenderState> extends EntityM
         super(root);
     }
 
-    @Inject(
-            method = "setupAnim", at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/client/model/HumanoidModel;setupAttackAnimation(Lnet/minecraft/client/renderer/entity/state/HumanoidRenderState;F)V"
-    )
-    )
+    @Inject(method = "setupAnim",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/model/HumanoidModel;setupAttackAnimation(Lnet/minecraft/client/renderer/entity/state/HumanoidRenderState;F)V"))
     public void setupAnim(T renderState, CallbackInfo callback) {
-        if (renderState instanceof PlayerRenderState playerRenderState && renderState.isUsingItem) {
-            if (RenderPropertyKey.getOrDefault(renderState,
+        if (renderState instanceof AvatarRenderState && renderState.isUsingItem) {
+            if (RenderStateExtraData.getOrDefault(renderState,
                     FirstPersonRenderingHandler.IS_BLOCKING_RENDER_PROPERTY_KEY,
                     false)) {
                 InteractionHand interactionHand =
