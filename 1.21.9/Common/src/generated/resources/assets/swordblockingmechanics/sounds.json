@@ -1,0 +1,15 @@
+{
+  "item.sword.block": {
+    "sounds": [
+      {
+        "name": "swordblockingmechanics:item/sword/block1",
+        "volume": 0.8
+      },
+      {
+        "name": "swordblockingmechanics:item/sword/block2",
+        "volume": 0.8
+      }
+    ],
+    "subtitle": "subtitles.item.sword.block"
+  }
+}
