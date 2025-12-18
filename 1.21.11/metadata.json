@@ -1,0 +1,61 @@
+{
+    "mod": {
+        "id": "swordblockingmechanics",
+        "group": "fuzs.swordblockingmechanics",
+        "name": "Sword Blocking Mechanics",
+        "version": "21.11.0",
+        "authors": [
+            "Fuzs"
+        ],
+        "description": "Sword blocking is back! Exactly like it used to be, or different? Your choice!",
+        "license": "MPL-2.0"
+    },
+    "dependencies": [
+        {
+            "name": "fabricapi",
+            "type": "required",
+            "platforms": [
+                "fabric"
+            ]
+        },
+        {
+            "name": "forgeconfigapiport",
+            "type": "required",
+            "platforms": [
+                "fabric"
+            ]
+        },
+        {
+            "name": "puzzleslib",
+            "type": "required",
+            "platforms": [
+                "fabric",
+                "neoforge"
+            ]
+        }
+    ],
+    "links": [
+        {
+            "name": "github",
+            "slug": "swordblockingmechanics"
+        },
+        {
+            "name": "curseforge",
+            "slug": "sword-blocking-mechanics",
+            "id": "969424"
+        },
+        {
+            "name": "modrinth",
+            "slug": "sword-blocking-mechanics",
+            "id": "4v5Na7b9"
+        }
+    ],
+    "environments": {
+        "client": "required",
+        "server": "required"
+    },
+    "platforms": [
+        "fabric",
+        "neoforge"
+    ]
+}

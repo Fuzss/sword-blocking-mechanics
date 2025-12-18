@@ -2,6 +2,7 @@ package fuzs.swordblockingmechanics.client;
 
 import fuzs.puzzleslib.api.client.core.v1.ClientModConstructor;
 import fuzs.puzzleslib.api.client.core.v1.context.GuiLayersContext;
+import fuzs.puzzleslib.api.client.event.v1.ClientTickEvents;
 import fuzs.puzzleslib.api.client.event.v1.gui.RenderGuiEvents;
 import fuzs.puzzleslib.api.client.event.v1.renderer.ExtractRenderStateCallback;
 import fuzs.puzzleslib.api.client.event.v1.renderer.RenderHandEvents;
@@ -21,6 +22,7 @@ public class SwordBlockingMechanicsClient implements ClientModConstructor {
         RenderGuiEvents.AFTER.register(AttackIndicatorInGuiHandler::onAfterRenderGui);
         RenderHandEvents.BOTH.register(FirstPersonRenderingHandler::onRenderBothHands);
         ExtractRenderStateCallback.EVENT.register(FirstPersonRenderingHandler::onExtractRenderState);
+        ClientTickEvents.END.register(AttackIndicatorInGuiHandler::onEndClientTick);
     }
 
     @Override

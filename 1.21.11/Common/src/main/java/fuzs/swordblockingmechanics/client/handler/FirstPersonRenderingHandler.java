@@ -7,17 +7,16 @@ import fuzs.puzzleslib.api.event.v1.core.EventResult;
 import fuzs.swordblockingmechanics.SwordBlockingMechanics;
 import fuzs.swordblockingmechanics.config.ClientConfig;
 import fuzs.swordblockingmechanics.handler.SwordBlockingHandler;
-import fuzs.swordblockingmechanics.mixin.client.accessor.ItemInHandRendererAccessor;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
@@ -26,7 +25,7 @@ public class FirstPersonRenderingHandler {
             "is_blocking"));
 
     public static void onExtractRenderState(Entity entity, EntityRenderState entityRenderState, float partialTick) {
-        if (entity instanceof Player player && entityRenderState instanceof AvatarRenderState) {
+        if (entity instanceof LivingEntity player && entityRenderState instanceof HumanoidRenderState) {
             RenderStateExtraData.set(entityRenderState,
                     IS_BLOCKING_RENDER_PROPERTY_KEY,
                     SwordBlockingHandler.isActiveItemStackBlocking(player));
@@ -36,19 +35,13 @@ public class FirstPersonRenderingHandler {
     public static EventResult onRenderBothHands(ItemInHandRenderer itemInHandRenderer, InteractionHand interactionHand, AbstractClientPlayer player, HumanoidArm humanoidArm, ItemStack itemStack, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int combinedLight, float partialTick, float interpolatedPitch, float swingProgress, float equipProgress) {
         if (player.getUsedItemHand() == interactionHand && SwordBlockingHandler.isActiveItemStackBlocking(player)) {
             poseStack.pushPose();
-            boolean mainHand = interactionHand == InteractionHand.MAIN_HAND;
-            HumanoidArm handSide = mainHand ? player.getMainArm() : player.getMainArm().getOpposite();
-            boolean isHandSideRight = handSide == HumanoidArm.RIGHT;
-            ((ItemInHandRendererAccessor) itemInHandRenderer).swordblockingmechanics$callApplyItemArmTransform(poseStack,
-                    handSide,
-                    equipProgress);
+            boolean isHandSideRight = humanoidArm == HumanoidArm.RIGHT;
+            itemInHandRenderer.applyItemArmTransform(poseStack, humanoidArm, equipProgress);
             if (SwordBlockingMechanics.CONFIG.get(ClientConfig.class).interactAnimations) {
-                ((ItemInHandRendererAccessor) itemInHandRenderer).swordblockingmechanics$callApplyItemArmAttackTransform(
-                        poseStack,
-                        handSide,
-                        swingProgress);
+                itemInHandRenderer.applyItemArmAttackTransform(poseStack, humanoidArm, swingProgress);
             }
-            transformBlockFirstPerson(poseStack, handSide);
+
+            applyBlockTransform(poseStack, humanoidArm);
             itemInHandRenderer.renderItem(player,
                     itemStack,
                     isHandSideRight ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND :
@@ -63,12 +56,11 @@ public class FirstPersonRenderingHandler {
         }
     }
 
-    private static void transformBlockFirstPerson(PoseStack matrixStack, HumanoidArm hand) {
-        int direction = hand == HumanoidArm.RIGHT ? 1 : -1;
-        // values taken from Minecraft snapshot 15w33b
-        matrixStack.translate(direction * -0.14142136F, 0.08F, 0.14142136F);
-        matrixStack.mulPose(Axis.XP.rotationDegrees(-102.25F));
-        matrixStack.mulPose(Axis.YP.rotationDegrees(direction * 13.365F));
-        matrixStack.mulPose(Axis.ZP.rotationDegrees(direction * 78.05F));
+    private static void applyBlockTransform(PoseStack poseStack, HumanoidArm humanoidArm) {
+        int direction = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;
+        poseStack.translate(direction * -0.14142136F, 0.08F, 0.14142136F);
+        poseStack.mulPose(Axis.XP.rotationDegrees(-102.25F));
+        poseStack.mulPose(Axis.YP.rotationDegrees(direction * 13.365F));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(direction * 78.05F));
     }
 }

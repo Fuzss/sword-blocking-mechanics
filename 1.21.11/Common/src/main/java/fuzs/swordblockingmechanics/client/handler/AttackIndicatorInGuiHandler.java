@@ -9,41 +9,61 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class AttackIndicatorInGuiHandler {
-    public static final ResourceLocation GUI_ICONS_LOCATION = SwordBlockingMechanics.id("textures/gui/icons.png");
+    public static final Identifier GUI_ICONS_LOCATION = SwordBlockingMechanics.id("textures/gui/icons.png");
 
     @Nullable
     private static AttackIndicatorStatus attackIndicator = null;
+    private static double oldParryStrengthScale;
+
+    public static void onEndClientTick(Minecraft minecraft) {
+        if (minecraft.player != null) {
+            oldParryStrengthScale = SwordBlockingHandler.getParryStrengthScale(minecraft.player);
+        }
+    }
+
+    private static double getParryStrengthScale(Player player, float partialTick) {
+        double scale = SwordBlockingHandler.getParryStrengthScale(player);
+        return Mth.lerp(partialTick, oldParryStrengthScale, scale);
+    }
 
     public static void onBeforeRenderGui(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
-        if (!SwordBlockingMechanics.CONFIG.get(ClientConfig.class).renderParryIndicator) return;
-        if (attackIndicator == null
-                && SwordBlockingHandler.getParryStrengthScale(Minecraft.getInstance().player) != 0.0) {
-            Options options = Minecraft.getInstance().options;
-            attackIndicator = options.attackIndicator().get();
-            options.attackIndicator().set(AttackIndicatorStatus.OFF);
+        if (!SwordBlockingMechanics.CONFIG.get(ClientConfig.class).renderParryIndicator) {
+            return;
+        }
+
+        Minecraft minecraft = Minecraft.getInstance();
+        if (attackIndicator == null && minecraft.player != null) {
+            float partialTick = deltaTracker.getGameTimeDeltaPartialTick(false);
+            if (getParryStrengthScale(minecraft.player, partialTick) != 0.0) {
+                attackIndicator = minecraft.options.attackIndicator().get();
+                minecraft.options.attackIndicator().set(AttackIndicatorStatus.OFF);
+            }
         }
     }
 
     public static void onAfterRenderGui(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
         if (attackIndicator != null) {
-            Minecraft.getInstance().options.attackIndicator().set(attackIndicator);
+            Options options = Minecraft.getInstance().options;
+            options.attackIndicator().set(attackIndicator);
             attackIndicator = null;
         }
     }
 
     public static void renderCrosshairBlockingIndicator(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
-        if (attackIndicator == AttackIndicatorStatus.CROSSHAIR) {
-            Minecraft minecraft = Minecraft.getInstance();
+        Minecraft minecraft = Minecraft.getInstance();
+        if (attackIndicator == AttackIndicatorStatus.CROSSHAIR && minecraft.player != null) {
             if (minecraft.options.getCameraType().isFirstPerson()) {
                 int posX = guiGraphics.guiWidth() / 2 - 8;
                 int posY = guiGraphics.guiHeight() / 2 - 7 + 16;
-                double parryStrengthScale = SwordBlockingHandler.getParryStrengthScale(minecraft.player);
+                float partialTick = deltaTracker.getGameTimeDeltaPartialTick(false);
+                double parryStrengthScale = getParryStrengthScale(minecraft.player, partialTick);
                 int textureHeight = (int) (Math.abs(parryStrengthScale) * 15.0);
                 guiGraphics.blit(RenderPipelines.CROSSHAIR, GUI_ICONS_LOCATION, posX, posY, 54, 0, 16, 14, 256, 256);
                 guiGraphics.blit(RenderPipelines.CROSSHAIR,
@@ -61,16 +81,18 @@ public class AttackIndicatorInGuiHandler {
     }
 
     public static void renderHotbarBlockingIndicator(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
-        if (attackIndicator == AttackIndicatorStatus.HOTBAR) {
-            Player player = Minecraft.getInstance().player;
+        Minecraft minecraft = Minecraft.getInstance();
+        if (attackIndicator == AttackIndicatorStatus.HOTBAR && minecraft.player != null) {
             int posX;
-            if (player.getMainArm() == HumanoidArm.LEFT) {
+            if (minecraft.player.getMainArm() == HumanoidArm.LEFT) {
                 posX = guiGraphics.guiWidth() / 2 - 91 - 22;
             } else {
                 posX = guiGraphics.guiWidth() / 2 + 91 + 6;
             }
+
             int posY = guiGraphics.guiHeight() - 20;
-            double parryStrengthScale = SwordBlockingHandler.getParryStrengthScale(player);
+            float partialTick = deltaTracker.getGameTimeDeltaPartialTick(false);
+            double parryStrengthScale = getParryStrengthScale(minecraft.player, partialTick);
             int textureHeight = (int) (Math.abs(parryStrengthScale) * 19.0F);
             guiGraphics.blit(RenderPipelines.GUI_TEXTURED, GUI_ICONS_LOCATION, posX, posY, 0, 0, 18, 18, 256, 256);
             guiGraphics.blit(RenderPipelines.GUI_TEXTURED,
