@@ -18,9 +18,9 @@ abstract class ItemInHandRendererMixin {
     private Minecraft minecraft;
 
     @Inject(method = "itemUsed", at = @At("HEAD"), cancellable = true)
-    public void itemUsed(InteractionHand interactionHand, CallbackInfo callback) {
-        // don't play the reequip animation when beginning to use an item, like shield or bow
-        if (this.minecraft.player.isUsingItem() && this.minecraft.player.getUsedItemHand() == interactionHand) {
+    public void itemUsed(InteractionHand hand, CallbackInfo callback) {
+        // Don't play the re-equip animation when beginning to use an item, like shield or bow.
+        if (this.minecraft.player.isUsingItem() && this.minecraft.player.getUsedItemHand() == hand) {
             if (this.minecraft.player.getUseItem().is(ModRegistry.CAN_PERFORM_SWORD_BLOCKING_ITEM_TAG)) {
                 callback.cancel();
             }

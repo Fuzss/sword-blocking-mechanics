@@ -1,7 +1,7 @@
 package fuzs.swordblockingmechanics.config;
 
-import fuzs.puzzleslib.api.config.v3.Config;
-import fuzs.puzzleslib.api.config.v3.ConfigCore;
+import fuzs.puzzleslib.common.api.config.v3.Config;
+import fuzs.puzzleslib.common.api.config.v3.ConfigCore;
 
 public class ClientConfig implements ConfigCore {
     @Config(name = "simple_blocking_pose", description = "Use the much simpler third-person pose when blocking with a sword from Minecaft 1.8 instead of the default one from before that.")

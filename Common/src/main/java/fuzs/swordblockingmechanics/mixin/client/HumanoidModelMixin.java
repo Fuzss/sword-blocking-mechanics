@@ -1,6 +1,6 @@
 package fuzs.swordblockingmechanics.mixin.client;
 
-import fuzs.puzzleslib.api.client.renderer.v1.RenderStateExtraData;
+import fuzs.puzzleslib.common.api.client.renderer.v1.RenderStateExtraData;
 import fuzs.swordblockingmechanics.SwordBlockingMechanics;
 import fuzs.swordblockingmechanics.client.handler.FirstPersonRenderingHandler;
 import fuzs.swordblockingmechanics.config.ClientConfig;
@@ -34,13 +34,13 @@ abstract class HumanoidModelMixin<T extends HumanoidRenderState> extends EntityM
     @Inject(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/HumanoidRenderState;)V",
             at = @At(value = "INVOKE",
                      target = "Lnet/minecraft/client/model/HumanoidModel;setupAttackAnimation(Lnet/minecraft/client/renderer/entity/state/HumanoidRenderState;)V"))
-    public void setupAnim(T renderState, CallbackInfo callback) {
-        if (renderState.isUsingItem && RenderStateExtraData.getOrDefault(renderState,
+    public void setupAnim(T state, CallbackInfo callback) {
+        if (state.isUsingItem && RenderStateExtraData.getOrDefault(state,
                 FirstPersonRenderingHandler.IS_BLOCKING_RENDER_PROPERTY_KEY,
                 false)) {
             InteractionHand interactionHand =
-                    renderState.mainArm == HumanoidArm.RIGHT ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
-            if (renderState.useItemHand == interactionHand) {
+                    state.mainArm == HumanoidArm.RIGHT ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+            if (state.useItemHand == interactionHand) {
                 this.rightArm.xRot = this.rightArm.xRot - Mth.PI * 2.0F / 10.0F;
                 if (SwordBlockingMechanics.CONFIG.get(ClientConfig.class).simpleBlockingPose) {
                     this.rightArm.yRot = -Mth.PI / 6.0F;

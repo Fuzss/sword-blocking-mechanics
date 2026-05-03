@@ -1,9 +1,10 @@
 {
+    "minecraft": "26.1.2",
     "mod": {
         "id": "swordblockingmechanics",
         "group": "fuzs.swordblockingmechanics",
         "name": "Sword Blocking Mechanics",
-        "version": "21.11.0",
+        "version": "26.1.0",
         "authors": [
             "Fuzs"
         ],
@@ -36,13 +37,13 @@
     ],
     "links": [
         {
-            "name": "github",
-            "slug": "swordblockingmechanics"
-        },
-        {
             "name": "curseforge",
             "slug": "sword-blocking-mechanics",
             "id": "969424"
+        },
+        {
+            "name": "github",
+            "slug": "sword-blocking-mechanics"
         },
         {
             "name": "modrinth",

@@ -7,7 +7,7 @@ import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -33,7 +33,7 @@ public class AttackIndicatorInGuiHandler {
         return Mth.lerp(partialTick, oldParryStrengthScale, scale);
     }
 
-    public static void onBeforeRenderGui(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+    public static void onBeforeRenderGui(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker) {
         if (!SwordBlockingMechanics.CONFIG.get(ClientConfig.class).renderParryIndicator) {
             return;
         }
@@ -48,7 +48,7 @@ public class AttackIndicatorInGuiHandler {
         }
     }
 
-    public static void onAfterRenderGui(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+    public static void onAfterRenderGui(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker) {
         if (attackIndicator != null) {
             Options options = Minecraft.getInstance().options;
             options.attackIndicator().set(attackIndicator);
@@ -56,7 +56,7 @@ public class AttackIndicatorInGuiHandler {
         }
     }
 
-    public static void renderCrosshairBlockingIndicator(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+    public static void renderCrosshairBlockingIndicator(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
         if (attackIndicator == AttackIndicatorStatus.CROSSHAIR && minecraft.player != null) {
             if (minecraft.options.getCameraType().isFirstPerson()) {
@@ -80,7 +80,7 @@ public class AttackIndicatorInGuiHandler {
         }
     }
 
-    public static void renderHotbarBlockingIndicator(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+    public static void renderHotbarBlockingIndicator(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
         if (attackIndicator == AttackIndicatorStatus.HOTBAR && minecraft.player != null) {
             int posX;

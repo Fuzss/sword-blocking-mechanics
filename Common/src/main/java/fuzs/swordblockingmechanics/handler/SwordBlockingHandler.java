@@ -1,11 +1,11 @@
 package fuzs.swordblockingmechanics.handler;
 
-import fuzs.puzzleslib.api.event.v1.core.EventResult;
-import fuzs.puzzleslib.api.event.v1.core.EventResultHolder;
-import fuzs.puzzleslib.api.event.v1.data.MutableDouble;
-import fuzs.puzzleslib.api.event.v1.data.MutableFloat;
-import fuzs.puzzleslib.api.event.v1.data.MutableInt;
-import fuzs.puzzleslib.api.item.v2.ItemHelper;
+import fuzs.puzzleslib.common.api.event.v1.core.EventResult;
+import fuzs.puzzleslib.common.api.event.v1.core.EventResultHolder;
+import fuzs.puzzleslib.common.api.event.v1.data.MutableDouble;
+import fuzs.puzzleslib.common.api.event.v1.data.MutableFloat;
+import fuzs.puzzleslib.common.api.event.v1.data.MutableInt;
+import fuzs.puzzleslib.common.api.item.v2.ItemHelper;
 import fuzs.swordblockingmechanics.SwordBlockingMechanics;
 import fuzs.swordblockingmechanics.attachment.ParryCooldown;
 import fuzs.swordblockingmechanics.config.ServerConfig;
@@ -226,7 +226,7 @@ public class SwordBlockingHandler {
                 livingEntity.stopUsingItem();
                 livingEntity.playSound(SoundEvents.ITEM_BREAK.value(),
                         0.8F,
-                        0.8F + livingEntity.level().random.nextFloat() * 0.4F);
+                        0.8F + livingEntity.level().getRandom().nextFloat() * 0.4F);
             }
         }
     }

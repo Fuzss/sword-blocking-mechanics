@@ -2,8 +2,8 @@ package fuzs.swordblockingmechanics.client.handler;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import fuzs.puzzleslib.api.client.renderer.v1.RenderStateExtraData;
-import fuzs.puzzleslib.api.event.v1.core.EventResult;
+import fuzs.puzzleslib.common.api.client.renderer.v1.RenderStateExtraData;
+import fuzs.puzzleslib.common.api.event.v1.core.EventResult;
 import fuzs.swordblockingmechanics.SwordBlockingMechanics;
 import fuzs.swordblockingmechanics.config.ClientConfig;
 import fuzs.swordblockingmechanics.handler.SwordBlockingHandler;
@@ -24,7 +24,7 @@ public class FirstPersonRenderingHandler {
     public static final ContextKey<Boolean> IS_BLOCKING_RENDER_PROPERTY_KEY = new ContextKey<>(SwordBlockingMechanics.id(
             "is_blocking"));
 
-    public static void onExtractRenderState(Entity entity, EntityRenderState entityRenderState, float partialTick) {
+    public static void onExtractEntityRenderState(Entity entity, EntityRenderState entityRenderState, float partialTick) {
         if (entity instanceof LivingEntity player && entityRenderState instanceof HumanoidRenderState) {
             RenderStateExtraData.set(entityRenderState,
                     IS_BLOCKING_RENDER_PROPERTY_KEY,

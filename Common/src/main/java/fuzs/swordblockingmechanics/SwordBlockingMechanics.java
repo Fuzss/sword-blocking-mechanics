@@ -1,13 +1,13 @@
 package fuzs.swordblockingmechanics;
 
-import fuzs.puzzleslib.api.config.v3.ConfigHolder;
-import fuzs.puzzleslib.api.core.v1.ModConstructor;
-import fuzs.puzzleslib.api.event.v1.entity.living.LivingAttackCallback;
-import fuzs.puzzleslib.api.event.v1.entity.living.LivingHurtCallback;
-import fuzs.puzzleslib.api.event.v1.entity.living.LivingKnockBackCallback;
-import fuzs.puzzleslib.api.event.v1.entity.living.UseItemEvents;
-import fuzs.puzzleslib.api.event.v1.entity.player.PlayerInteractEvents;
-import fuzs.puzzleslib.api.event.v1.entity.player.PlayerTickEvents;
+import fuzs.puzzleslib.common.api.config.v3.ConfigHolder;
+import fuzs.puzzleslib.common.api.core.v1.ModConstructor;
+import fuzs.puzzleslib.common.api.event.v1.entity.living.LivingAttackCallback;
+import fuzs.puzzleslib.common.api.event.v1.entity.living.LivingHurtCallback;
+import fuzs.puzzleslib.common.api.event.v1.entity.living.LivingKnockBackCallback;
+import fuzs.puzzleslib.common.api.event.v1.entity.living.UseItemEvents;
+import fuzs.puzzleslib.common.api.event.v1.entity.player.PlayerInteractEvents;
+import fuzs.puzzleslib.common.api.event.v1.entity.player.PlayerTickEvents;
 import fuzs.swordblockingmechanics.attachment.ParryCooldown;
 import fuzs.swordblockingmechanics.config.ClientConfig;
 import fuzs.swordblockingmechanics.config.ServerConfig;
