@@ -1,8 +1,8 @@
-package fuzs.swordblockingmechanics.data.tags;
+package fuzs.swordblockingmechanics.common.data.tags;
 
 import fuzs.puzzleslib.common.api.data.v2.core.DataProviderContext;
 import fuzs.puzzleslib.common.api.data.v2.tags.AbstractTagProvider;
-import fuzs.swordblockingmechanics.init.ModRegistry;
+import fuzs.swordblockingmechanics.common.init.ModRegistry;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.ItemTags;

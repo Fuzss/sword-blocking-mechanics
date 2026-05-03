@@ -1,8 +1,8 @@
-package fuzs.swordblockingmechanics.client.handler;
+package fuzs.swordblockingmechanics.common.client.handler;
 
-import fuzs.swordblockingmechanics.SwordBlockingMechanics;
-import fuzs.swordblockingmechanics.config.ClientConfig;
-import fuzs.swordblockingmechanics.handler.SwordBlockingHandler;
+import fuzs.swordblockingmechanics.common.SwordBlockingMechanics;
+import fuzs.swordblockingmechanics.common.config.ClientConfig;
+import fuzs.swordblockingmechanics.common.handler.SwordBlockingHandler;
 import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;

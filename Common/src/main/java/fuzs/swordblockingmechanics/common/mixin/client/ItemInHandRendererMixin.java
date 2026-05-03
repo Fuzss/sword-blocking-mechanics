@@ -1,6 +1,6 @@
-package fuzs.swordblockingmechanics.mixin.client;
+package fuzs.swordblockingmechanics.common.mixin.client;
 
-import fuzs.swordblockingmechanics.init.ModRegistry;
+import fuzs.swordblockingmechanics.common.init.ModRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.world.InteractionHand;

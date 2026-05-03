@@ -1,9 +1,9 @@
-package fuzs.swordblockingmechanics.attachment;
+package fuzs.swordblockingmechanics.common.attachment;
 
-import fuzs.swordblockingmechanics.SwordBlockingMechanics;
-import fuzs.swordblockingmechanics.config.ServerConfig;
-import fuzs.swordblockingmechanics.handler.SwordBlockingHandler;
-import fuzs.swordblockingmechanics.init.ModRegistry;
+import fuzs.swordblockingmechanics.common.SwordBlockingMechanics;
+import fuzs.swordblockingmechanics.common.config.ServerConfig;
+import fuzs.swordblockingmechanics.common.handler.SwordBlockingHandler;
+import fuzs.swordblockingmechanics.common.init.ModRegistry;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 

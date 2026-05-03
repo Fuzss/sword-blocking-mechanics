@@ -2,8 +2,8 @@ package fuzs.swordblockingmechanics.neoforge.data;
 
 import fuzs.puzzleslib.common.api.data.v2.core.DataProviderContext;
 import fuzs.puzzleslib.neoforge.api.client.data.v2.AbstractSoundProvider;
-import fuzs.swordblockingmechanics.SwordBlockingMechanics;
-import fuzs.swordblockingmechanics.init.ModRegistry;
+import fuzs.swordblockingmechanics.common.SwordBlockingMechanics;
+import fuzs.swordblockingmechanics.common.init.ModRegistry;
 
 public class ModSoundDefinitionProvider extends AbstractSoundProvider {
 

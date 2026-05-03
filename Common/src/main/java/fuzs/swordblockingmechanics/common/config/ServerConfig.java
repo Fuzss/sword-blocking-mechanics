@@ -1,8 +1,8 @@
-package fuzs.swordblockingmechanics.config;
+package fuzs.swordblockingmechanics.common.config;
 
 import fuzs.puzzleslib.common.api.config.v3.Config;
 import fuzs.puzzleslib.common.api.config.v3.ConfigCore;
-import fuzs.swordblockingmechanics.handler.SwordBlockingHandler;
+import fuzs.swordblockingmechanics.common.handler.SwordBlockingHandler;
 
 public class ServerConfig implements ConfigCore {
     static final String BLOCKING_CATEGORY = "blocking";

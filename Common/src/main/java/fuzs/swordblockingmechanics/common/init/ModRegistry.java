@@ -1,11 +1,11 @@
-package fuzs.swordblockingmechanics.init;
+package fuzs.swordblockingmechanics.common.init;
 
 import fuzs.puzzleslib.common.api.attachment.v4.DataAttachmentRegistry;
 import fuzs.puzzleslib.common.api.attachment.v4.DataAttachmentType;
 import fuzs.puzzleslib.common.api.init.v3.registry.RegistryManager;
 import fuzs.puzzleslib.common.api.init.v3.tags.TagFactory;
-import fuzs.swordblockingmechanics.SwordBlockingMechanics;
-import fuzs.swordblockingmechanics.attachment.ParryCooldown;
+import fuzs.swordblockingmechanics.common.SwordBlockingMechanics;
+import fuzs.swordblockingmechanics.common.attachment.ParryCooldown;
 import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;

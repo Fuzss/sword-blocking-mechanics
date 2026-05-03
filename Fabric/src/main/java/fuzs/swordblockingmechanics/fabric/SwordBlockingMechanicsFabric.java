@@ -1,7 +1,7 @@
 package fuzs.swordblockingmechanics.fabric;
 
 import fuzs.puzzleslib.common.api.core.v1.ModConstructor;
-import fuzs.swordblockingmechanics.SwordBlockingMechanics;
+import fuzs.swordblockingmechanics.common.SwordBlockingMechanics;
 import net.fabricmc.api.ModInitializer;
 
 public class SwordBlockingMechanicsFabric implements ModInitializer {

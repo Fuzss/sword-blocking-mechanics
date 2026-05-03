@@ -2,8 +2,8 @@ package fuzs.swordblockingmechanics.neoforge;
 
 import fuzs.puzzleslib.common.api.core.v1.ModConstructor;
 import fuzs.puzzleslib.neoforge.api.data.v2.core.DataProviderHelper;
-import fuzs.swordblockingmechanics.SwordBlockingMechanics;
-import fuzs.swordblockingmechanics.data.tags.ModItemTagProvider;
+import fuzs.swordblockingmechanics.common.SwordBlockingMechanics;
+import fuzs.swordblockingmechanics.common.data.tags.ModItemTagProvider;
 import net.neoforged.fml.common.Mod;
 
 @Mod(SwordBlockingMechanics.MOD_ID)

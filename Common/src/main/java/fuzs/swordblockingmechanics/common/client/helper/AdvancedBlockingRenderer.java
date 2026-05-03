@@ -1,4 +1,4 @@
-package fuzs.swordblockingmechanics.client.helper;
+package fuzs.swordblockingmechanics.common.client.helper;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;

@@ -1,4 +1,4 @@
-package fuzs.swordblockingmechanics.handler;
+package fuzs.swordblockingmechanics.common.handler;
 
 import fuzs.puzzleslib.common.api.event.v1.core.EventResult;
 import fuzs.puzzleslib.common.api.event.v1.core.EventResultHolder;
@@ -6,10 +6,10 @@ import fuzs.puzzleslib.common.api.event.v1.data.MutableDouble;
 import fuzs.puzzleslib.common.api.event.v1.data.MutableFloat;
 import fuzs.puzzleslib.common.api.event.v1.data.MutableInt;
 import fuzs.puzzleslib.common.api.item.v2.ItemHelper;
-import fuzs.swordblockingmechanics.SwordBlockingMechanics;
-import fuzs.swordblockingmechanics.attachment.ParryCooldown;
-import fuzs.swordblockingmechanics.config.ServerConfig;
-import fuzs.swordblockingmechanics.init.ModRegistry;
+import fuzs.swordblockingmechanics.common.SwordBlockingMechanics;
+import fuzs.swordblockingmechanics.common.attachment.ParryCooldown;
+import fuzs.swordblockingmechanics.common.config.ServerConfig;
+import fuzs.swordblockingmechanics.common.init.ModRegistry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;

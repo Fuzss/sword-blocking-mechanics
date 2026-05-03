@@ -1,8 +1,8 @@
-package fuzs.swordblockingmechanics.data.client;
+package fuzs.swordblockingmechanics.common.data.client;
 
 import fuzs.puzzleslib.common.api.client.data.v2.AbstractLanguageProvider;
 import fuzs.puzzleslib.common.api.data.v2.core.DataProviderContext;
-import fuzs.swordblockingmechanics.init.ModRegistry;
+import fuzs.swordblockingmechanics.common.init.ModRegistry;
 
 public class ModLanguageProvider extends AbstractLanguageProvider {
 

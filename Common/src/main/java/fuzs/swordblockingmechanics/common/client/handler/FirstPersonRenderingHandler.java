@@ -1,12 +1,12 @@
-package fuzs.swordblockingmechanics.client.handler;
+package fuzs.swordblockingmechanics.common.client.handler;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import fuzs.puzzleslib.common.api.client.renderer.v1.RenderStateExtraData;
 import fuzs.puzzleslib.common.api.event.v1.core.EventResult;
-import fuzs.swordblockingmechanics.SwordBlockingMechanics;
-import fuzs.swordblockingmechanics.config.ClientConfig;
-import fuzs.swordblockingmechanics.handler.SwordBlockingHandler;
+import fuzs.swordblockingmechanics.common.SwordBlockingMechanics;
+import fuzs.swordblockingmechanics.common.config.ClientConfig;
+import fuzs.swordblockingmechanics.common.handler.SwordBlockingHandler;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;

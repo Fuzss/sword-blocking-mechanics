@@ -2,9 +2,9 @@ package fuzs.swordblockingmechanics.neoforge.client;
 
 import fuzs.puzzleslib.common.api.client.core.v1.ClientModConstructor;
 import fuzs.puzzleslib.neoforge.api.data.v2.core.DataProviderHelper;
-import fuzs.swordblockingmechanics.SwordBlockingMechanics;
-import fuzs.swordblockingmechanics.client.SwordBlockingMechanicsClient;
-import fuzs.swordblockingmechanics.data.client.ModLanguageProvider;
+import fuzs.swordblockingmechanics.common.SwordBlockingMechanics;
+import fuzs.swordblockingmechanics.common.client.SwordBlockingMechanicsClient;
+import fuzs.swordblockingmechanics.common.data.client.ModLanguageProvider;
 import fuzs.swordblockingmechanics.neoforge.data.ModSoundDefinitionProvider;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.common.Mod;

@@ -1,8 +1,8 @@
 package fuzs.swordblockingmechanics.fabric.client;
 
-import fuzs.swordblockingmechanics.SwordBlockingMechanics;
+import fuzs.swordblockingmechanics.common.SwordBlockingMechanics;
 import fuzs.puzzleslib.common.api.client.core.v1.ClientModConstructor;
-import fuzs.swordblockingmechanics.client.SwordBlockingMechanicsClient;
+import fuzs.swordblockingmechanics.common.client.SwordBlockingMechanicsClient;
 import net.fabricmc.api.ClientModInitializer;
 
 public class SwordBlockingMechanicsFabricClient implements ClientModInitializer {
