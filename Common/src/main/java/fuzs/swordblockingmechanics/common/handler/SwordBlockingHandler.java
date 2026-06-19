@@ -116,7 +116,9 @@ public class SwordBlockingHandler {
                             && damageSource.getDirectEntity() instanceof LivingEntity directEntity) {
                         directEntity.knockback(SwordBlockingMechanics.CONFIG.get(ServerConfig.class).parryKnockbackStrength,
                                 livingEntity.getX() - directEntity.getX(),
-                                livingEntity.getZ() - directEntity.getZ());
+                                livingEntity.getZ() - directEntity.getZ(),
+                                damageSource,
+                                damageAmount);
                     }
 
                     serverLevel.playSound(null,
